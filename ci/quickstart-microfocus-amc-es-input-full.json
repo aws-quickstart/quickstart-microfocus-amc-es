@@ -141,7 +141,7 @@
     },
     {
         "ParameterKey": "OperatorEmail",
-        "ParameterValue": "quickstart@amazon.com"
+        "ParameterValue": ""
     },
     {
         "ParameterKey": "PrivateSubnet1ACIDR",
