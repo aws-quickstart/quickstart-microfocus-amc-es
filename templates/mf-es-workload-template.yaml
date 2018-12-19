@@ -60,6 +60,7 @@ Metadata:
         Parameters:
 
           - ESInstanceType
+          - NumberESInstance
           - RegionsPerInstance
           - AdditonalESStorageinGiB
           - KeyPairName
@@ -111,7 +112,7 @@ Metadata:
 
     ParameterLabels:
       AdditonalESStorageinGiB:
-        default: Additional integrated Fileshare storage
+        default: Additional Enterprise Server instance storage
       AvailabilityZones:
         default: Availability Zones
       DBBackupRetentionPeriod:
@@ -160,6 +161,8 @@ Metadata:
         default: Re-enter Enterprise Server Demo User password
       ESInstanceType:
         default: Enterprise Server instance type
+      NumberESInstance:
+        default: Number of Enterprise Server Instances to start
       ESLicenseFilename:
         default: Enterprise Server license filename
       ESResourceNamePrefix:
@@ -211,10 +214,10 @@ Metadata:
 Parameters:
   AdditonalESStorageinGiB:
     Type: Number
-    Description: Enter 0-16384 GiB. Additional EBS storage capacity added to Enterprise Server instances when running integrated local Fileshare.
+    Description: Enter 0-16384 GiB. Additional EBS storage capacity added to ES Instances.
     MinValue: 0
     MaxValue: 16384
-    Default: 1024
+    Default: 100
 
   AvailabilityZones:
     Description: >-
@@ -274,7 +277,7 @@ Parameters:
     Description: Enter 1-16384 GiB
     MinValue: 1
     MaxValue: 16384
-    Default: 1024
+    Default: 100
 
   DemoAppsIngressCIDR:
     AllowedPattern: >-
@@ -393,6 +396,15 @@ Parameters:
     Default: c5.large
     Type: String
 
+  NumberESInstance:
+    AllowedValues:
+      - 1
+      - 2
+    Default: 1
+    Description: >-
+      The number of Enterprise Server Instances to start. Can be 1 or 2.
+    Type: Number
+
   ESLicenseFilename:
     Description: 'Place the license file obtained from Micro Focus in the S3 bucket folder: s3://<ESS3BucketName>/<ESS3KeyPrefix>/license/'
     Type: String
@@ -490,7 +502,7 @@ Parameters:
     Type: 'AWS::EC2::KeyPair::KeyName'
 
   LicenseAgreement:
-    Description: I have read and agree to the license terms for Micro Focus Enterprise Server (https://www.microfocus.com/about/legal/).
+    Description: I have read and agree to the license terms for Micro Focus Enterprise Server (https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-0562B3C9-2271-4CE8-AF64-93DE4940077F.html).
     Type: String
     Default: '-'
     AllowedValues:
@@ -664,6 +676,10 @@ Conditions:
   NamePrefixIsUndefined: !Equals
   - !Ref ESResourceNamePrefix
   - ""
+
+  Start2Instances: !Equals
+  - !Ref NumberESInstance
+  - 2
 Resources:
 
   EMailNotificationTopic:
@@ -764,6 +780,7 @@ Resources:
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         RDGWAccessSGID: !Ref RDGWAccessSGID
         VPCID: !Ref VPCID
+
   ESInstanceRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -823,6 +840,7 @@ Resources:
               Effect: Allow
               Resource: "*"
           PolicyName: ESInstancePolicy
+
   ESInstanceRoleProfile:
     Type: "AWS::IAM::InstanceProfile"
     Properties:
@@ -830,26 +848,29 @@ Resources:
       Roles:
         - !Ref ESInstanceRole
 
-  
-
   RDSRemoteDatabaseStackCreateWaitHandle:
     Condition: CreateRDSRemoteDatabaseStack
     DependsOn: RemoteDatabaseServerStack
     Type: "AWS::CloudFormation::WaitConditionHandle"
+
   NoRDSRemoteDatabaseStackCreateWaitHandle:
     Type: "AWS::CloudFormation::WaitConditionHandle"
+
   RDSRemoteDatabaseStackCreateWaitCondition:
     Type: "AWS::CloudFormation::WaitCondition"
     Properties:
       Handle: !If [CreateRDSRemoteDatabaseStack, !Ref RDSRemoteDatabaseStackCreateWaitHandle, !Ref NoRDSRemoteDatabaseStackCreateWaitHandle]
       Timeout: "1"
       Count: 0
+
   FSServerCreateWaitHandle:
     Condition: CreateRemoteFileshareServerStack
     DependsOn: [RemoteFileshareServerStack , RDSRemoteDatabaseStackCreateWaitCondition]
     Type: "AWS::CloudFormation::WaitConditionHandle"
+
   NoFSServerWaitHandle:
     Type: "AWS::CloudFormation::WaitConditionHandle"
+
   FSServerWaitCondition:
     Type: "AWS::CloudFormation::WaitCondition"
     Properties:
@@ -917,12 +938,13 @@ Resources:
           CidrIp: !Ref DemoAppsIngressCIDR
         - !Ref AWS::NoValue
 
-  ESInstanceStack1:
+  BootstrapStack:
     Type: 'AWS::CloudFormation::Stack'
+    DependsOn: [FSServerWaitCondition, RDSRemoteDatabaseStackCreateWaitCondition]
     Properties:
       TemplateURL: !Sub
         - >-
-          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-es-template.yaml
+          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-es-bootstrap-template.yaml
         - QSS3Region: !If
           - GovCloudCondition
           - s3-us-gov-west-1
@@ -938,6 +960,40 @@ Resources:
           DomainDNSName: !Ref DomainDNSName
           DomainMemberSGID: !Ref DomainMemberSGID
           DomainNetBIOSName: !Ref DomainNetBIOSName
+          ESDemoUserPassword: !Ref ESDemoUserPassword
+          ESDemoUserPasswordConfirm: !Ref ESDemoUserPasswordConfirm
+          ESClientAccessSGID: !Ref ESInstance1ClientAccessSecurityGroup
+          ESDatabaseEndpointAddress: !GetAtt RemoteDatabaseServerStack.Outputs.ESDatabaseEndpointAddress
+          ESS3BucketName: !Ref ESS3BucketName
+          ESS3KeyPrefix: !Ref ESS3KeyPrefix
+          FileshareDataFolderUNC: !GetAtt RemoteFileshareServerStack.Outputs.FileshareDataFolderUNC
+          InstallFSDemoApp: !Ref InstallFSDemoApp
+          InstallSQLDemoApp: !Ref InstallSQLDemoApp
+          KeyPairName: !Ref KeyPairName
+          QSS3BucketName: !Ref QSS3BucketName
+          QSS3KeyPrefix: !Ref QSS3KeyPrefix
+          SubnetID: !Ref PrivateSubnet1AID
+
+  ESInstanceStack1:
+    Type: 'AWS::CloudFormation::Stack'
+    DependsOn: [BootstrapStack]
+    Properties:
+      TemplateURL: !Sub
+        - >-
+          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-es-template.yaml
+        - QSS3Region: !If
+          - GovCloudCondition
+          - s3-us-gov-west-1
+          - s3
+      Parameters:
+          AvailabilityZones: !Join
+          - ','
+          - !Ref AvailabilityZones
+          DomainAdminPassword: !Ref DomainAdminPassword
+          DomainAdminUser: !Ref DomainAdminUser
+          DomainDNSName: !Ref DomainDNSName
+          DomainMemberSGID: !Ref DomainMemberSGID
+          DomainNetBIOSName: !Ref DomainNetBIOSName
           EMailNotificationTopic: !If
           - HaveOperatorEmail
           - !Ref EMailNotificationTopic
@@ -948,6 +1004,54 @@ Resources:
           ESDatabaseEndpointAddress: !GetAtt RemoteDatabaseServerStack.Outputs.ESDatabaseEndpointAddress
           ESDemoUserPassword: !Ref ESDemoUserPassword
           ESInstanceName: ESServer1
+          ESInstanceType: !Ref ESInstanceType
+          ESLicenseFilename: !Ref ESLicenseFilename
+          ESS3BucketName: !Ref ESS3BucketName
+          ESS3KeyPrefix: !Ref ESS3KeyPrefix
+          FileshareDataFolderUNC: !GetAtt RemoteFileshareServerStack.Outputs.FileshareDataFolderUNC
+          FSDemoApp3270Port: !Ref FSDemoApp3270Port
+          InstallFSDemoApp: !Ref InstallFSDemoApp
+          InstallSQLDemoApp: !Ref InstallSQLDemoApp
+          AdditonalESStorageinGiB: !Ref AdditonalESStorageinGiB
+          KeyPairName: !Ref KeyPairName
+          LicenseAgreement: !Ref LicenseAgreement
+          QSS3BucketName: !Ref QSS3BucketName
+          QSS3KeyPrefix: !Ref QSS3KeyPrefix
+          RegionsPerInstance: !Ref RegionsPerInstance
+          SQLDemoApp3270Port: !Ref SQLDemoApp3270Port
+          SubnetID: !Ref PrivateSubnet1AID
+
+  ESInstanceStack2:
+    Condition: Start2Instances
+    Type: 'AWS::CloudFormation::Stack'
+    DependsOn: [BootstrapStack]
+    Properties:
+      TemplateURL: !Sub
+        - >-
+          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-es-template.yaml
+        - QSS3Region: !If
+          - GovCloudCondition
+          - s3-us-gov-west-1
+          - s3
+      Parameters:
+          AvailabilityZones: !Join
+          - ','
+          - !Ref AvailabilityZones
+          DomainAdminPassword: !Ref DomainAdminPassword
+          DomainAdminUser: !Ref DomainAdminUser
+          DomainDNSName: !Ref DomainDNSName
+          DomainMemberSGID: !Ref DomainMemberSGID
+          DomainNetBIOSName: !Ref DomainNetBIOSName
+          EMailNotificationTopic: !If
+          - HaveOperatorEmail
+          - !Ref EMailNotificationTopic
+          - !Ref AWS::NoValue
+          ESCCITCPListenerPort: !Ref ESCCITCPListenerPort
+          ESClientAccessSGID: !Ref ESInstance1ClientAccessSecurityGroup
+          ESCWLogGroup: !Ref ESCWLogGroup
+          ESDatabaseEndpointAddress: !GetAtt RemoteDatabaseServerStack.Outputs.ESDatabaseEndpointAddress
+          ESDemoUserPassword: !Ref ESDemoUserPassword
+          ESInstanceName: ESServer2
           ESInstanceType: !Ref ESInstanceType
           ESLicenseFilename: !Ref ESLicenseFilename
           ESS3BucketName: !Ref ESS3BucketName
@@ -1014,6 +1118,11 @@ Resources:
       Targets:
       - Id: !GetAtt ESInstanceStack1.Outputs.ESInstanceID
         Port: !Ref FSDemoApp3270Port
+      - !If 
+        - Start2Instances
+        - Id: !GetAtt ESInstanceStack2.Outputs.ESInstanceID
+          Port: !Ref FSDemoApp3270Port
+        - !Ref AWS::NoValue
       TargetType: instance
       UnhealthyThresholdCount: 3
       VpcId: !Ref VPCID
@@ -1052,6 +1161,11 @@ Resources:
       Targets:
       - Id: !GetAtt ESInstanceStack1.Outputs.ESInstanceID
         Port: !Ref SQLDemoApp3270Port
+      - !If 
+        - Start2Instances
+        - Id: !GetAtt ESInstanceStack2.Outputs.ESInstanceID
+          Port: !Ref SQLDemoApp3270Port
+        - !Ref AWS::NoValue
       TargetType: instance
       UnhealthyThresholdCount: 3
       VpcId: !Ref VPCID

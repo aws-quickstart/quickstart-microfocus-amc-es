@@ -266,7 +266,7 @@ Parameters:
     Default: '-'
     Description: >-
       I have read and agree to the license terms for Micro Focus Enterprise
-      Server (https://www.microfocus.com/about/legal/).
+      Server (https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-0562B3C9-2271-4CE8-AF64-93DE4940077F.html).
     Type: String
 
   NotificationARN:
@@ -343,33 +343,37 @@ Mappings:
     AMI:
       MFES40AMI: amzn-ami-hvm-2018.03.0.20180622-x86_64-gp2
     ap-northeast-1:
-      MFES40AMI: ami-
+      MFES40AMI: ami-06c3d16c5df1c240b
     ap-northeast-2:
-      MFES40AMI: ami-
+      MFES40AMI: ami-00eb2b925eb9fdc8d
     ap-south-1:
-      MFES40AMI: ami-
+      MFES40AMI: ami-019259bb848c7f338
     ap-southeast-1:
-      MFES40AMI: ami-
+      MFES40AMI: ami-0e18a5785fa04f73d
     ap-southeast-2:
-      MFES40AMI: ami-
+      MFES40AMI: ami-0e4f2f963cc22b4ca
     ca-central-1:
-      MFES40AMI: ami-
+      MFES40AMI: ami-0bd506dc6b2f055c3
     eu-central-1:
-      MFES40AMI: ami-
+      MFES40AMI: ami-066e63443e766f6cd
     eu-west-1:
-      MFES40AMI: ami-
+      MFES40AMI: ami-0fa9e5782cb050751
     eu-west-2:
-      MFES40AMI: ami-
+      MFES40AMI: ami-08e83f333f3939a0c
+    eu-west-3:
+      MFES40AMI: ami-0e5eb1e5e3e8f04de
+    eu-north-1:
+      MFES40AMI: ami-0d6a3cb13c317190f
     sa-east-1:
-      MFES40AMI: ami-
+      MFES40AMI: ami-0fa986095836e2c86
     us-east-1:
-      MFES40AMI: ami-09d096ea7fb256c14
+      MFES40AMI: ami-0a0733069611fad2e
     us-east-2:
-      MFES40AMI: ami-
+      MFES40AMI: ami-03c29362c033f4877
     us-west-1:
-      MFES40AMI: ami-
+      MFES40AMI: ami-010ea808fd14ded05
     us-west-2:
-      MFES40AMI: ami-
+      MFES40AMI: ami-021191f2c9a2de4c3
 Conditions:
   GovCloudCondition: !Equals
     - !Ref 'AWS::Region'

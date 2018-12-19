@@ -58,6 +58,7 @@ Metadata:
           default: Enterprise Server Configuration
         Parameters:
           - ESInstanceType
+          - NumberESInstance
           - KeyPairName
           - RegionsPerInstance
           - AdditonalESStorageinGiB
@@ -109,7 +110,7 @@ Metadata:
 
     ParameterLabels:
       AdditonalESStorageinGiB:
-        default: Additional integrated Fileshare storage
+        default: Additional Enterprise Server instance storage
       AvailabilityZones:
         default: Availability Zones
       DBBackupRetentionPeriod:
@@ -154,6 +155,8 @@ Metadata:
         default: Re-enter Enterprise Server Demo User password
       ESInstanceType:
         default: Enterprise Server instance type
+      NumberESInstance:
+        default: Number of Enterprise Server Instances to start
       ESLicenseFilename:
         default: Enterprise Server license filename
       ESResourceNamePrefix:
@@ -209,10 +212,10 @@ Metadata:
 Parameters:
   AdditonalESStorageinGiB:
     Type: Number
-    Description: Enter 0-16384 GiB. Additional EBS storage capacity added to Enterprise Server instances when running integrated local Fileshare.
+    Description: Enter 0-16384 GiB. Additional EBS storage capacity added to Enterprise Server instances.
     MinValue: 0
     MaxValue: 16384
-    Default: 1024
+    Default: 100
 
   AvailabilityZones:
     Description: >-
@@ -272,7 +275,7 @@ Parameters:
     Description: Enter 1-16384 GiB
     MinValue: 1
     MaxValue: 16384
-    Default: 1024
+    Default: 100
 
   DemoAppsIngressCIDR:
     AllowedPattern: >-
@@ -386,6 +389,15 @@ Parameters:
     Default: c5.large
     Type: String
 
+  NumberESInstance:
+    AllowedValues:
+      - 1
+      - 2
+    Default: 1
+    Description: >- 
+      The number of Enterprise Server Instances to start.
+    Type: Number
+
   ESLicenseFilename:
     Description: 'Place the license file obtained from Micro Focus in the S3 bucket folder: s3://<ESS3BucketName>/<ESS3KeyPrefix>/license/'
     Type: String
@@ -483,7 +495,7 @@ Parameters:
     Type: 'AWS::EC2::KeyPair::KeyName'
 
   LicenseAgreement:
-    Description: I have read and agree to the license terms for Micro Focus Enterprise Server (https://www.microfocus.com/about/legal/).
+    Description: I have read and agree to the license terms for Micro Focus Enterprise Server (https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-0562B3C9-2271-4CE8-AF64-93DE4940077F.html).
     Type: String
     Default: '-'
     AllowedValues:
@@ -893,6 +905,7 @@ Resources:
         ESDemoUserPassword: !Ref ESDemoUserPassword
         ESDemoUserPasswordConfirm: !Ref ESDemoUserPasswordConfirm
         ESInstanceType: !Ref ESInstanceType
+        NumberESInstance: !Ref NumberESInstance
         ESLicenseFilename: !Ref ESLicenseFilename
         ESResourceNamePrefix: !Ref ESResourceNamePrefix
         ESS3BucketName: !Ref ESS3BucketName
