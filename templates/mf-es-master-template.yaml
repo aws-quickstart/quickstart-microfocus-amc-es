@@ -18,7 +18,7 @@ Description: >-
   will be billed for the AWS resources used if you create a stack from this
   template. License: Apache 2.0 (Please do not remove) Sept,05,2018. Micro Focus
   Enterprise Server is licensed separately, please review the terms and conditions
-  here (https://www.microfocus.com/about/legal/) for further details. (qs-1p440hhtu)"
+  here (https://www.microfocus.com/about/legal/) for further details. (qs-1p5pra0c2)"
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
