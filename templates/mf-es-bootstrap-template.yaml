@@ -148,7 +148,6 @@ Parameters:
   DomainMemberSGID:
     Description: 'ID of the Domain Member Security Group (e.g., sg-7f16e910)'
     Type: 'AWS::EC2::SecurityGroup::Id'
-    Default: sg-0047e4c33f1428a0c
   DomainNetBIOSName:
     AllowedPattern: '[a-zA-Z0-9\-]+'
     Default: example
@@ -180,7 +179,6 @@ Parameters:
   ESClientAccessSGID:
     Type: 'AWS::EC2::SecurityGroup::Id'
     Description: Security Group ID for application ingress into the Enterpriser Server instance (e.g., sg-1234abcd)
-    Default: sg-001187193760ad9bf
   ESDatabaseEndpointAddress:
     Type: String
     Default: "teq7j5sfv22mtd.cbwwpz794fpx.us-east-1.rds.amazonaws.com"
