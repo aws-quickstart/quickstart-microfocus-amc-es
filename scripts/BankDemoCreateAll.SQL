@@ -1043,15 +1043,15 @@ INSERT INTO [dbo].[TTEXT] VALUES ('PRDA20A','7','00',
 INSERT INTO [dbo].[TTEXT] VALUES ('PRDA20A','7','01',
 'Micro Focus mainframe connectivity provides COBOL                          ')
 INSERT INTO [dbo].[TTEXT] VALUES ('PRDA20A','7','02',
-'developers the best of two worlds with Mainframe Access™, SQL              ')
+'developers the best of two worlds with Mainframe Accessï¿½, SQL              ')
 INSERT INTO [dbo].[TTEXT] VALUES ('PRDA20A','7','03',
-'Option™ for DB2, IMS Option™, and CICS Option™ - products that             ')
+'Optionï¿½ for DB2, IMS Optionï¿½, and CICS Optionï¿½ - products that             ')
 INSERT INTO [dbo].[TTEXT] VALUES ('PRDA20A','7','04',
 'exploit the best features of workgroup and enterprise architectures.       ')
 INSERT INTO [dbo].[TTEXT] VALUES ('PRDA20A','7','05',
 'Mainframe source control systems, data, and processes are now              ')
 INSERT INTO [dbo].[TTEXT] VALUES ('PRDA20A','7','06',
-'accessible from Mainframe Express™, the industry"s leading                 ')
+'accessible from Mainframe Expressï¿½, the industry"s leading                 ')
 INSERT INTO [dbo].[TTEXT] VALUES ('PRDA20A','7','07',
 'development environment. Flexible and intuitive graphic presentations for  ')
 INSERT INTO [dbo].[TTEXT] VALUES ('PRDA20A','7','08',
@@ -1077,7 +1077,7 @@ INSERT INTO [dbo].[TTEXT] VALUES ('PRDB20A','1','06',
 'UNIX, Windows and the Internet.                                            ')
 
 INSERT INTO [dbo].[TTEXT] VALUES ('PRDB20A','2','00',
-'Server Express™                                                            ')
+'Server Expressï¿½                                                            ')
 
 INSERT INTO [dbo].[TTEXT] VALUES ('PRDB20A','2','01',
 'Building Next Generation e-Business Applications. Micro Focus              ')
@@ -1088,7 +1088,7 @@ INSERT INTO [dbo].[TTEXT] VALUES ('PRDB20A','2','03',
 INSERT INTO [dbo].[TTEXT] VALUES ('PRDB20A','2','04',
 'COBOL application performance to the next level providing the fastest      ')
 INSERT INTO [dbo].[TTEXT] VALUES ('PRDB20A','2','05',
-'ever Micro Focus COBOL© product for UNIX.                                  ')
+'ever Micro Focus COBOLï¿½ product for UNIX.                                  ')
 
 INSERT INTO [dbo].[TTEXT] VALUES ('PRDB20A','3','00',
 'Object COBOL Developer Suite for UNIX                                      ')

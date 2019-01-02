@@ -13,21 +13,20 @@
 # limitations under the License.
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
-  "Deploys a Micro Focus Enterprise Server Fileshare Server.
-  **WARNING** This template creates EC2 instances and related resources. You
-  will be billed for the AWS resources used if you create a stack from this
-  template. Micro Focus Enterprise Server is licensed separately, please review
-  the terms and conditions here (https://www.microfocus.com/about/legal/) for
-  further details. (qs-1p440hhtu)"
+  "Deploys a Micro Focus Enterprise Server Fileshare Server. **WARNING** This
+  template creates EC2 instances and related resources. You will be billed for
+  the AWS resources used if you create a stack from this template. Micro Focus
+  Enterprise Server is licensed separately, please review the terms and
+  conditions here (https://www.microfocus.com/about/legal/) for further details.
+  (qs-1p440hhtu)"
 Metadata:
-  "AWS::CloudFormation::Interface":
+  'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
           default: Software License Agreement
         Parameters:
           - LicenseAgreement
           - ESLicenseFilename
-
       - Label:
           default: Network Configuration
         Parameters:
@@ -42,7 +41,6 @@ Metadata:
           - DomainMemberSGID
           - DomainAdminUser
           - DomainAdminPassword
-          - DomainAdminPasswordConfirm
       - Label:
           default: Microsoft Remote Desktop Gateway Configuration
         Parameters:
@@ -54,9 +52,9 @@ Metadata:
           - KeyPairName
           - ESCWLogGroup
           - ESS3BucketName
-          - ESS3KeyPrefix
           - NotificationARN
           - ESResourceNamePrefix
+          - FSViewUserPassword
       - Label:
           default: Enterprise Server Demo Apps Configuration
         Parameters:
@@ -85,8 +83,6 @@ Metadata:
         default: Resource 'Name' prefix
       ESS3BucketName:
         default: Enterprise Server S3 bucket name
-      ESS3KeyPrefix:
-        default: Enterprise Server S3 key prefix
       FSInstanceType:
         default: Enterprise Server Fileshare instance type
       FSCCITCPListenerPort:
@@ -95,8 +91,8 @@ Metadata:
         default: Fileshare Server Name
       FSStorageInGiB:
         default: Enterprise Server Fileshare storage size (GiB)
-      FSViewPassword:
-        default: FSView Password
+      FSViewUserPassword:
+        default: FSView User Password
       InstallDemoApps:
         default: Install Demo Apps
       KeyPairName:
@@ -122,7 +118,6 @@ Parameters:
       Availability Zones are used for this deployment, and the logical order of
       your selections is preserved.
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
-
   DomainAdminPassword:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
@@ -133,18 +128,6 @@ Parameters:
     MinLength: '8'
     NoEcho: false
     Type: String
-
-  DomainAdminPasswordConfirm:
-    AllowedPattern: >-
-      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
-    Description: >-
-      Confirm Password for the domain admin user. Must be at least 8 characters
-      containing letters, numbers and symbols
-    MaxLength: '32'
-    MinLength: '8'
-    NoEcho: false
-    Type: String
-
   DomainAdminUser:
     AllowedPattern: '[a-zA-Z0-9]*'
     Default: Admin
@@ -154,7 +137,6 @@ Parameters:
     MaxLength: '25'
     MinLength: '5'
     Type: String
-
   DomainDNSName:
     AllowedPattern: '[a-zA-Z0-9\-]+\..+'
     Default: example.com
@@ -162,11 +144,9 @@ Parameters:
     MaxLength: '255'
     MinLength: '2'
     Type: String
-
   DomainMemberSGID:
     Description: 'ID of the Domain Member Security Group (e.g., sg-7f16e910)'
     Type: 'AWS::EC2::SecurityGroup::Id'
-
   DomainNetBIOSName:
     AllowedPattern: '[a-zA-Z0-9\-]+'
     Default: example
@@ -175,39 +155,28 @@ Parameters:
       versions of Windows e.g. EXAMPLE
     MaxLength: '15'
     Type: String
-
   ESCWLogGroup:
     Type: String
-
   ESLicenseFilename:
-    Description: 'Place the license file obtained from Micro Focus in the S3 bucket folder: s3://<ESS3BucketName>/<ESS3KeyPrefix>/license/'
+    Description: >-
+      Place the license file obtained from Micro Focus in the S3 bucket folder:
+      s3://<ESS3BucketName>/license/
     Type: String
-
   ESResourceNamePrefix:
     Type: String
-    Default: AWS::StackName
-    Description: Used to prefix resource 'Name' tags. Leave empty for no prefix, 'AWS::StackName' or a value such as the parent stacks' name
-
+    Default: 'AWS::StackName'
+    Description: >-
+      Used to prefix resource 'Name' tags. Leave empty for no prefix,
+      'AWS::StackName' or a value such as the parent stacks' name
   ESS3BucketName:
     AllowedPattern: '^[a-z0-9][a-z0-9-.]*$'
     Description: >-
       Name of the existing S3 bucket used to store/retrieve objects specific to
-      this stack. This string can include numbers, lowercase letters, uppercase
-      letters, and hyphens (-). It cannot start or end with a hyphen (-).
+      this stack. A system integrator extending this Quick Start should use this
+      bucket to store  or retrieve items needed. This string can include numbers,
+      lowercase letters,  uppercase letters, and hyphens (-). It cannot start or
+      end with a hyphen (-).
     Type: String
-
-  ESS3KeyPrefix:
-    AllowedPattern: '^[0-9a-zA-Z-/]*$'
-    ConstraintDescription: >-
-      Quick Start key prefix can include numbers, lowercase letters, uppercase
-      letters, hyphens (-), and forward slash (/).
-    Default: /
-    Description: >-
-      S3 key prefix for the Quick Start assets. Quick Start key prefix can
-      include numbers, lowercase letters, uppercase letters, hyphens (-), and
-      forward slash (/).
-    Type: String
-
   FSCCITCPListenerPort:
     ConstraintDescription: The port number must be between 1 and 65535
     Default: 3000
@@ -215,10 +184,8 @@ Parameters:
     MaxValue: 65535
     MinValue: 1
     Type: Number
-
   FSClientAccessSGID:
     Type: 'AWS::EC2::SecurityGroup::Id'
-
   FSInstanceType:
     AllowedValues:
       - c5.large
@@ -227,37 +194,37 @@ Parameters:
       - c5.4xlarge
     Default: c5.large
     Type: String
-
   FSServerName:
     Default: FSServer
     Type: String
-
   FSStorageInGiB:
     Default: 250
     Description: 1-16384 GiB
     MaxValue: 16384
     MinValue: 1
     Type: Number
-
-  FSViewPassword:
-    Type: String
+  FSViewUserPassword:
+    AllowedPattern: >-
+      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+    Description: >-
+      Password for FSVIEW user. Must be at least 8 characters containing letters,
+      numbers and symbols
+    MaxLength: '32'
+    MinLength: '8'
     NoEcho: true
-
+    Type: String
   InstallDemoApps:
     Type: String
     AllowedValues:
-      - True
-      - False
-    Default: True
-    Description: >-
-      Choose 'False' to skip installation of Enterprise Server demo apps
-
+      - true
+      - false
+    Default: true
+    Description: Choose 'false' to skip installation of Enterprise Server demo apps
   KeyPairName:
     Description: >-
       Name of an existing EC2 key pair. All instances will launch with this key
       pair.
     Type: 'AWS::EC2::KeyPair::KeyName'
-
   LicenseAgreement:
     AllowedValues:
       - I agree
@@ -266,18 +233,18 @@ Parameters:
     Default: '-'
     Description: >-
       I have read and agree to the license terms for Micro Focus Enterprise
-      Server (https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-0562B3C9-2271-4CE8-AF64-93DE4940077F.html).
+      Server
+      (https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-0562B3C9-2271-4CE8-AF64-93DE4940077F.html).
     Type: String
-
   NotificationARN:
-    Description: (optional) An existing Amazon SNS topic where notifications about are sent, e.g., email notifications
+    Description: >-
+      (optional) An existing Amazon SNS topic where notifications about are
+      sent, e.g., email notifications
     Type: String
-    Default: ""
-
+    Default: ''
   PrivateSubnet1AID:
     Description: 'ID of private subnet A in Availability Zone 1 (e.g., subnet-a0246dcd)'
     Type: 'AWS::EC2::Subnet::Id'
-
   QSS3BucketName:
     AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
     ConstraintDescription: >-
@@ -289,7 +256,6 @@ Parameters:
       include numbers, lowercase letters, uppercase letters, and hyphens (-). It
       cannot start or end with a hyphen (-).
     Type: String
-
   QSS3KeyPrefix:
     AllowedPattern: '^[0-9a-zA-Z-/]*$'
     ConstraintDescription: >-
@@ -301,187 +267,183 @@ Parameters:
       include numbers, lowercase letters, uppercase letters, hyphens (-), and
       forward slash (/).
     Type: String
-
   RDGWAccessSGID:
     Type: 'AWS::EC2::SecurityGroup::Id'
-
   VPCID:
     Description: ID of your existing VPC for deployment
     Type: 'AWS::EC2::VPC::Id'
 Rules:
-  DomainAdminPasswordsMatchRule:
-    Assertions:
-      - Assert: !Equals
-          - !Ref DomainAdminPassword
-          - !Ref DomainAdminPasswordConfirm
-        AssertDescription: Domain Admin user password values do not match.
   KeyPairsNotEmpty:
     Assertions:
       - Assert: !Not
-          - "Fn::EachMemberEquals":
-              - "Fn::RefAll": "AWS::EC2::KeyPair::KeyName"
-              - ""
+          - 'Fn::EachMemberEquals':
+              - 'Fn::RefAll': 'AWS::EC2::KeyPair::KeyName'
+              - ''
         AssertDescription: All key pair parameters must not be empty
   LicenseAgreementRule:
     Assertions:
-    - Assert:
-        Fn::Contains:
-        - - I agree
-        - Ref: LicenseAgreement
-      AssertDescription: User must agree to the terms of the license agreement.
+      - Assert:
+          'Fn::Contains':
+            - - I agree
+            - !Ref LicenseAgreement
+        AssertDescription: User must agree to the terms of the license agreement.
   SubnetsInVPC:
     Assertions:
       - Assert:
-          "Fn::EachMemberIn":
-            - "Fn::ValueOfAll":
-                - "AWS::EC2::Subnet::Id"
+          'Fn::EachMemberIn':
+            - 'Fn::ValueOfAll':
+                - 'AWS::EC2::Subnet::Id'
                 - VpcId
-            - "Fn::RefAll": "AWS::EC2::VPC::Id"
+            - 'Fn::RefAll': 'AWS::EC2::VPC::Id'
         AssertDescription: All subnets must in the VPC
 Mappings:
   AWSAMIRegionMap:
     AMI:
-      MFES40AMI: amzn-ami-hvm-2018.03.0.20180622-x86_64-gp2
+      MFES40AMI: ES_40PU6_V3
     ap-northeast-1:
-      MFES40AMI: ami-06c3d16c5df1c240b
+      MFES40AMI: ami-09e76643c8a22f628
     ap-northeast-2:
-      MFES40AMI: ami-00eb2b925eb9fdc8d
+      MFES40AMI: ami-0d5bad2415e8c277e
+    ap-northeast-3:
+      MFES40AMI: ami-0c5460a03bd1332eb
     ap-south-1:
-      MFES40AMI: ami-019259bb848c7f338
+      MFES40AMI: ami-01f5a8b9196bfaa17
     ap-southeast-1:
-      MFES40AMI: ami-0e18a5785fa04f73d
+      MFES40AMI: ami-06c1e1f93ccf6e589
     ap-southeast-2:
-      MFES40AMI: ami-0e4f2f963cc22b4ca
+      MFES40AMI: ami-0f244f4fa36543578
     ca-central-1:
-      MFES40AMI: ami-0bd506dc6b2f055c3
+      MFES40AMI: ami-0d2dbb0a46afc823b
     eu-central-1:
-      MFES40AMI: ami-066e63443e766f6cd
-    eu-west-1:
-      MFES40AMI: ami-0fa9e5782cb050751
-    eu-west-2:
-      MFES40AMI: ami-08e83f333f3939a0c
-    eu-west-3:
-      MFES40AMI: ami-0e5eb1e5e3e8f04de
+      MFES40AMI: ami-02fbf9c68236dbc4e
     eu-north-1:
-      MFES40AMI: ami-0d6a3cb13c317190f
+      MFES40AMI: ami-04eadf41386ca1048
+    eu-west-1:
+      MFES40AMI: ami-06f605a14a1067a91
+    eu-west-2:
+      MFES40AMI: ami-08f3dd097d6a562a5
+    eu-west-3:
+      MFES40AMI: ami-055e0febac6ec29d1
     sa-east-1:
-      MFES40AMI: ami-0fa986095836e2c86
+      MFES40AMI: ami-093942a1ab4222cd5
     us-east-1:
-      MFES40AMI: ami-0a0733069611fad2e
+      MFES40AMI: ami-0d374f214a0a06be3
     us-east-2:
-      MFES40AMI: ami-03c29362c033f4877
+      MFES40AMI: ami-09bccccae991b0625
     us-west-1:
-      MFES40AMI: ami-010ea808fd14ded05
+      MFES40AMI: ami-0d46a8356c3bab803
     us-west-2:
-      MFES40AMI: ami-021191f2c9a2de4c3
+      MFES40AMI: ami-0799b8f0dbfbce83e
 Conditions:
   GovCloudCondition: !Equals
     - !Ref 'AWS::Region'
     - us-gov-west-1
   NamePrefixIaUndefined: !Equals
     - !Ref ESResourceNamePrefix
-    - ""
+    - ''
   NamePrefixIsAWSStackname: !Equals
     - !Ref ESResourceNamePrefix
-    - "AWS::StackName"
+    - 'AWS::StackName'
   HaveNotificationARN: !Not
     - !Equals
       - !Ref NotificationARN
-      - ""
+      - ''
 Resources:
   FSAccessSG:
-    Type: "AWS::EC2::SecurityGroup"
+    Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: Security group for allowed access to the Fileshare instance
       SecurityGroupIngress:
         - Description: >-
-            Allows RDP access into the instance from the Remote Desktop Gateway (for admin purposes)
+            Allows RDP access into the instance from the Remote Desktop Gateway
+            (for admin purposes)
           IpProtocol: tcp
           FromPort: 3389
           ToPort: 3389
           SourceSecurityGroupId: !Ref RDGWAccessSGID
-        - Description: >-
-            Fileshare client ingress
+        - Description: Fileshare client ingress
           IpProtocol: tcp
           FromPort: !Ref FSCCITCPListenerPort
           ToPort: !Ref FSCCITCPListenerPort
           SourceSecurityGroupId: !Ref FSClientAccessSGID
         - Description: >-
-            Micro Focus Enterprise Server Directory Service (tcp) Listener ingress
+            Micro Focus Enterprise Server Directory Service (tcp) Listener
+            ingress
           IpProtocol: tcp
           FromPort: 86
           ToPort: 86
           SourceSecurityGroupId: !Ref FSClientAccessSGID
         - Description: >-
-            Micro Focus Enterprise Server Directory Service (udp) Listener ingress
+            Micro Focus Enterprise Server Directory Service (udp) Listener
+            ingress
           IpProtocol: udp
           FromPort: 86
           ToPort: 86
           SourceSecurityGroupId: !Ref FSClientAccessSGID
       VpcId: !Ref VPCID
   FSInstanceRole:
-    Type: "AWS::IAM::Role"
+    Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
         Statement:
           - Action:
-              - "sts:AssumeRole"
+              - 'sts:AssumeRole'
             Effect: Allow
             Principal:
               Service:
                 - ec2.amazonaws.com
       Path: /
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
-        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
       Policies:
         - PolicyDocument:
             Statement:
               - Action:
-                  - "s3:GetObject"
+                  - 's3:GetObject'
                 Effect: Allow
                 Resource:
                   - !Sub
-                    - "arn:${partition}:s3:::${QSS3BucketName}"
+                    - 'arn:${partition}:s3:::${QSS3BucketName}'
                     - partition: !If
-                      - GovCloudCondition
-                      - aws-us-gov
-                      - aws
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
                   - !Sub
-                    - "arn:${partition}:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*"
+                    - 'arn:${partition}:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*'
                     - partition: !If
-                      - GovCloudCondition
-                      - aws-us-gov
-                      - aws
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
             Version: 2012-10-17
           PolicyName: aws-quick-start-s3-policy
         - PolicyDocument:
             Statement:
               - Action:
-                  - "s3:*"
+                  - 's3:*'
                 Effect: Allow
                 Resource:
                   - !Sub
-                    - "arn:${partition}:s3:::${ESS3BucketName}"
+                    - 'arn:${partition}:s3:::${ESS3BucketName}'
                     - partition: !If
-                      - GovCloudCondition
-                      - aws-us-gov
-                      - aws
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
                   - !Sub
-                    - "arn:${partition}:s3:::${ESS3BucketName}/${ESS3KeyPrefix}*"
+                    - 'arn:${partition}:s3:::${ESS3BucketName}/*'
                     - partition: !If
-                      - GovCloudCondition
-                      - aws-us-gov
-                      - aws
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
           PolicyName: FSInstancePolicy
   FSInstanceRoleProfile:
-    Type: "AWS::IAM::InstanceProfile"
+    Type: 'AWS::IAM::InstanceProfile'
     Properties:
       Path: /
       Roles:
         - !Ref FSInstanceRole
   FSPrimaryDataVolume:
-    Type: AWS::EC2::Volume
+    Type: 'AWS::EC2::Volume'
     Properties:
       VolumeType: gp2
       Size: !Ref FSStorageInGiB
@@ -497,23 +459,23 @@ Resources:
                 - ''
                 - !If
                   - NamePrefixIsAWSStackname
-                  - !Sub ${AWS::StackName}-
-                  - !Sub ${ESResourceNamePrefix}-
+                  - !Sub '${AWS::StackName}-'
+                  - !Sub '${ESResourceNamePrefix}-'
   FSPrimaryInstance:
-    Type: AWS::EC2::Instance
+    Type: 'AWS::EC2::Instance'
     CreationPolicy:
       ResourceSignal:
         Count: 1
         Timeout: PT20M
     Metadata:
-      AWS::CloudFormation::Authentication:
+      'AWS::CloudFormation::Authentication':
         S3AccessCreds:
           type: S3
           roleName: !Ref FSInstanceRole
           buckets:
             - !Ref QSS3BucketName
             - !Ref ESS3BucketName
-      AWS::CloudFormation::Init:
+      'AWS::CloudFormation::Init':
         configSets:
           config:
             - 010-InstallTools
@@ -525,29 +487,25 @@ Resources:
         010-InstallTools:
           files:
             'c:\cfn\assets\AWSCLI64PY3.msi':
-              source: https://s3.amazonaws.com/aws-cli/AWSCLI64PY3.msi
+              source: 'https://s3.amazonaws.com/aws-cli/AWSCLI64PY3.msi'
             'c:\cfn\assets\GoogleChromeStandaloneEnterprise64.msi':
-              source: https://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi
+              source: >-
+                https://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi
             'c:\cfn\assets\npp.Installer.x64.exe':
-              source: https://notepad-plus-plus.org/repository/7.x/7.5.9/npp.7.5.9.Installer.x64.exe
-
+              source: >-
+                https://notepad-plus-plus.org/repository/7.x/7.5.9/npp.7.5.9.Installer.x64.exe
           commands:
             a-install-aws-cli:
-              command:
-                start /wait
-                  c:\cfn\assets\AWSCLI64PY3.msi /quiet /passive /qn
+              command: 'start /wait c:\cfn\assets\AWSCLI64PY3.msi /quiet /passive /qn'
               waitAfterCompletion: '0'
-
             b-install-npp:
-              command: >-
-                start /wait c:\cfn\assets\npp.Installer.x64.exe /S
+              command: 'start /wait c:\cfn\assets\npp.Installer.x64.exe /S'
               waitAfterCompletion: '0'
-
             c-install-chrome:
               command: >-
-                start /wait c:\cfn\assets\GoogleChromeStandaloneEnterprise64.msi /quiet /passive
+                start /wait c:\cfn\assets\GoogleChromeStandaloneEnterprise64.msi
+                /quiet /passive
               waitAfterCompletion: '0'
-
         020-ConfigureCWLogs:
           files:
             'C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json':
@@ -696,14 +654,12 @@ Resources:
                     }
                   }
                 }
-
           commands:
             a-restartSSM:
               command:
                 powershell.exe
                   -Command Restart-Service AmazonSSMAgent
               waitAfterCompletion: '30'
-
         030-InitPowerShell:
           files:
             'C:\cfn\scripts\Unzip-Archive.ps1':
@@ -715,7 +671,6 @@ Resources:
                     - s3-us-gov-west-1
                     - s3
               authentication: S3AccessCreds
-
             'C:\cfn\modules\AWSQuickStart.zip':
               source: !Sub
                 - >-
@@ -725,7 +680,6 @@ Resources:
                     - s3-us-gov-west-1
                     - s3
               authentication: S3AccessCreds
-
             'c:\cfn\cfn-hup.conf':
               content: !Sub |
                 [main]
@@ -744,11 +698,10 @@ Resources:
                 - >-
                   https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/AddTo-SystemPath.ps1
                 - QSS3Region: !If
-                  - GovCloudCondition
-                  - s3-us-gov-west-1
-                  - s3
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
               authentication: S3AccessCreds
-
             'C:\cfn\scripts\Join-Domain.ps1':
               source: !Sub
                 - >-
@@ -758,7 +711,6 @@ Resources:
                     - s3-us-gov-west-1
                     - s3
               authentication: S3AccessCreds
-
             'C:\cfn\scripts\Rename-Computer.ps1':
               source: !Sub
                 - >-
@@ -768,7 +720,6 @@ Resources:
                     - s3-us-gov-west-1
                     - s3
               authentication: S3AccessCreds
-
           services:
             windows:
               cfn-hup:
@@ -784,7 +735,6 @@ Resources:
                   -Command "Set-ExecutionPolicy RemoteSigned"
                   -Force
               waitAfterCompletion: '0'
-
             b-unpack-quickstart-module:
               command:
                 powershell.exe
@@ -792,7 +742,6 @@ Resources:
                     -Source C:\cfn\modules\AWSQuickStart.zip
                     -Destination C:\Windows\system32\WindowsPowerShell\v1.0\Modules\
               waitAfterCompletion: '0'
-
             c-init-quickstart-module:
               command: !Sub
                 powershell.exe
@@ -801,10 +750,8 @@ Resources:
                     -Resource FSPrimaryInstance
                     -Region ${AWS::Region}
               waitAfterCompletion: '0'
-
         060-RenameAndJoinDomain:
           commands:
-
             a-rename-computer:
               command: !Sub
                 - powershell.exe
@@ -813,7 +760,6 @@ Resources:
                       -Restart
                 - InstanceName: !Ref FSServerName
               waitAfterCompletion: forever
-
             # Join this instance to the Windows Domain
             b-join-domain-and-restart:
               command: !Sub
@@ -823,7 +769,6 @@ Resources:
                     -UserName ${DomainNetBIOSName}\${DomainAdminUser}
                     -Password ${DomainAdminPassword}
               waitAfterCompletion: forever
-
             # Add 'Domain Users' to local RDP Group to they can RDP into this instance
             # Install A/D Management Tools
             c-add-domain-users-rdp-users-group:
@@ -842,7 +787,6 @@ Resources:
                         }
                       }"
               waitAfterCompletion: '0'
-
         070-ConfigureFileshare:
           files:
             'd:\fsdir\fs.conf':
@@ -854,11 +798,11 @@ Resources:
             'd:\fsdir\Enterprise-Server.mflic':
               source: !Sub
                 - >-
-                  https://${ESS3BucketName}.${QSS3Region}.amazonaws.com/${ESS3KeyPrefix}license/${ESLicenseFilename}
+                  https://${ESS3BucketName}.${QSS3Region}.amazonaws.com/license/${ESLicenseFilename}
                 - QSS3Region: !If
-                  - GovCloudCondition
-                  - s3-us-gov-west-1
-                  - s3
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
               authentication: S3AccessCreds
             'c:\cfn\scripts\prep-fs-demo.ps1':
               content: |
@@ -870,7 +814,7 @@ Resources:
                     & NET SHARE "fsdir=d:\fsdir" "/GRANT:Everyone,FULL"
 
                     # Add 'SYSAD' user required for demo apps
-                    & "C:\Program Files (x86)\Micro Focus\Enterprise Server\bin64\fs" /pf d:\fsdir\pass.dat /u SYSAD /pw SYSAD
+                    & "C:\Program Files (x86)\Micro Focus\Enterprise Server\bin\fs" /pf d:\fsdir\pass.dat /u SYSAD /pw SYSAD
                 }
                 catch {
                     $_ | Write-AWSQuickStartException
@@ -881,9 +825,8 @@ Resources:
               command:
                 powershell.exe
                   -File c:\cfn\scripts\AddTo-SystemPath.ps1
-                    -PathToAdd "C:\Program Files (x86)\Micro Focus\Enterprise Server\bin64"
+                    -PathToAdd "C:\Program Files (x86)\Micro Focus\Enterprise Server\bin"
               waitAfterCompletion: '0'
-
             b-copy-demo-files:
               test: !Sub >-
                 if /I "${InstallDemoApps}"=="true" (exit 0) else (exit 1)
@@ -891,7 +834,6 @@ Resources:
                 powershell.exe
                   -File c:\cfn\scripts\prep-fs-demo.ps1
               waitAfterCompletion: '0'
-
             c-install-license:
               cwd: 'C:\Program Files (x86)\Common Files\SafeNet Sentinel\Sentinel RMS License Manager\WinNT\'
               command:
@@ -900,13 +842,11 @@ Resources:
                     -term install
                     -f d:\fsdir\Enterprise-Server.mflic
               waitAfterCompletion: '0'
-
             d-gen-passfile:
-              cwd: C:\Program Files (x86)\Micro Focus\Enterprise Server\bin64
+              cwd: C:\Program Files (x86)\Micro Focus\Enterprise Server\bin
               command: !Sub >-
-                "C:\Program Files (x86)\Micro Focus\Enterprise Server\bin64\fs" /pf d:\fsdir\pass.dat /u FSVIEW /pw ${FSViewPassword}
+                "C:\Program Files (x86)\Micro Focus\Enterprise Server\bin\fs" /pf d:\fsdir\pass.dat /u FSVIEW /pw ${FSViewUserPassword}
               waitAfterCompletion: '0'
-
             e-configure-windows-firewall-fs-ccitcp-listener-rule:
               command:
                 powershell.exe
@@ -915,7 +855,6 @@ Resources:
                     -LocalPort 86
                     -Protocol tcp
               waitAfterCompletion: '0'
-
             f-configure-windows-firewall-fs-ccitcp-listener-rule:
               command:
                 powershell.exe
@@ -924,7 +863,6 @@ Resources:
                     -LocalPort 86
                     -Protocol udp
               waitAfterCompletion: '0'
-
             g-configure-windows-firewall-fs-ccitcp-listener-rule:
               command: !Sub
                 powershell.exe
@@ -933,15 +871,13 @@ Resources:
                     -LocalPort ${FSCCITCPListenerPort}
                     -Protocol tcp
               waitAfterCompletion: '0'
-
             h-install-fs-service:
-              cwd: C:\Program Files (x86)\Micro Focus\Enterprise Server\bin64
+              cwd: C:\Program Files (x86)\Micro Focus\Enterprise Server\bin
               command:
                 fsservice
                   -i FS1
                   /cf d:\fsdir\fs.conf
               waitAfterCompletion: '0'
-
           services:
             windows:
               'Micro Focus Fileshare Service: FS1':
@@ -950,7 +886,6 @@ Resources:
                 files:
                   - 'd:\fsdir\fs.conf'
                   - 'd:\fsdir\pass.dat'
-
         120-Finalize:
           commands:
             a-finalize-init:
@@ -958,7 +893,6 @@ Resources:
                 powershell.exe
                   -Command Write-AWSQuickStartStatus
               waitAfterCompletion: '0'
-
     Properties:
       AvailabilityZone: !Select
         - 0
@@ -986,11 +920,11 @@ Resources:
                 - ''
                 - !If
                   - NamePrefixIsAWSStackname
-                  - !Sub ${AWS::StackName}-
-                  - !Sub ${ESResourceNamePrefix}-
-      UserData:
-        'Fn::Base64': !Sub
-          - |+
+                  - !Sub '${AWS::StackName}-'
+                  - !Sub '${ESResourceNamePrefix}-'
+      UserData: !Base64
+        'Fn::Sub':
+          - |
             <script>
               rem Uninstall Amazon SSM Agent and AWS CLI to allow updating
               wmic product where "description='Amazon SSM Agent' " uninstall
@@ -1007,16 +941,15 @@ Resources:
               cfn-init.exe -v -c config -s ${AWS::StackName} --resource FSPrimaryInstance --region ${AWS::Region}
             </script>
           - QSS3Region: !If
-            - GovCloudCondition
-            - s3-us-gov-west-1
-            - s3
-
+              - GovCloudCondition
+              - s3-us-gov-west-1
+              - s3
   FSPrimaryInstanceRecoveryAlarm:
     Type: 'AWS::CloudWatch::Alarm'
     Properties:
       AlarmDescription: !Sub |
         "${AWS::StackName} Stack instance auto-recovery alarm/trigger."
-      Namespace: 'AWS/EC2'
+      Namespace: AWS/EC2
       MetricName: StatusCheckFailed_System
       Statistic: Minimum
       Period: 60
@@ -1024,14 +957,14 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Threshold: 0
       AlarmActions:
-      - !Sub 'arn:aws:automate:${AWS::Region}:ec2:recover'
-      - !If
-        - HaveNotificationARN
-        - !Ref NotificationARN
-        - !Ref AWS::NoValue
+        - !Sub 'arn:aws:automate:${AWS::Region}:ec2:recover'
+        - !If
+          - HaveNotificationARN
+          - !Ref NotificationARN
+          - !Ref 'AWS::NoValue'
       Dimensions:
-      - Name: InstanceId
-        Value: !Ref FSPrimaryInstance
+        - Name: InstanceId
+          Value: !Ref FSPrimaryInstance
 Outputs:
   FSInstanceAvailabilityZone:
     Description: The Availability Zone where the Fileshare instance is launched
@@ -1039,10 +972,9 @@ Outputs:
   FSInstancePrivateDnsName:
     Description: The private DNS name of the Fileshare instance
     Value: !Join
-      - '.'
+      - .
       - - !Ref FSServerName
         - !Ref DomainDNSName
   FileshareDataFolderUNC:
     Description: UNC of the Fileshare data folder
-    Value: !Sub
-      '\\${FSServerName}\fsdir'
+    Value: !Sub '\\${FSServerName}\fsdir'

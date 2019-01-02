@@ -9,7 +9,7 @@
     },
     {
         "ParameterKey": "DatabaseType",
-        "ParameterValue": "Create-RDS-Remote-Database"
+        "ParameterValue": "None"
     },
     {
         "ParameterKey": "DBBackupRetentionPeriod",
@@ -117,7 +117,7 @@
     },
     {
         "ParameterKey": "FileshareType",
-        "ParameterValue": "Create-Remote-Fileshare-Server"
+        "ParameterValue": "None"
     },
     {
         "ParameterKey": "FSViewUserPassword",
@@ -129,11 +129,11 @@
     },
     {
         "ParameterKey": "InstallFSDemoApp",
-        "ParameterValue": "true"
+        "ParameterValue": "false"
     },
     {
         "ParameterKey": "InstallSQLDemoApp",
-        "ParameterValue": "true"
+        "ParameterValue": "false"
     },
     {
         "ParameterKey": "KeyPairName",

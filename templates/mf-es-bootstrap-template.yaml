@@ -13,13 +13,14 @@
 # limitations under the License.
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
-  "This template deploys a single Micro Focus Enterprise Server instance as defined
-  in the Micro Focus Enterprise Server Reference Architecture.
+  "This template deploys a single Micro Focus Enterprise Server instance as
+  defined in the Micro Focus Enterprise Server Reference Architecture.
   **WARNING** This template creates EC2 instances and related resources. You
   will be billed for the AWS resources used if you create a stack from this
   template. License: Apache 2.0 (Please do not remove) Sept,05,2018. Micro Focus
-  Enterprise Server is licensed separately, please review the terms and conditions
-  here (https://www.microfocus.com/about/legal/) for further details. (qs-1p440hhtu)"
+  Enterprise Server is licensed separately, please review the terms and
+  conditions here (https://www.microfocus.com/about/legal/) for further details.
+  (qs-1p440hhtu)"
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -28,7 +29,6 @@ Metadata:
         Parameters:
           - AvailabilityZones
           - SubnetID
-
       - Label:
           default: Microsoft Active Directory Configuration
         Parameters:
@@ -37,6 +37,11 @@ Metadata:
           - DomainMemberSGID
           - DomainAdminUser
           - DomainAdminPassword
+      - Label:
+          default: Enterprise Server Configuration
+        Parameters:
+          - MFDSServiceAccountName
+          - MFDSServiceAccountPassword
       - Label:
           default: Database Configuration
         Parameters:
@@ -47,20 +52,17 @@ Metadata:
           default: Fileshare Configuration
         Parameters:
           - FileshareDataFolderUNC
-
       - Label:
           default: Enterprise Server Demo Apps Configuration
         Parameters:
           - InstallFSDemoApp
           - InstallSQLDemoApp
           - ESDemoUserPassword
-          - ESDemoUserPasswordConfirm
       - Label:
           default: AWS Quick Start Configuration
         Parameters:
           - QSS3BucketName
           - QSS3KeyPrefix
-
     ParameterLabels:
       AvailabilityZones:
         default: Availability Zones
@@ -80,14 +82,10 @@ Metadata:
         default: Domain member Security Group ID
       ESDemoUserPassword:
         default: Enterprise Server Demo User password
-      ESDemoUserPasswordConfirm:
-        default: Re-enter Enterprise Server Demo User password
-      ESDatabaseEndpointAddress: 
+      ESDatabaseEndpointAddress:
         default: Enterprise Server Database Endpoint Address
       ESS3BucketName:
         default: Enterprise Server S3 bucket name
-      ESS3KeyPrefix:
-        default: Enterprise Server S3 key prefix
       FileshareDataFolderUNC:
         default: FileShare Data Folder UNC
       InstallFSDemoApp:
@@ -96,13 +94,16 @@ Metadata:
         default: Install SQLServer Demo App
       KeyPairName:
         default: Key Pair Name
+      MFDSServiceAccountName:
+        default: Micro Focus Directory Service, Service Domain Account Name
+      MFDSServiceAccountPassword:
+        default: Micro Focus Directory Service, Service Account Password
       SubnetID:
         default: Subnet 1A ID
       QSS3BucketName:
         default: Quick Start S3 bucket name
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
-
 Parameters:
   AvailabilityZones:
     Description: >-
@@ -110,9 +111,7 @@ Parameters:
       Availability Zones are used for this deployment, and the logical order of
       your selections is preserved.
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
-    Default: "us-east-1a,us-east-1b"
   DBMasterUserPassword:
-    Default: Password123!
     Type: String
     NoEcho: true
   DBMasterUsername:
@@ -121,7 +120,6 @@ Parameters:
   DomainAdminPassword:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
-    Default: Password123!
     Description: >-
       Password for the domain admin user. Must be at least 8 characters
       containing letters, numbers and symbols
@@ -148,7 +146,6 @@ Parameters:
   DomainMemberSGID:
     Description: 'ID of the Domain Member Security Group (e.g., sg-7f16e910)'
     Type: 'AWS::EC2::SecurityGroup::Id'
-    Default: sg-0047e4c33f1428a0c
   DomainNetBIOSName:
     AllowedPattern: '[a-zA-Z0-9\-]+'
     Default: example
@@ -161,87 +158,80 @@ Parameters:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
     Description: >-
-      Password for ESDemoUser. Must be at least 8 characters
-      containing letters, numbers and symbols
-    MaxLength: '32'
-    MinLength: '8'
-    NoEcho: true
-    Type: String
-  ESDemoUserPasswordConfirm:
-    AllowedPattern: >-
-      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
-    Description: >-
-      Confirm password for the ESDemoUser . Must be at least 8 characters
-      containing letters, numbers and symbols
+      Password for ESDemoUser. Must be at least 8 characters containing letters,
+      numbers and symbols
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
     Type: String
   ESClientAccessSGID:
     Type: 'AWS::EC2::SecurityGroup::Id'
-    Description: Security Group ID for application ingress into the Enterpriser Server instance (e.g., sg-1234abcd)
-    Default: sg-001187193760ad9bf
+    Description: >-
+      Security Group ID for application ingress into the Enterpriser Server
+      instance (e.g., sg-1234abcd)
   ESDatabaseEndpointAddress:
     Type: String
-    Default: "teq7j5sfv22mtd.cbwwpz794fpx.us-east-1.rds.amazonaws.com"
+    Default: ''
   ESS3BucketName:
     AllowedPattern: '^[a-z0-9][a-z0-9-.]*$'
-    Default: sk-amc
     Description: >-
       Name of the existing S3 bucket used to store/retrieve objects specific to
-      this stack. This string can include numbers, lowercase letters, uppercase
-      letters, and hyphens (-). It cannot start or end with a hyphen (-).
-    Type: String
-  ESS3KeyPrefix:
-    AllowedPattern: '^[0-9a-zA-Z-/]*$'
-    ConstraintDescription: >-
-      Quick Start key prefix can include numbers, lowercase letters, uppercase
-      letters, hyphens (-), and forward slash (/).
-    Default: es-qs-user/
-    Description: >-
-      S3 key prefix for the Quick Start assets. Quick Start key prefix can
-      include numbers, lowercase letters, uppercase letters, hyphens (-), and
-      forward slash (/).
+      this stack. A system integrator extending this Quick Start should use this
+      bucket to store  or retrieve items needed. This string can include numbers,
+      lowercase letters,  uppercase letters, and hyphens (-). It cannot start or
+      end with a hyphen (-).
     Type: String
   FileshareDataFolderUNC:
     Type: String
-    Default: \\FSServer\fsdir
+    Default: ''
   InstallFSDemoApp:
     Type: String
     AllowedValues:
-      - True
-      - False
-    #Default: False
-    Default: True
+      - true
+      - false
+    Default: true
     Description: >-
-      Choose True to install the Enterprise Server Fileshare demo app. Requires
+      Choose 'false' to install the Enterprise Server Fileshare demo app. Requires
       selection of the 'Create-Remote-Fileshare-Server' Fileshare Type
   InstallSQLDemoApp:
     AllowedValues:
-    - true
-    - false
-    #Default: False
-    Default: True
+      - true
+      - false
+    Default: true
     Description: >-
-      Choose True to install the Enterprise Server SQLServer demo app.
-      Requires selection of the 'Create-RDS-Remote-Database' Database Type
+      Choose 'false' to install the Enterprise Server SQLServer demo app. Requires
+      selection of the 'Create-RDS-Remote-Database' Database Type
     Type: String
   KeyPairName:
     Description: >-
       Name of an existing EC2 key pair. All instances will launch with this key
       pair.
     Type: 'AWS::EC2::KeyPair::KeyName'
-    Default: id_rsa
+  MFDSServiceAccountName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9]*'
+    Default: 'MFDSServiceAccount'
+    Description: >-
+      Existing domain account name under which the service will run. If left as default, a domain account 'MFDSServiceAccount' will be created.
+    MaxLength: '25'
+    MinLength: '5'
+  MFDSServiceAccountPassword:
+    Type: String
+    AllowedPattern: >-
+      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+    Description: >-
+      Must be at least 8 characters containing letters, numbers and symbols
+    MaxLength: '32'
+    MinLength: '8'
+    NoEcho: true
   SubnetID:
     Description: 'ID of private subnet A in Availability Zone 1 (e.g., subnet-a0246dcd)'
     Type: 'AWS::EC2::Subnet::Id'
-    Default: subnet-0280c5a32af66e780
   QSS3BucketName:
     AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
     ConstraintDescription: >-
       Quick Start bucket name can include numbers, lowercase letters, uppercase
       letters, and hyphens (-). It cannot start or end with a hyphen (-).
-    Default: sk-amc
     Description: >-
       S3 bucket name for the Quick Start assets. This string can include
       numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot
@@ -252,15 +242,13 @@ Parameters:
     ConstraintDescription: >-
       Quick Start key prefix can include numbers, lowercase letters, uppercase
       letters, hyphens (-), and forward slash (/).
-    Default: es-qs/
+    Default: /
     Description: >-
       S3 key prefix for the Quick Start assets. Quick Start key prefix can
       include numbers, lowercase letters, uppercase letters, hyphens (-), and
       forward slash (/).
     Type: String
-
 Rules:
-  
   KeyPairsNotEmpty:
     Assertions:
       - Assert: !Not
@@ -268,17 +256,10 @@ Rules:
               - 'Fn::RefAll': 'AWS::EC2::KeyPair::KeyName'
               - ''
         AssertDescription: All key pair parameters must not be empty
-  ESDemoUserPasswordMatchRule:
-    Assertions:
-      - Assert: !Equals
-          - !Ref ESDemoUserPassword
-          - !Ref ESDemoUserPasswordConfirm
-        AssertDescription: Enterprise Server Demo user password values do not match.
-
 Mappings:
   AWSAMIRegionMap:
     AMI:
-      MFESBSTRAPAMI: amzn-ami-hvm-2018.03.0.20180622-x86_64-gp2
+      MFESBSTRAPAMI: Windows_Server-2012-R2_RTM-English-64Bit-Base-2018.11.28
     ap-northeast-1:
       MFESBSTRAPAMI: ami-0e8e51f50c1d7d1b6
     ap-northeast-2:
@@ -320,126 +301,144 @@ Conditions:
     - !Condition InstallingSQLDemoApp
   InstallingFSDemoApp: !Equals
     - !Ref InstallFSDemoApp
-    - "true"
+    - 'true'
   InstallingSQLDemoApp: !Equals
     - !Ref InstallSQLDemoApp
-    - "true"
+    - 'true'
   HaveDatabaseEnvironment: !Not
     - !Equals
       - !Ref ESDatabaseEndpointAddress
-      - ""
+      - ''
+  CreateMFDSServiceAccount: !Or
+    - !Equals
+      - !Ref MFDSServiceAccountName
+      - ''
+    - !Equals
+      - !Ref MFDSServiceAccountName
+      - 'MFDSServiceAccount'
 Resources:
   ESInstanceRole:
-    Type: "AWS::IAM::Role"
+    Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
         Statement:
           - Action:
-              - "sts:AssumeRole"
+              - 'sts:AssumeRole'
             Effect: Allow
             Principal:
               Service:
                 - ec2.amazonaws.com
       Path: /
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
-        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
       Policies:
         - PolicyDocument:
             Statement:
               - Action:
-                  - "s3:GetObject"
+                  - 's3:GetObject'
                 Effect: Allow
                 Resource:
                   - !Sub
-                    - "arn:${partition}:s3:::${QSS3BucketName}"
+                    - 'arn:${partition}:s3:::${QSS3BucketName}'
                     - partition: !If
-                      - GovCloudCondition
-                      - aws-us-gov
-                      - aws
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
                   - !Sub
-                    - "arn:${partition}:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*"
+                    - 'arn:${partition}:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*'
                     - partition: !If
-                      - GovCloudCondition
-                      - aws-us-gov
-                      - aws
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
             Version: 2012-10-17
           PolicyName: aws-quick-start-s3-policy
         - PolicyDocument:
             Statement:
               - Action:
-                  - "s3:*"
+                  - 's3:*'
                 Effect: Allow
                 Resource:
                   - !Sub
-                    - "arn:${partition}:s3:::${ESS3BucketName}"
+                    - 'arn:${partition}:s3:::${ESS3BucketName}'
                     - partition: !If
-                      - GovCloudCondition
-                      - aws-us-gov
-                      - aws
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
                   - !Sub
-                    - "arn:${partition}:s3:::${ESS3BucketName}/${ESS3KeyPrefix}*"
+                    - 'arn:${partition}:s3:::${ESS3BucketName}/*'
                     - partition: !If
-                      - GovCloudCondition
-                      - aws-us-gov
-                      - aws
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
               - Action:
-                  - "ds:Describe*"
+                  - 'ds:Describe*'
                 Effect: Allow
-                Resource: "*"
+                Resource: '*'
           PolicyName: ESInstancePolicy
-
   ESInstanceRoleProfile:
-    Type: "AWS::IAM::InstanceProfile"
+    Type: 'AWS::IAM::InstanceProfile'
     Properties:
       Path: /
       Roles:
         - !Ref ESInstanceRole
-
   ESInstance:
-    Type: AWS::EC2::Instance
+    Type: 'AWS::EC2::Instance'
     CreationPolicy:
       ResourceSignal:
         Count: 1
         Timeout: PT20M
     Metadata:
-      AWS::CloudFormation::Authentication:
+      'AWS::CloudFormation::Authentication':
         S3AccessCreds:
           type: S3
           roleName: !Ref ESInstanceRole
           buckets:
             - !Ref QSS3BucketName
             - !Ref ESS3BucketName
-      AWS::CloudFormation::Init:
+      'AWS::CloudFormation::Init':
         configSets:
           config:
-            - 030-InitPowerShell
-            - 060-RenameAndJoinDomain
+            - 010-InitPowerShell
+            - 020-RenameAndJoinDomain
             - !If
               - HaveDatabaseEnvironment
-              - 070-Setup-Database-Client-Environment
+              - 030-Setup-Database-Client-Environment
+              - 000-NoOperation
+            - !If
+              - CreateMFDSServiceAccount
+              - 040-CreateMFDSServiceAccount
               - 000-NoOperation
             - !If
               - InstallingAtLeastOneDemoApp
-              - 080-CreateBankDemoDomainUser
+              - 050-CreateBankDemoDomainUser
               - 000-NoOperation
             - !If
               - InstallingFSDemoApp
-              - 090-InstallBankDemoFS
+              - 060-InstallBankDemoFS
               - 000-NoOperation
             - !If
               - InstallingSQLDemoApp
-              - 100-InstallBankDemoSQL
+              - 070-InstallBankDemoSQL
               - 000-NoOperation
-            - 120-Finalize
+            - 080-Finalize
         000-NoOperation:
           commands:
             a-no-operation:
               command:
                 echo "No-Operation" > nul
-        
-        030-InitPowerShell:
+              waitAfterCompletion: '0'
+        010-InitPowerShell:
           files:
+            'c:\cfn\scripts\New-ADUser.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/New-ADUser.ps1
+                - QSS3Region: !If
+                  - GovCloudCondition
+                  - s3-us-gov-west-1
+                  - s3
+              authentication: S3AccessCreds
             'C:\cfn\scripts\Unzip-Archive.ps1':
               source: !Sub
                 - >-
@@ -449,7 +448,6 @@ Resources:
                     - s3-us-gov-west-1
                     - s3
               authentication: S3AccessCreds
-
             'C:\cfn\modules\AWSQuickStart.zip':
               source: !Sub
                 - >-
@@ -459,40 +457,35 @@ Resources:
                     - s3-us-gov-west-1
                     - s3
               authentication: S3AccessCreds
-
             'c:\cfn\cfn-hup.conf':
               content: !Sub |
                 [main]
                 stack=${AWS::StackName}
                 region=${AWS::Region}
-
             'c:\cfn\hooks.d\cfn-auto-reloader.conf':
               content: !Sub |
                 [cfn-auto-reloader-hook]
                 triggers=post.update
                 path=Resources.ESInstance.Metadata.AWS::CloudFormation::Init
                 action=cfn-init.exe -v -c config -s ${AWS::StackId} --resource ESInstance --region ${AWS::Region}
-
             'c:\cfn\scripts\AddTo-SystemPath.ps1':
               source: !Sub
                 - >-
                   https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/AddTo-SystemPath.ps1
                 - QSS3Region: !If
-                  - GovCloudCondition
-                  - s3-us-gov-west-1
-                  - s3
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
               authentication: S3AccessCreds
-
             'c:\cfn\scripts\Schedule-AD-PowershellTask.ps1':
               source: !Sub
                 - >-
                   https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Schedule-AD-PowershellTask.ps1
                 - QSS3Region: !If
-                  - GovCloudCondition
-                  - s3-us-gov-west-1
-                  - s3
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
               authentication: S3AccessCreds
-
             'C:\cfn\scripts\Join-Domain.ps1':
               source: !Sub
                 - >-
@@ -502,7 +495,6 @@ Resources:
                     - s3-us-gov-west-1
                     - s3
               authentication: S3AccessCreds
-
             'C:\cfn\scripts\Rename-Computer.ps1':
               source: !Sub
                 - >-
@@ -512,7 +504,6 @@ Resources:
                     - s3-us-gov-west-1
                     - s3
               authentication: S3AccessCreds
-
           services:
             windows:
               cfn-hup:
@@ -528,7 +519,6 @@ Resources:
                   -Command "Set-ExecutionPolicy RemoteSigned"
                   -Force
               waitAfterCompletion: '0'
-
             b-unpack-quickstart-module:
               command:
                 powershell.exe
@@ -536,7 +526,6 @@ Resources:
                     -Source C:\cfn\modules\AWSQuickStart.zip
                     -Destination C:\Windows\system32\WindowsPowerShell\v1.0\Modules\
               waitAfterCompletion: '0'
-
             c-init-quickstart-module:
               command: !Sub
                 powershell.exe
@@ -545,10 +534,8 @@ Resources:
                     -Resource ESInstance
                     -Region ${AWS::Region}
               waitAfterCompletion: '0'
-
-        060-RenameAndJoinDomain:
+        020-RenameAndJoinDomain:
           commands:
-  
             a-rename-computer:
               command:
                 powershell.exe
@@ -556,7 +543,6 @@ Resources:
                     -NewName bstrpinstance
                     -Restart
               waitAfterCompletion: forever
-
             # Join this instance to the Windows Domain
             b-join-domain-and-restart:
               command: !Sub
@@ -566,7 +552,6 @@ Resources:
                     -UserName ${DomainNetBIOSName}\${DomainAdminUser}
                     -Password ${DomainAdminPassword}
               waitAfterCompletion: forever
-
             # Add 'Domain Users' to local RDP Group to they can RDP into this instance
             # Install A/D Management Tools
             c-add-domain-users-rdp-users-group:
@@ -585,8 +570,7 @@ Resources:
                         }
                       }"
               waitAfterCompletion: '0'
-
-        070-Setup-Database-Client-Environment:
+        030-Setup-Database-Client-Environment:
           files:
             # Download Microsoft® ODBC Driver 13.1 for SQL Server® - Windows, Linux, & macOS
             # https://www.microsoft.com/en-us/download/details.aspx?id=53339
@@ -609,7 +593,6 @@ Resources:
                 - s3-us-gov-west-1
                 - s3
               authentication: S3AccessCreds
-
           commands:
             # Schedule using task scheduler, as <domain>\admin, addition of 'ESDatabase' CNAME to DNS servers
             # pointing to the RDS database
@@ -623,7 +606,6 @@ Resources:
                     -DomainUserName ${DomainAdminUser}
                     -DomainUserPassword ${DomainAdminPassword}
               waitAfterCompletion: '0'
-
             b-install-mssqlserver-odbcdriver:
               command:
                 start /wait
@@ -635,7 +617,6 @@ Resources:
                       IACCEPTMSODBCSQLLICENSETERMS=YES
                       ADDLOCAL=ALL
               waitAfterCompletion: '0'
-
             c-install-MsSql-CmdLn-Utils:
               command:
                 start /wait
@@ -646,26 +627,26 @@ Resources:
                     /i c:\cfn\assets\MsSqlCmdLnUtils.msi
                       IACCEPTMSSQLCMDLNUTILSLICENSETERMS=YES
               waitAfterCompletion: '0'
-
             d-add-mssql-cmdln-utils-to-system-path:
               command:
                 powershell.exe
                   -File c:\cfn\scripts\AddTo-SystemPath.ps1
                     -PathToAdd "c:\Program Files\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn"
               waitAfterCompletion: '0'
-
-        080-CreateBankDemoDomainUser:
-          files:
-            'c:\cfn\scripts\New-ADUser.ps1':
-              source: !Sub
-                - >-
-                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/New-ADUser.ps1
-                - QSS3Region: !If
-                  - GovCloudCondition
-                  - s3-us-gov-west-1
-                  - s3
-              authentication: S3AccessCreds
-
+        040-CreateMFDSServiceAccount:
+          commands:
+            a-create-mfds-service-account:
+              command: !Sub
+                powershell.exe
+                  -File c:\cfn\scripts\New-ADUser.ps1
+                    -NewUsername ${MFDSServiceAccountName}
+                    -NewUserPassword ${MFDSServiceAccountPassword}
+                    -NewUserDescription "Micro Focus Directory Service, Service Account"
+                    -DomainDnsName ${DomainDNSName}
+                    -DomainUserName ${DomainAdminUser}
+                    -DomainUserPassword ${DomainAdminPassword}
+              waitAfterCompletion: '0'
+        050-CreateBankDemoDomainUser:
           commands:
             # Create <domain>\ESDemoUser
             a-create-esdemouser:
@@ -673,14 +654,13 @@ Resources:
                 powershell.exe
                   -File c:\cfn\scripts\New-ADUser.ps1
                     -NewUsername ESDemoUser
-                    -NewUserPassword ${ESDemoUserPasswordConfirm}
+                    -NewUserPassword ${ESDemoUserPassword}
                     -NewUserDescription "Enterprise Server Demos User"
                     -DomainDnsName ${DomainDNSName}
                     -DomainUserName ${DomainAdminUser}
                     -DomainUserPassword ${DomainAdminPassword}
               waitAfterCompletion: '0'
-
-        090-InstallBankDemoFS:
+        060-InstallBankDemoFS:
           files:
             'c:\cfn\scripts\Create-Mapped-Drive-GPO.ps1':
               source: !Sub
@@ -691,7 +671,6 @@ Resources:
                   - s3-us-gov-west-1
                   - s3
               authentication: S3AccessCreds
-
           commands:
             a-create-fsserver-mapped-drive-gpo:
               command: !Sub
@@ -702,28 +681,26 @@ Resources:
                     -DomainUserName "${DomainNetBIOSName}\${DomainAdminUser}"
                     -DomainUserPassword "${DomainAdminPassword}"
               waitAfterCompletion: '0'
-        100-InstallBankDemoSQL:
+        070-InstallBankDemoSQL:
           files:
             'C:\BankDemo_SQL\System\BankDemoCreateAll.SQL':
               source: !Sub
                 - >-
                   https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/BankDemoCreateAll.SQL
                 - QSS3Region: !If
-                  - GovCloudCondition
-                  - s3-us-gov-west-1
-                  - s3
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
               authentication: S3AccessCreds
-
             'c:\cfn\scripts\Prep-BankDemoDatabase.ps1':
               source: !Sub
                 - >-
                   https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Prep-BankDemoDatabase.ps1
                 - QSS3Region: !If
-                  - GovCloudCondition
-                  - s3-us-gov-west-1
-                  - s3
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
               authentication: S3AccessCreds
-
           commands:
             a-create-bankdemo-sql-environment:
               command: !Sub
@@ -733,8 +710,7 @@ Resources:
                     -DBMasterUsername ${DBMasterUsername}
                     -DBMasterUserPassword ${DBMasterUserPassword}
               waitAfterCompletion: '0'
-          
-        120-Finalize:
+        080-Finalize:
           commands:
             a-finalize-init:
               command:
@@ -746,7 +722,6 @@ Resources:
                 powershell.exe
                   -Command shutdown /f /p
               waitAfterCompletion: '0'
-
     Properties:
       AvailabilityZone: !Select
         - 0
@@ -766,9 +741,9 @@ Resources:
       Tags:
         - Key: Name
           Value: bootstrap
-      UserData:
-        'Fn::Base64': !Sub
-          - |+
+      UserData: !Base64
+        'Fn::Sub':
+          - |
             <script>
               rem Uninstall Amazon SSM Agent and AWS CLI to allow updating
               wmic product where "description='Amazon SSM Agent' " uninstall
@@ -785,6 +760,6 @@ Resources:
               cfn-init.exe -v -c config -s ${AWS::StackName} --resource ESInstance --region ${AWS::Region}
             </script>
           - QSS3Region: !If
-            - GovCloudCondition
-            - s3-us-gov-west-1
-            - s3
+              - GovCloudCondition
+              - s3-us-gov-west-1
+              - s3

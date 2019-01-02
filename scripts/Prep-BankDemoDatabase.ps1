@@ -30,25 +30,25 @@ try {
         -Platform "32-bit" `
         -SetPropertyValue @("Server=ESDatabase", "Trusted_Connection=Yes", "Database=BANKDEMO")
 
-    # Create the ESDemoUser SQL Login
+    # Create the MFDSServiceAccount SQL Login (MFDS Service runs as <domain>\MFDSServiceAccount)
     & "c:\Program Files\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\sqlcmd" `
         -S ESDatabase `
         -U $DBMasterUsername `
         -P $DBMasterUserPassword `
-        -Q "CREATE Login [$DomainNetBIOSName\ESDemoUser] `
+        -Q "CREATE Login [$DomainNetBIOSName\MFDSServiceAccount] `
                 FROM WINDOWS `
                 WITH `
                     default_database=BANKDEMO, `
                     default_language=[us_english]"
 
-    # Create the ESDemoUser User in BankDemo
+    # Create the MFDSServiceAccount User in BankDemo
     & "c:\Program Files\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\sqlcmd" `
         -S ESDatabase `
         -U $DBMasterUsername `
         -P $DBMasterUserPassword `
         -Q "USE BANKDEMO; `
-             CREATE User [ESDemoUser] `
-               FOR LOGIN [$DomainNetBIOSName\ESDemoUser]"
+             CREATE User [MFDSServiceAccount] `
+               FOR LOGIN [$DomainNetBIOSName\MFDSServiceAccount]"
 
     # Grant permissions
     & "c:\Program Files\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\sqlcmd" `
@@ -57,7 +57,7 @@ try {
         -P $DBMasterUserPassword `
         -Q "USE BANKDEMO; `
              GRANT CONTROL `
-               TO [ESDemoUser]"
+               TO [MFDSServiceAccount]"
 
 } catch {
      $_ | Write-AWSQuickStartException

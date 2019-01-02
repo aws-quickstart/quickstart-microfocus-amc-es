@@ -117,7 +117,7 @@
     },
     {
         "ParameterKey": "FileshareType",
-        "ParameterValue": "Create-Remote-Fileshare-Server"
+        "ParameterValue": "None"
     },
     {
         "ParameterKey": "FSViewUserPassword",
@@ -129,7 +129,7 @@
     },
     {
         "ParameterKey": "InstallFSDemoApp",
-        "ParameterValue": "true"
+        "ParameterValue": "false"
     },
     {
         "ParameterKey": "InstallSQLDemoApp",

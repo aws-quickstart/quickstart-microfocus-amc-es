@@ -13,13 +13,14 @@
 # limitations under the License.
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
-  "This template deploys a Micro Focus Enterprise Server reference architecture including
-  optional Remote Fileshare and SQLServer Database services into an existing VPC.
-  **WARNING** This template creates EC2 instances and related resources. You
-  will be billed for the AWS resources used if you create a stack from this
-  template. License: Apache 2.0 (Please do not remove) Sept,05,2018. Micro Focus
-  Enterprise Server is licensed separately, please review the terms and conditions
-  here (https://www.microfocus.com/about/legal/) for further details. (qs-1p440hhtu)"
+  "This template deploys a Micro Focus Enterprise Server reference architecture
+  including optional Remote Fileshare and SQLServer Database services into an
+  existing VPC. **WARNING** This template creates EC2 instances and related
+  resources. You will be billed for the AWS resources used if you create a stack
+  from this template. License: Apache 2.0 (Please do not remove) Sept,05,2018.
+  Micro Focus Enterprise Server is licensed separately, please review the terms
+  and conditions here (https://www.microfocus.com/about/legal/) for further
+  details. (qs-1p440hhtu)"
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -28,7 +29,6 @@ Metadata:
         Parameters:
           - LicenseAgreement
           - ESLicenseFilename
-
       - Label:
           default: Network Configuration
         Parameters:
@@ -38,7 +38,6 @@ Metadata:
           - PublicSubnet2ID
           - PrivateSubnet1AID
           - PrivateSubnet2AID
-
       - Label:
           default: Microsoft Active Directory Configuration
         Parameters:
@@ -49,40 +48,41 @@ Metadata:
           - DomainAdminUser
           - DomainAdminPassword
           - DomainAdminPasswordConfirm
-
       - Label:
           default: Microsoft Remote Desktop Gateway Configuration
         Parameters:
           - RDGWAccessSGID
-
       - Label:
           default: Enterprise Server Configuration
         Parameters:
-
           - ESInstanceType
-          - NumberESInstance
+          - NumberOfESInstance
+          - KeyPairName
           - RegionsPerInstance
           - AdditonalESStorageinGiB
-          - KeyPairName
           - ESCCITCPListenerPort
           - ESCWLogGroupRetentionInDays
-          - ESS3BucketName
-          - ESS3KeyPrefix
+          - MFDSServiceAccountName
+          - MFDSServiceAccountPassword
+          - MFDSServiceAccountPasswordConfirm
           - OperatorEmail
+          - ESS3BucketName
           - ESResourceNamePrefix
-
       - Label:
           default: Fileshare Configuration
         Parameters:
           - FileshareType
+          - InstallFSDemoApp
           - FSInstanceType
           - FSStorageInGiB
           - FSCCITCPListenerPort
-
+          - FSViewUserPassword
+          - FSViewUserPasswordConfirm
       - Label:
           default: Database Configuration
         Parameters:
           - DatabaseType
+          - InstallSQLDemoApp
           - DBInstanceClass
           - DBStorageInGiB
           - DBMasterUsername
@@ -92,29 +92,26 @@ Metadata:
           - DBBackupRetentionPeriod
           - DBPreferredBackupWindow
           - DBPreferredMaintenanceWindow
-
       - Label:
           default: Enterprise Server Demo Apps Configuration
         Parameters:
-          - InstallFSDemoApp
-          - InstallSQLDemoApp
           - ESDemoUserPassword
           - ESDemoUserPasswordConfirm
           - DemoAppsIngressCIDR
           - FSDemoApp3270Port
           - SQLDemoApp3270Port
-
       - Label:
           default: AWS Quick Start Configuration
         Parameters:
           - QSS3BucketName
           - QSS3KeyPrefix
-
     ParameterLabels:
       AdditonalESStorageinGiB:
         default: Additional Enterprise Server instance storage
       AvailabilityZones:
         default: Availability Zones
+      DatabaseType:
+        default: Database type
       DBBackupRetentionPeriod:
         default: Database backup retention period
       DBInstanceClass:
@@ -122,7 +119,7 @@ Metadata:
       DBMasterUserPassword:
         default: Database Master User password
       DBMasterUserPasswordConfirm:
-        default: Re-enter database Master User password
+        default: Re-enter the database Master User password
       DBMasterUsername:
         default: Database Master username
       DBPreferredBackupWindow:
@@ -131,8 +128,6 @@ Metadata:
         default: Database preferred maintenance window
       DBStorageInGiB:
         default: Database storage
-      DatabaseType:
-        default: Database type
       DemoAppsIngressCIDR:
         default: Allowed Demo Apps external access CIDR
       DeployMultiAZ:
@@ -144,13 +139,13 @@ Metadata:
       DomainAdminPassword:
         default: Domain admin password
       DomainAdminPasswordConfirm:
-        default: Re-enter Domain admin password
+        default: Re-enter the Domain admin password
       DomainDNSName:
         default: Domain DNS name
-      DomainNetBIOSName:
-        default: Domain NetBIOS name
       DomainMemberSGID:
         default: Domain member Security Group ID
+      DomainNetBIOSName:
+        default: Domain NetBIOS name
       ESCCITCPListenerPort:
         default: Enterprise Server CCITCP listener port
       ESCWLogGroupRetentionInDays:
@@ -158,29 +153,29 @@ Metadata:
       ESDemoUserPassword:
         default: Enterprise Server Demo User password
       ESDemoUserPasswordConfirm:
-        default: Re-enter Enterprise Server Demo User password
+        default: Re-enter the Enterprise Server Demo User password
       ESInstanceType:
         default: Enterprise Server instance type
-      NumberESInstance:
-        default: Number of Enterprise Server Instances to start
       ESLicenseFilename:
         default: Enterprise Server license filename
       ESResourceNamePrefix:
         default: Resource 'Name' prefix
       ESS3BucketName:
         default: Enterprise Server S3 bucket name
-      ESS3KeyPrefix:
-        default: Enterprise Server S3 key prefix
+      FileshareType:
+        default: Fileshare type
       FSInstanceType:
         default: Enterprise Server Fileshare instance type
       FSCCITCPListenerPort:
         default: Enterprise Server Fileshare CCITCP listener port
       FSStorageInGiB:
         default: Fileshare storage size
-      FileshareType:
-        default: Fileshare type
       FSDemoApp3270Port:
         default: Fileshare Bank Demo TN3270 Port
+      FSViewUserPassword:
+        default: FSView User Password
+      FSViewUserPasswordConfirm:
+        default: Re-enter the FSView User Password
       InstallFSDemoApp:
         default: Install Fileshare Demo App
       InstallSQLDemoApp:
@@ -189,6 +184,14 @@ Metadata:
         default: Key Pair Name
       LicenseAgreement:
         default: License agreement
+      MFDSServiceAccountName:
+        default: Micro Focus Directory Service, Service Domain Account Name
+      MFDSServiceAccountPassword:
+        default: Micro Focus Directory Service, Service Account Password
+      MFDSServiceAccountPasswordConfirm:
+        default: Re-enter the Micro Focus Directory Service, Service Account Password
+      NumberOfESInstance:
+        default: Number of Enterprise Server Instances to start
       OperatorEmail:
         default: Operator email
       PrivateSubnet1AID:
@@ -203,10 +206,10 @@ Metadata:
         default: Quick Start S3 bucket name
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
-      RegionsPerInstance:
-        default: Number of Enterprise Server "Regions" per instance
       RDGWAccessSGID:
         default: Remote Desktop Gateway Security Group ID
+      RegionsPerInstance:
+        default: Number of Enterprise Server "Regions" per instance
       SQLDemoApp3270Port:
         default: SQLServer Bank Demo TN3270 Port
       VPCID:
@@ -214,18 +217,18 @@ Metadata:
 Parameters:
   AdditonalESStorageinGiB:
     Type: Number
-    Description: Enter 0-16384 GiB. Additional EBS storage capacity added to ES Instances.
+    Description: >-
+      Enter 0-16384 GiB. Additional EBS storage capacity added to each Enterprise
+      Server instance.
     MinValue: 0
     MaxValue: 16384
     Default: 100
-
   AvailabilityZones:
     Description: >-
       List of Availability Zones to use for the subnets in the VPC. Only two
       Availability Zones are used for this deployment, and the logical order of
       your selections is preserved.
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
-
   DatabaseType:
     AllowedValues:
       - None
@@ -233,11 +236,9 @@ Parameters:
     Default: Create-RDS-Remote-Database
     Description: 'If ''None'', the remaining Database Configuration parameters are ignored'
     Type: String
-
   DBBackupRetentionPeriod:
     Default: 30
     Type: String
-
   DBInstanceClass:
     AllowedValues:
       - db.r4.large
@@ -247,38 +248,31 @@ Parameters:
       - db.r2.8xlarge
     Default: db.r4.large
     Type: String
-
-  DBMasterUserPassword:
-    Type: String
-    NoEcho: true
-
-  DBMasterUserPasswordConfirm:
-    Type: String
-    NoEcho: true
-
   DBMasterUsername:
     Default: DBAdmin
     Type: String
-
+  DBMasterUserPassword:
+    Type: String
+    NoEcho: true
+  DBMasterUserPasswordConfirm:
+    Type: String
+    NoEcho: true
   DBPreferredBackupWindow:
     Description: >-
       Must be in the format hh24:mi-hh24:mi, in UTC. Must be at least 30
       minutes. Must not conflict with the preferred maintenance window.
     Type: String
-
   DBPreferredMaintenanceWindow:
     Description: >-
       Must be in the format ddd:hh24:mi-ddd:hh24:mi, in UTC. Must be at least 30
       minutes.
     Type: String
-
   DBStorageInGiB:
     Type: Number
     Description: Enter 1-16384 GiB
     MinValue: 1
     MaxValue: 16384
     Default: 100
-
   DemoAppsIngressCIDR:
     AllowedPattern: >-
       ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
@@ -286,19 +280,15 @@ Parameters:
     Default: 0.0.0.0/0
     Description: Allowed CIDR Block for external access to the Demo Apps
     Type: String
-
   DeployMultiAZ:
     AllowedValues:
-      - True
-      - False
-    Default: False
-    Description: >-
-      Choose 'True' to deploy the database across multiple Availability Zonesg
+      - true
+      - false
+    Default: false
+    Description: Choose 'true' to deploy the database across multiple Availability Zones
     Type: String
-
   DirectoryServiceID:
     Type: String
-    
   DomainAdminPassword:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
@@ -309,7 +299,6 @@ Parameters:
     MinLength: '8'
     NoEcho: true
     Type: String
-
   DomainAdminPasswordConfirm:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
@@ -320,17 +309,15 @@ Parameters:
     MinLength: '8'
     NoEcho: true
     Type: String
-
   DomainAdminUser:
     AllowedPattern: '[a-zA-Z0-9]*'
     Default: Admin
     Description: >-
-      User name for the domain administrator. This is separate from the default
+      Username for the domain administrator. This is separate from the default
       "Administrator" account
     MaxLength: '25'
     MinLength: '5'
     Type: String
-
   DomainDNSName:
     AllowedPattern: '[a-zA-Z0-9\-]+\..+'
     Default: example.com
@@ -338,11 +325,9 @@ Parameters:
     MaxLength: '255'
     MinLength: '2'
     Type: String
-
   DomainMemberSGID:
     Description: 'ID of the Domain Member Security Group (e.g., sg-7f16e910)'
     Type: 'AWS::EC2::SecurityGroup::Id'
-    
   DomainNetBIOSName:
     AllowedPattern: '[a-zA-Z0-9\-]+'
     Default: example
@@ -351,7 +336,6 @@ Parameters:
       versions of Windows e.g. EXAMPLE
     MaxLength: '15'
     Type: String
-
   ESCCITCPListenerPort:
     ConstraintDescription: The port number must be between 1 and 65535
     Default: 86
@@ -359,23 +343,20 @@ Parameters:
     MaxValue: 65535
     MinValue: 1
     Type: Number
-
   ESCWLogGroupRetentionInDays:
     Default: 7
     Description: The number of days log events are kept in AWS CloudWatch Logs.
     Type: Number
-
   ESDemoUserPassword:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
     Description: >-
-      Password for ESDemoUser. Must be at least 8 characters
-      containing letters, numbers and symbols
+      Password for ESDemoUser. Must be at least 8 characters containing letters,
+      numbers and symbols
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
     Type: String
-
   ESDemoUserPasswordConfirm:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
@@ -386,7 +367,6 @@ Parameters:
     MinLength: '8'
     NoEcho: true
     Type: String
-
   ESInstanceType:
     AllowedValues:
       - c5.large
@@ -395,47 +375,33 @@ Parameters:
       - c5.4xlarge
     Default: c5.large
     Type: String
-
-  NumberESInstance:
+  NumberOfESInstance:
     AllowedValues:
       - 1
       - 2
     Default: 1
-    Description: >-
-      The number of Enterprise Server Instances to start. Can be 1 or 2.
+    Description: The number of Enterprise Server instances to start.
     Type: Number
-
   ESLicenseFilename:
-    Description: 'Place the license file obtained from Micro Focus in the S3 bucket folder: s3://<ESS3BucketName>/<ESS3KeyPrefix>/license/'
+    Description: >-
+      Place the license file obtained from Micro Focus in the S3 bucket folder:
+      s3://<ESS3BucketName>/license/
     Type: String
-
   ESResourceNamePrefix:
     Default: 'AWS::StackName'
     Description: >-
       Used to prefix resource 'Name' tags. Leave empty for no prefix,
       'AWS::StackName' or a value such as the parent stacks' name
     Type: String
-
   ESS3BucketName:
     AllowedPattern: '^[a-z0-9][a-z0-9-.]*$'
     Description: >-
       Name of the existing S3 bucket used to store/retrieve objects specific to
-      this stack. This string can include numbers, lowercase letters, uppercase
-      letters, and hyphens (-). It cannot start or end with a hyphen (-).
+      this stack. A system integrator extending this Quick Start should use this
+      bucket to store  or retrieve items needed. This string can include numbers,
+      lowercase letters,  uppercase letters, and hyphens (-). It cannot start or
+      end with a hyphen (-).
     Type: String
-
-  ESS3KeyPrefix:
-    AllowedPattern: '^[0-9a-zA-Z-/]*$'
-    ConstraintDescription: >-
-      Quick Start key prefix can include numbers, lowercase letters, uppercase
-      letters, hyphens (-), and forward slash (/).
-    Default: /
-    Description: >-
-      S3 key prefix for the Quick Start assets. Quick Start key prefix can
-      include numbers, lowercase letters, uppercase letters, hyphens (-), and
-      forward slash (/).
-    Type: String
-
   FSCCITCPListenerPort:
     ConstraintDescription: The port number must be between 1 and 65535
     Default: 3000
@@ -443,14 +409,12 @@ Parameters:
     MaxValue: 65535
     MinValue: 1
     Type: Number
-
   FSDemoApp3270Port:
     AllowedPattern: >-
       ^([1-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9]|[1-8][0-9]{3}|9[0-8][0-9]{2}|99[0-8][0-9]|999[0-9]|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$
     ConstraintDescription: TN3270 Port must be a number (1-65535)
     Default: '5555'
     Type: String
-
   FSInstanceType:
     AllowedValues:
       - c5.large
@@ -459,14 +423,12 @@ Parameters:
       - c5.4xlarge
     Default: c5.large
     Type: String
-
   FSStorageInGiB:
     Default: 250
     Description: Enter 1-16384 GiB
     MaxValue: 16384
     MinValue: 1
     Type: Number
-
   FileshareType:
     AllowedValues:
       - None
@@ -474,72 +436,114 @@ Parameters:
     Default: Create-Remote-Fileshare-Server
     Description: 'If ''None'', the remaining Fileshare Configuration parameters are ignored'
     Type: String
-
+  FSViewUserPassword:
+    AllowedPattern: >-
+      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+    Description: >-
+      Password for FSVIEW user. Must be at least 8 characters containing letters,
+      numbers and symbols
+    MaxLength: '32'
+    MinLength: '8'
+    NoEcho: true
+    Type: String
+  FSViewUserPasswordConfirm:
+    AllowedPattern: >-
+      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+    Description: >-
+      Confirm password for FSVIEW user. Must be at least 8 characters containing letters,
+      numbers and symbols
+    MaxLength: '32'
+    MinLength: '8'
+    NoEcho: true
+    Type: String
   InstallFSDemoApp:
     Type: String
     AllowedValues:
-      - True
-      - False
-    Default: True
+      - true
+      - false
+    Default: true
     Description: >-
-      Choose 'False' to not install the Enterprise Server Fileshare demo app. Requires
-      selection of the 'Create-Remote-Fileshare-Server' Fileshare Type
-
+      Choose 'false' to not install the Enterprise Server Fileshare demo app.
+      Requires selection of the 'Create-Remote-Fileshare-Server' Fileshare Type
   InstallSQLDemoApp:
     AllowedValues:
-    - True
-    - False
-    Default: True
+      - true
+      - false
+    Default: true
     Description: >-
-      Choose 'False' to not install the Enterprise Server SQLServer demo app.
+      Choose 'false' to not install the Enterprise Server SQLServer demo app.
       Requires selection of the 'Create-RDS-Remote-Database' Database Type
     Type: String
-
   KeyPairName:
     Description: >-
       Name of an existing EC2 key pair. All instances will launch with this key
       pair.
     Type: 'AWS::EC2::KeyPair::KeyName'
-
   LicenseAgreement:
-    Description: I have read and agree to the license terms for Micro Focus Enterprise Server (https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-0562B3C9-2271-4CE8-AF64-93DE4940077F.html).
+    Description: >-
+      I have read and agree to the license terms for Micro Focus Enterprise
+      Server
+      (https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-0562B3C9-2271-4CE8-AF64-93DE4940077F.html).
     Type: String
     Default: '-'
     AllowedValues:
-    - I agree
-    - '-'
+      - I agree
+      - '-'
     ConstraintDescription: must answer 'I agree'
-
+  MFDSServiceAccountName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9]*'
+    Default: 'MFDSServiceAccount'
+    Description: >-
+      Existing domain account name under which the service will run. If left as default, a domain account 'MFDSServiceAccount' will be created.
+    MaxLength: '25'
+    MinLength: '5'
+  MFDSServiceAccountPassword:
+    Type: String
+    AllowedPattern: >-
+      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+    Description: >-
+       Must be at least 8 characters containing letters, numbers and symbols
+    MaxLength: '32'
+    MinLength: '8'
+    NoEcho: true
+  MFDSServiceAccountPasswordConfirm:
+    AllowedPattern: >-
+      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+    Description: >-
+      Confirm password for MFDSServiceAccount. Must be at least 8 characters containing letters,
+      numbers and symbols
+    MaxLength: '32'
+    MinLength: '8'
+    NoEcho: true
+    Type: String
   OperatorEmail:
     AllowedPattern: >-
       (?i)^None$|([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)
     ConstraintDescription: Must be a valid email address.
-    Description: (optional) Email address that notifications are sent to (database, VM failures etc)
+    Description: >-
+      (optional) Email address that notifications are sent to (database, VM
+      failures etc)
     Type: String
-    Default: 'None'
-
+    Default: None
   PrivateSubnet1AID:
     Description: 'ID of private subnet A in Availability Zone 1 (e.g., subnet-a0246dcd)'
     Type: 'AWS::EC2::Subnet::Id'
-
   PrivateSubnet2AID:
     Description: >-
       ID of private subnet A in Availability Zone 2 (e.g.,
       subnet-01a43dc1ca1fa7f9b)
     Type: 'AWS::EC2::Subnet::Id'
-
   PublicSubnet1ID:
     Description: >-
       ID of public subnet 1 in Availability Zone 1 for the ELB load balancer
       (e.g., subnet-9bc642ac)
     Type: 'AWS::EC2::Subnet::Id'
-
   PublicSubnet2ID:
     Description: >-
       ID of public subnet 2 in Availability Zone 2 for the ELB load balancer
       (e.g., subnet-e3246d8e)
     Type: 'AWS::EC2::Subnet::Id'
-
   QSS3BucketName:
     AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
     ConstraintDescription: >-
@@ -551,7 +555,6 @@ Parameters:
       include numbers, lowercase letters, uppercase letters, and hyphens (-). It
       cannot start or end with a hyphen (-).
     Type: String
-
   QSS3KeyPrefix:
     AllowedPattern: '^[0-9a-zA-Z-/]*$'
     ConstraintDescription: >-
@@ -563,164 +566,161 @@ Parameters:
       include numbers, lowercase letters, uppercase letters, hyphens (-), and
       forward slash (/).
     Type: String
-    
   RDGWAccessSGID:
     Type: 'AWS::EC2::SecurityGroup::Id'
-
   RegionsPerInstance:
     ConstraintDescription: Must be between 1 and 10 regions per instance
     Default: 1
     MaxValue: 10
     MinValue: 1
     Type: Number
-
   SQLDemoApp3270Port:
     AllowedPattern: >-
       ^([1-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9]|[1-8][0-9]{3}|9[0-8][0-9]{2}|99[0-8][0-9]|999[0-9]|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$
     ConstraintDescription: TN3270 Port must be a number (1-65535)
     Default: '5349'
     Type: String
-
   VPCID:
     Description: ID of your existing VPC for deployment
     Type: 'AWS::EC2::VPC::Id'
-    
 Rules:
   DBMasterUserPasswordMatchRule:
     Assertions:
-    - Assert: !Equals
-      - !Ref DBMasterUserPassword
-      - !Ref DBMasterUserPasswordConfirm
-      AssertDescription: Database Master User password values do not match.
+      - Assert: !Equals
+          - !Ref DBMasterUserPassword
+          - !Ref DBMasterUserPasswordConfirm
+        AssertDescription: Database Master User password values do not match.
   DomainAdminPasswordsMatchRule:
     Assertions:
-    - Assert: !Equals
-      - !Ref DomainAdminPassword
-      - !Ref DomainAdminPasswordConfirm
-      AssertDescription: Domain Admin user password values do not match.
+      - Assert: !Equals
+          - !Ref DomainAdminPassword
+          - !Ref DomainAdminPasswordConfirm
+        AssertDescription: Domain Admin user password values do not match.
   ESDemoUserPasswordMatchRule:
     Assertions:
-    - Assert: !Equals
-      - !Ref ESDemoUserPassword
-      - !Ref ESDemoUserPasswordConfirm
-      AssertDescription: Enterprise Server Demo user password values do not match.
+      - Assert: !Equals
+          - !Ref ESDemoUserPassword
+          - !Ref ESDemoUserPasswordConfirm
+        AssertDescription: Enterprise Server Demo user password values do not match.
+  FSViewUserPasswordMatchRule:
+    Assertions:
+      - Assert: !Equals
+          - !Ref FSViewUserPassword
+          - !Ref FSViewUserPasswordConfirm
+        AssertDescription: FSVIEW user password values do not match.
   InstallFSDemoAppRule:
     RuleCondition: !Equals
-    - !Ref InstallFSDemoApp
-    - "true"
+      - !Ref InstallFSDemoApp
+      - 'true'
     Assertions:
-    - Assert: !Not
-      - !Equals
-        - !Ref FileshareType
-        - "None"
-      AssertDescription: Either choose a Fileshare Type or select 'false' for Install Fileshare Demo App parameter
+      - Assert: !Not
+          - !Equals
+            - !Ref FileshareType
+            - None
+        AssertDescription: >-
+          Either choose a Fileshare Type or select 'false' for Install Fileshare
+          Demo App parameter
   InstallSQLDemoAppRule:
     RuleCondition: !Equals
-    - !Ref InstallSQLDemoApp
-    - "true"
+      - !Ref InstallSQLDemoApp
+      - 'true'
     Assertions:
-    - Assert: !Not
-      - !Equals
-        - !Ref DatabaseType
-        - "None"
-      AssertDescription: Either choose a Database Type or select 'false' for Install SQLServer Demo App parameter
+      - Assert: !Not
+          - !Equals
+            - !Ref DatabaseType
+            - None
+        AssertDescription: >-
+          Either choose a Database Type or select 'false' for Install SQLServer
+          Demo App parameter
   KeyPairsNotEmpty:
     Assertions:
-    - Assert: !Not
-      - 'Fn::EachMemberEquals':
-        - 'Fn::RefAll': 'AWS::EC2::KeyPair::KeyName'
-        - ''
-      AssertDescription: All key pair parameters must not be empty
+      - Assert: !Not
+          - 'Fn::EachMemberEquals':
+              - 'Fn::RefAll': 'AWS::EC2::KeyPair::KeyName'
+              - ''
+        AssertDescription: All key pair parameters must not be empty
   LicenseAgreementRule:
     Assertions:
-    - Assert:
-        Fn::Contains:
-        - - I agree
-        - Ref: LicenseAgreement
-      AssertDescription: User must agree to the terms of the license agreement.
+      - Assert:
+          'Fn::Contains':
+            - - I agree
+            - !Ref LicenseAgreement
+        AssertDescription: User must agree to the terms of the license agreement.
+  MFDSServiceAccountPasswordsMatchRule:
+    Assertions:
+      - Assert: !Equals
+          - !Ref MFDSServiceAccountPassword
+          - !Ref MFDSServiceAccountPasswordConfirm
+        AssertDescription: The Micro Focus Directory Service, Service Account password values do not match.
 Conditions:
-
   CreateRDSRemoteDatabaseStack: !Equals
-  - !Ref DatabaseType
-  - Create-RDS-Remote-Database
-
+    - !Ref DatabaseType
+    - Create-RDS-Remote-Database
   CreateRemoteFileshareServerStack: !Equals
-  - !Ref FileshareType
-  - Create-Remote-Fileshare-Server
-  
+    - !Ref FileshareType
+    - Create-Remote-Fileshare-Server
   GovCloudCondition: !Equals
-  - !Ref 'AWS::Region'
-  - us-gov-west-1
-  
+    - !Ref 'AWS::Region'
+    - us-gov-west-1
   HaveOperatorEmail: !Not
-  - !Equals
-    - !Ref OperatorEmail
-    - "None"
-  
+    - !Equals
+      - !Ref OperatorEmail
+      - None
   InstallingAtLeastOneDemoApp: !Or
-  - !Condition InstallingFSDemoApp
-  - !Condition InstallingSQLDemoApp
-  
+    - !Condition InstallingFSDemoApp
+    - !Condition InstallingSQLDemoApp
   InstallingFSDemoApp: !Equals
-  - !Ref InstallFSDemoApp
-  - "true"
-  
+    - !Ref InstallFSDemoApp
+    - 'true'
   InstallingSQLDemoApp: !Equals
-  - !Ref InstallSQLDemoApp
-  - "true"
-  
+    - !Ref InstallSQLDemoApp
+    - 'true'
   NamePrefixIsAWSStackname: !Equals
-  - !Ref ESResourceNamePrefix
-  - "AWS::StackName"
-  
+    - !Ref ESResourceNamePrefix
+    - 'AWS::StackName'
   NamePrefixIsUndefined: !Equals
-  - !Ref ESResourceNamePrefix
-  - ""
-
+    - !Ref ESResourceNamePrefix
+    - ''
   Start2Instances: !Equals
-  - !Ref NumberESInstance
-  - 2
+    - !Ref NumberOfESInstance
+    - 2
 Resources:
-
   EMailNotificationTopic:
-    Type: "AWS::SNS::Topic"
+    Type: 'AWS::SNS::Topic'
     Condition: HaveOperatorEmail
     Properties:
       Subscription:
-      - Endpoint: !Ref OperatorEmail
-        Protocol: email
-
+        - Endpoint: !Ref OperatorEmail
+          Protocol: email
   ESCWLogGroup:
     Type: 'AWS::Logs::LogGroup'
     Properties:
       LogGroupName: !Sub
-        - ${StackNamePrefix}-LogGroup
+        - '${StackNamePrefix}-LogGroup'
         - StackNamePrefix: !If
-          - NamePrefixIsUndefined
-          - ${AWS::StackName}-
-          - !If
-            - NamePrefixIsAWSStackname
-            - !Sub ${AWS::StackName}-
-            - !Sub ${ESResourceNamePrefix}-
+            - NamePrefixIsUndefined
+            - '${AWS::StackName}-'
+            - !If
+              - NamePrefixIsAWSStackname
+              - !Sub '${AWS::StackName}-'
+              - !Sub '${ESResourceNamePrefix}-'
       RetentionInDays: !Ref ESCWLogGroupRetentionInDays
-
   RemoteDatabaseServerStack:
     Type: 'AWS::CloudFormation::Stack'
     Condition: CreateRDSRemoteDatabaseStack
     Properties:
       TemplateURL: !Sub
-      - >-
-        https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-db-template.yaml
-      - QSS3Region: !If
-        - GovCloudCondition
-        - s3-us-gov-west-1
-        - s3
+        - >-
+          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-db-template.yaml
+        - QSS3Region: !If
+            - GovCloudCondition
+            - s3-us-gov-west-1
+            - s3
       Parameters:
         DBBackupRetentionPeriod: !Ref DBBackupRetentionPeriod
         DBInstanceClass: !Ref DBInstanceClass
         DBMasterUsername: !Ref DBMasterUsername
         DBMasterUserPassword: !Ref DBMasterUserPassword
-        DBMasterUserPasswordConfirm: !Ref DBMasterUserPasswordConfirm
         DBPreferredBackupWindow: !Ref DBPreferredBackupWindow
         DBPreferredMaintenanceWindow: !Ref DBPreferredMaintenanceWindow
         DBStorageInGiB: !Ref DBStorageInGiB
@@ -729,30 +729,28 @@ Resources:
         ESClientAccessSGID: !Ref ESInstance1ClientAccessSecurityGroup
         ESResourceNamePrefix: !Ref ESResourceNamePrefix
         NotificationARN: !If
-        - HaveOperatorEmail
-        - !Ref EMailNotificationTopic
-        - !Ref AWS::NoValue
+          - HaveOperatorEmail
+          - !Ref EMailNotificationTopic
+          - !Ref 'AWS::NoValue'
         PrivateSubnet1AID: !Ref PrivateSubnet1AID
         PrivateSubnet2AID: !Ref PrivateSubnet2AID
         VPCID: !Ref VPCID
-
   RemoteFileshareServerStack:
     Type: 'AWS::CloudFormation::Stack'
     Condition: CreateRemoteFileshareServerStack
     Properties:
       TemplateURL: !Sub
-      - >-
-        https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-fs-template.yaml
-      - QSS3Region: !If
-        - GovCloudCondition
-        - s3-us-gov-west-1
-        - s3
+        - >-
+          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-fs-template.yaml
+        - QSS3Region: !If
+            - GovCloudCondition
+            - s3-us-gov-west-1
+            - s3
       Parameters:
         AvailabilityZones: !Join
-        - ','
-        - !Ref AvailabilityZones
+          - ','
+          - !Ref AvailabilityZones
         DomainAdminPassword: !Ref DomainAdminPassword
-        DomainAdminPasswordConfirm: !Ref DomainAdminPasswordConfirm
         DomainAdminUser: !Ref DomainAdminUser
         DomainDNSName: !Ref DomainDNSName
         DomainMemberSGID: !Ref DomainMemberSGID
@@ -761,341 +759,345 @@ Resources:
         ESLicenseFilename: !Ref ESLicenseFilename
         ESResourceNamePrefix: !Ref ESResourceNamePrefix
         ESS3BucketName: !Ref ESS3BucketName
-        ESS3KeyPrefix: !Ref ESS3KeyPrefix
         FSCCITCPListenerPort: !Ref FSCCITCPListenerPort
         FSClientAccessSGID: !Ref ESInstance1ClientAccessSecurityGroup
         FSInstanceType: !Ref FSInstanceType
-        FSServerName: "FSServer"
+        FSServerName: FSServer
         FSStorageInGiB: !Ref FSStorageInGiB
-        FSViewPassword: "xyzzy"
+        FSViewUserPassword: !Ref FSViewUserPassword
         InstallDemoApps: !Ref InstallFSDemoApp
         KeyPairName: !Ref KeyPairName
         LicenseAgreement: !Ref LicenseAgreement
         NotificationARN: !If
-        - HaveOperatorEmail
-        - !Ref EMailNotificationTopic
-        - !Ref AWS::NoValue
+          - HaveOperatorEmail
+          - !Ref EMailNotificationTopic
+          - !Ref 'AWS::NoValue'
         PrivateSubnet1AID: !Ref PrivateSubnet1AID
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         RDGWAccessSGID: !Ref RDGWAccessSGID
         VPCID: !Ref VPCID
-
   ESInstanceRole:
-    Type: "AWS::IAM::Role"
+    Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
         Statement:
-        - Action:
-          - "sts:AssumeRole"
-          Effect: Allow
-          Principal:
-            Service:
-            - ec2.amazonaws.com
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
       Path: /
       ManagedPolicyArns:
-      - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
-      - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
       Policies:
         - PolicyDocument:
             Statement:
               - Action:
-                - "s3:GetObject"
+                  - 's3:GetObject'
                 Effect: Allow
                 Resource:
-                - !Sub
-                  - "arn:${partition}:s3:::${QSS3BucketName}"
-                  - partition: !If
-                    - GovCloudCondition
-                    - aws-us-gov
-                    - aws
-                - !Sub
-                  - "arn:${partition}:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*"
-                  - partition: !If
-                    - GovCloudCondition
-                    - aws-us-gov
-                    - aws
+                  - !Sub
+                    - 'arn:${partition}:s3:::${QSS3BucketName}'
+                    - partition: !If
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
+                  - !Sub
+                    - 'arn:${partition}:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*'
+                    - partition: !If
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
             Version: 2012-10-17
           PolicyName: aws-quick-start-s3-policy
         - PolicyDocument:
             Statement:
-            - Action:
-              - "s3:*"
-              Effect: Allow
-              Resource:
-              - !Sub
-                - "arn:${partition}:s3:::${ESS3BucketName}"
-                - partition: !If
-                  - GovCloudCondition
-                  - aws-us-gov
-                  - aws
-              - !Sub
-                - "arn:${partition}:s3:::${ESS3BucketName}/${ESS3KeyPrefix}*"
-                - partition: !If
-                  - GovCloudCondition
-                  - aws-us-gov
-                  - aws
-            - Action:
-              - "ds:Describe*"
-              Effect: Allow
-              Resource: "*"
+              - Action:
+                  - 's3:*'
+                Effect: Allow
+                Resource:
+                  - !Sub
+                    - 'arn:${partition}:s3:::${ESS3BucketName}'
+                    - partition: !If
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
+                  - !Sub
+                    - 'arn:${partition}:s3:::${ESS3BucketName}/*'
+                    - partition: !If
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
+              - Action:
+                  - 'ds:Describe*'
+                Effect: Allow
+                Resource: '*'
           PolicyName: ESInstancePolicy
-
   ESInstanceRoleProfile:
-    Type: "AWS::IAM::InstanceProfile"
+    Type: 'AWS::IAM::InstanceProfile'
     Properties:
       Path: /
       Roles:
         - !Ref ESInstanceRole
-
   RDSRemoteDatabaseStackCreateWaitHandle:
     Condition: CreateRDSRemoteDatabaseStack
     DependsOn: RemoteDatabaseServerStack
-    Type: "AWS::CloudFormation::WaitConditionHandle"
-
+    Type: 'AWS::CloudFormation::WaitConditionHandle'
   NoRDSRemoteDatabaseStackCreateWaitHandle:
-    Type: "AWS::CloudFormation::WaitConditionHandle"
-
+    Type: 'AWS::CloudFormation::WaitConditionHandle'
   RDSRemoteDatabaseStackCreateWaitCondition:
-    Type: "AWS::CloudFormation::WaitCondition"
+    Type: 'AWS::CloudFormation::WaitCondition'
     Properties:
-      Handle: !If [CreateRDSRemoteDatabaseStack, !Ref RDSRemoteDatabaseStackCreateWaitHandle, !Ref NoRDSRemoteDatabaseStackCreateWaitHandle]
-      Timeout: "1"
+      Handle: !If
+        - CreateRDSRemoteDatabaseStack
+        - !Ref RDSRemoteDatabaseStackCreateWaitHandle
+        - !Ref NoRDSRemoteDatabaseStackCreateWaitHandle
+      Timeout: '1'
       Count: 0
-
   FSServerCreateWaitHandle:
     Condition: CreateRemoteFileshareServerStack
-    DependsOn: [RemoteFileshareServerStack , RDSRemoteDatabaseStackCreateWaitCondition]
-    Type: "AWS::CloudFormation::WaitConditionHandle"
-
+    DependsOn:
+      - RemoteFileshareServerStack
+      - RDSRemoteDatabaseStackCreateWaitCondition
+    Type: 'AWS::CloudFormation::WaitConditionHandle'
   NoFSServerWaitHandle:
-    Type: "AWS::CloudFormation::WaitConditionHandle"
-
+    Type: 'AWS::CloudFormation::WaitConditionHandle'
   FSServerWaitCondition:
-    Type: "AWS::CloudFormation::WaitCondition"
+    Type: 'AWS::CloudFormation::WaitCondition'
     Properties:
-      Handle: !If [CreateRemoteFileshareServerStack, !Ref FSServerCreateWaitHandle, !Ref NoFSServerWaitHandle]
-      Timeout: "1"
+      Handle: !If
+        - CreateRemoteFileshareServerStack
+        - !Ref FSServerCreateWaitHandle
+        - !Ref NoFSServerWaitHandle
+      Timeout: '1'
       Count: 0
-
   # Security Group for (client/application) ingress traffic into Enterprise Server 1
   ESInstance1ClientAccessSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
+    Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: >-
-        Security Group for (client/application) ingress traffic into Enterprise Server 1
+        Security Group for (client/application) ingress traffic into Enterprise
+        Server 1
       VpcId: !Ref VPCID
       SecurityGroupIngress:
-      
-      # Allow RDP access from the Remote Desktop Gateway (for admin purposes)  
-      - Description: >-
-          Allows RDP access into the instance from the Remote Desktop Gateway 
-          (for admin purposes)
-        IpProtocol: tcp
-        FromPort: 3389
-        ToPort: 3389
-        SourceSecurityGroupId: !Ref RDGWAccessSGID
-
-      # Allows access to the Enterprise Server Admin portal from the Remote Desktop Gateway
-      - Description: >-
-          Allows access to the Enterprise Server Admin portal from the Remote 
-          Desktop Gateway instances
-        IpProtocol: tcp
-        FromPort: !Ref ESCCITCPListenerPort
-        ToPort: !Ref ESCCITCPListenerPort
-        SourceSecurityGroupId: !Ref RDGWAccessSGID
-
-      # Allow ICMP pings in from DemoApp CIDR range if any demo app is bring installed
-      - !If
-        - InstallingAtLeastOneDemoApp
         - Description: >-
-            Allow ICMP Destination Unreachable to aid MTU Path Discovery
-          IpProtocol: icmp
-          FromPort: 3
-          ToPort: 4
-          CidrIp: !Ref DemoAppsIngressCIDR
-        - !Ref AWS::NoValue
-
-      # Fileshare Bank Demo Application TN3270 Listener Ingress (via the Public Load Balancer)
-      - !If
-        - InstallingFSDemoApp
-        - Description: >-
-            Fileshare Bank Demo Application TN3270 Listener Ingress
+            Allows RDP access into the instance from the Remote Desktop Gateway
+            (for admin purposes)
           IpProtocol: tcp
-          FromPort: !Ref FSDemoApp3270Port
-          ToPort: !Ref FSDemoApp3270Port
-          CidrIp: !Ref DemoAppsIngressCIDR
-        - !Ref AWS::NoValue
-
-      # SQLServer Bank Demo Application TN3270 Listener Ingress (via the Public Load Balancer)
-      - !If
-        - InstallingSQLDemoApp
+          FromPort: 3389
+          ToPort: 3389
+          SourceSecurityGroupId: !Ref RDGWAccessSGID
         - Description: >-
-            SQLServer Bank Demo Application TN3270 Listener Ingress
+            Allows access to the Enterprise Server Admin portal from the Remote
+            Desktop Gateway instances
           IpProtocol: tcp
-          FromPort: !Ref SQLDemoApp3270Port
-          ToPort: !Ref SQLDemoApp3270Port
-          CidrIp: !Ref DemoAppsIngressCIDR
-        - !Ref AWS::NoValue
-
+          FromPort: !Ref ESCCITCPListenerPort
+          ToPort: !Ref ESCCITCPListenerPort
+          SourceSecurityGroupId: !Ref RDGWAccessSGID
+        - !If
+          - InstallingAtLeastOneDemoApp
+          - Description: Allow ICMP Destination Unreachable to aid MTU Path Discovery
+            IpProtocol: icmp
+            FromPort: 3
+            ToPort: 4
+            CidrIp: !Ref DemoAppsIngressCIDR
+          - !Ref 'AWS::NoValue'
+        - !If
+          - InstallingFSDemoApp
+          - Description: Fileshare Bank Demo Application TN3270 Listener Ingress
+            IpProtocol: tcp
+            FromPort: !Ref FSDemoApp3270Port
+            ToPort: !Ref FSDemoApp3270Port
+            CidrIp: !Ref DemoAppsIngressCIDR
+          - !Ref 'AWS::NoValue'
+        - !If
+          - InstallingSQLDemoApp
+          - Description: SQLServer Bank Demo Application TN3270 Listener Ingress
+            IpProtocol: tcp
+            FromPort: !Ref SQLDemoApp3270Port
+            ToPort: !Ref SQLDemoApp3270Port
+            CidrIp: !Ref DemoAppsIngressCIDR
+          - !Ref 'AWS::NoValue'
   BootstrapStack:
     Type: 'AWS::CloudFormation::Stack'
-    DependsOn: [FSServerWaitCondition, RDSRemoteDatabaseStackCreateWaitCondition]
+    DependsOn:
+      - FSServerWaitCondition
+      - RDSRemoteDatabaseStackCreateWaitCondition
     Properties:
       TemplateURL: !Sub
         - >-
           https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-es-bootstrap-template.yaml
         - QSS3Region: !If
-          - GovCloudCondition
-          - s3-us-gov-west-1
-          - s3
+            - GovCloudCondition
+            - s3-us-gov-west-1
+            - s3
       Parameters:
-          AvailabilityZones: !Join
+        AvailabilityZones: !Join
           - ','
           - !Ref AvailabilityZones
-          DBMasterUsername: !Ref DBMasterUsername
-          DBMasterUserPassword: !Ref DBMasterUserPassword
-          DomainAdminPassword: !Ref DomainAdminPassword
-          DomainAdminUser: !Ref DomainAdminUser
-          DomainDNSName: !Ref DomainDNSName
-          DomainMemberSGID: !Ref DomainMemberSGID
-          DomainNetBIOSName: !Ref DomainNetBIOSName
-          ESDemoUserPassword: !Ref ESDemoUserPassword
-          ESDemoUserPasswordConfirm: !Ref ESDemoUserPasswordConfirm
-          ESClientAccessSGID: !Ref ESInstance1ClientAccessSecurityGroup
-          ESDatabaseEndpointAddress: !GetAtt RemoteDatabaseServerStack.Outputs.ESDatabaseEndpointAddress
-          ESS3BucketName: !Ref ESS3BucketName
-          ESS3KeyPrefix: !Ref ESS3KeyPrefix
-          FileshareDataFolderUNC: !GetAtt RemoteFileshareServerStack.Outputs.FileshareDataFolderUNC
-          InstallFSDemoApp: !Ref InstallFSDemoApp
-          InstallSQLDemoApp: !Ref InstallSQLDemoApp
-          KeyPairName: !Ref KeyPairName
-          QSS3BucketName: !Ref QSS3BucketName
-          QSS3KeyPrefix: !Ref QSS3KeyPrefix
-          SubnetID: !Ref PrivateSubnet1AID
-
+        DBMasterUsername: !Ref DBMasterUsername
+        DBMasterUserPassword: !Ref DBMasterUserPassword
+        DomainAdminPassword: !Ref DomainAdminPassword
+        DomainAdminUser: !Ref DomainAdminUser
+        DomainDNSName: !Ref DomainDNSName
+        DomainMemberSGID: !Ref DomainMemberSGID
+        DomainNetBIOSName: !Ref DomainNetBIOSName
+        ESDemoUserPassword: !Ref ESDemoUserPassword
+        ESClientAccessSGID: !Ref ESInstance1ClientAccessSecurityGroup
+        ESDatabaseEndpointAddress: !If
+          - CreateRDSRemoteDatabaseStack
+          - !GetAtt RemoteDatabaseServerStack.Outputs.ESDatabaseEndpointAddress
+          - !Ref 'AWS::NoValue'
+        ESS3BucketName: !Ref ESS3BucketName
+        FileshareDataFolderUNC: !If
+          - CreateRemoteFileshareServerStack
+          - !GetAtt RemoteFileshareServerStack.Outputs.FileshareDataFolderUNC
+          - !Ref 'AWS::NoValue'
+        InstallFSDemoApp: !Ref InstallFSDemoApp
+        InstallSQLDemoApp: !Ref InstallSQLDemoApp
+        KeyPairName: !Ref KeyPairName
+        MFDSServiceAccountName: !Ref MFDSServiceAccountName
+        MFDSServiceAccountPassword: !Ref MFDSServiceAccountPassword
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        SubnetID: !Ref PrivateSubnet1AID
   ESInstanceStack1:
     Type: 'AWS::CloudFormation::Stack'
-    DependsOn: [BootstrapStack]
+    DependsOn:
+      - BootstrapStack
     Properties:
       TemplateURL: !Sub
         - >-
           https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-es-template.yaml
         - QSS3Region: !If
-          - GovCloudCondition
-          - s3-us-gov-west-1
-          - s3
+            - GovCloudCondition
+            - s3-us-gov-west-1
+            - s3
       Parameters:
-          AvailabilityZones: !Join
+        AvailabilityZones: !Join
           - ','
           - !Ref AvailabilityZones
-          DomainAdminPassword: !Ref DomainAdminPassword
-          DomainAdminUser: !Ref DomainAdminUser
-          DomainDNSName: !Ref DomainDNSName
-          DomainMemberSGID: !Ref DomainMemberSGID
-          DomainNetBIOSName: !Ref DomainNetBIOSName
-          EMailNotificationTopic: !If
+        DomainAdminPassword: !Ref DomainAdminPassword
+        DomainAdminUser: !Ref DomainAdminUser
+        DomainDNSName: !Ref DomainDNSName
+        DomainMemberSGID: !Ref DomainMemberSGID
+        DomainNetBIOSName: !Ref DomainNetBIOSName
+        EMailNotificationTopic: !If
           - HaveOperatorEmail
           - !Ref EMailNotificationTopic
-          - !Ref AWS::NoValue
-          ESCCITCPListenerPort: !Ref ESCCITCPListenerPort
-          ESClientAccessSGID: !Ref ESInstance1ClientAccessSecurityGroup
-          ESCWLogGroup: !Ref ESCWLogGroup
-          ESDatabaseEndpointAddress: !GetAtt RemoteDatabaseServerStack.Outputs.ESDatabaseEndpointAddress
-          ESDemoUserPassword: !Ref ESDemoUserPassword
-          ESInstanceName: ESServer1
-          ESInstanceType: !Ref ESInstanceType
-          ESLicenseFilename: !Ref ESLicenseFilename
-          ESS3BucketName: !Ref ESS3BucketName
-          ESS3KeyPrefix: !Ref ESS3KeyPrefix
-          FileshareDataFolderUNC: !GetAtt RemoteFileshareServerStack.Outputs.FileshareDataFolderUNC
-          FSDemoApp3270Port: !Ref FSDemoApp3270Port
-          InstallFSDemoApp: !Ref InstallFSDemoApp
-          InstallSQLDemoApp: !Ref InstallSQLDemoApp
-          AdditonalESStorageinGiB: !Ref AdditonalESStorageinGiB
-          KeyPairName: !Ref KeyPairName
-          LicenseAgreement: !Ref LicenseAgreement
-          QSS3BucketName: !Ref QSS3BucketName
-          QSS3KeyPrefix: !Ref QSS3KeyPrefix
-          RegionsPerInstance: !Ref RegionsPerInstance
-          SQLDemoApp3270Port: !Ref SQLDemoApp3270Port
-          SubnetID: !Ref PrivateSubnet1AID
-
+          - !Ref 'AWS::NoValue'
+        ESCCITCPListenerPort: !Ref ESCCITCPListenerPort
+        ESClientAccessSGID: !Ref ESInstance1ClientAccessSecurityGroup
+        ESCWLogGroup: !Ref ESCWLogGroup
+        ESDatabaseEndpointAddress: !If
+          - CreateRDSRemoteDatabaseStack
+          - !GetAtt RemoteDatabaseServerStack.Outputs.ESDatabaseEndpointAddress
+          - !Ref 'AWS::NoValue'
+        ESInstanceName: ESServer1
+        ESInstanceType: !Ref ESInstanceType
+        ESLicenseFilename: !Ref ESLicenseFilename
+        ESS3BucketName: !Ref ESS3BucketName
+        FileshareDataFolderUNC: !If
+          - CreateRemoteFileshareServerStack
+          - !GetAtt RemoteFileshareServerStack.Outputs.FileshareDataFolderUNC
+          - !Ref 'AWS::NoValue'
+        FSDemoApp3270Port: !Ref FSDemoApp3270Port
+        InstallFSDemoApp: !Ref InstallFSDemoApp
+        InstallSQLDemoApp: !Ref InstallSQLDemoApp
+        AdditonalESStorageinGiB: !Ref AdditonalESStorageinGiB
+        KeyPairName: !Ref KeyPairName
+        LicenseAgreement: !Ref LicenseAgreement
+        MFDSServiceAccountName: !Ref MFDSServiceAccountName
+        MFDSServiceAccountPassword: !Ref MFDSServiceAccountPassword
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        RegionsPerInstance: !Ref RegionsPerInstance
+        SQLDemoApp3270Port: !Ref SQLDemoApp3270Port
+        SubnetID: !Ref PrivateSubnet1AID
   ESInstanceStack2:
     Condition: Start2Instances
     Type: 'AWS::CloudFormation::Stack'
-    DependsOn: [BootstrapStack]
+    DependsOn:
+      - BootstrapStack
     Properties:
       TemplateURL: !Sub
         - >-
           https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-es-template.yaml
         - QSS3Region: !If
-          - GovCloudCondition
-          - s3-us-gov-west-1
-          - s3
+            - GovCloudCondition
+            - s3-us-gov-west-1
+            - s3
       Parameters:
-          AvailabilityZones: !Join
+        AvailabilityZones: !Join
           - ','
           - !Ref AvailabilityZones
-          DomainAdminPassword: !Ref DomainAdminPassword
-          DomainAdminUser: !Ref DomainAdminUser
-          DomainDNSName: !Ref DomainDNSName
-          DomainMemberSGID: !Ref DomainMemberSGID
-          DomainNetBIOSName: !Ref DomainNetBIOSName
-          EMailNotificationTopic: !If
+        DomainAdminPassword: !Ref DomainAdminPassword
+        DomainAdminUser: !Ref DomainAdminUser
+        DomainDNSName: !Ref DomainDNSName
+        DomainMemberSGID: !Ref DomainMemberSGID
+        DomainNetBIOSName: !Ref DomainNetBIOSName
+        EMailNotificationTopic: !If
           - HaveOperatorEmail
           - !Ref EMailNotificationTopic
-          - !Ref AWS::NoValue
-          ESCCITCPListenerPort: !Ref ESCCITCPListenerPort
-          ESClientAccessSGID: !Ref ESInstance1ClientAccessSecurityGroup
-          ESCWLogGroup: !Ref ESCWLogGroup
-          ESDatabaseEndpointAddress: !GetAtt RemoteDatabaseServerStack.Outputs.ESDatabaseEndpointAddress
-          ESDemoUserPassword: !Ref ESDemoUserPassword
-          ESInstanceName: ESServer2
-          ESInstanceType: !Ref ESInstanceType
-          ESLicenseFilename: !Ref ESLicenseFilename
-          ESS3BucketName: !Ref ESS3BucketName
-          ESS3KeyPrefix: !Ref ESS3KeyPrefix
-          FileshareDataFolderUNC: !GetAtt RemoteFileshareServerStack.Outputs.FileshareDataFolderUNC
-          FSDemoApp3270Port: !Ref FSDemoApp3270Port
-          InstallFSDemoApp: !Ref InstallFSDemoApp
-          InstallSQLDemoApp: !Ref InstallSQLDemoApp
-          AdditonalESStorageinGiB: !Ref AdditonalESStorageinGiB
-          KeyPairName: !Ref KeyPairName
-          LicenseAgreement: !Ref LicenseAgreement
-          QSS3BucketName: !Ref QSS3BucketName
-          QSS3KeyPrefix: !Ref QSS3KeyPrefix
-          RegionsPerInstance: !Ref RegionsPerInstance
-          SQLDemoApp3270Port: !Ref SQLDemoApp3270Port
-          SubnetID: !Ref PrivateSubnet1AID
-
+          - !Ref 'AWS::NoValue'
+        ESCCITCPListenerPort: !Ref ESCCITCPListenerPort
+        ESClientAccessSGID: !Ref ESInstance1ClientAccessSecurityGroup
+        ESCWLogGroup: !Ref ESCWLogGroup
+        ESDatabaseEndpointAddress: !If
+          - CreateRDSRemoteDatabaseStack
+          - !GetAtt RemoteDatabaseServerStack.Outputs.ESDatabaseEndpointAddress
+          - !Ref 'AWS::NoValue'
+        ESInstanceName: ESServer2
+        ESInstanceType: !Ref ESInstanceType
+        ESLicenseFilename: !Ref ESLicenseFilename
+        ESS3BucketName: !Ref ESS3BucketName
+        FileshareDataFolderUNC: !If
+          - CreateRemoteFileshareServerStack
+          - !GetAtt RemoteFileshareServerStack.Outputs.FileshareDataFolderUNC
+          - !Ref 'AWS::NoValue'
+        FSDemoApp3270Port: !Ref FSDemoApp3270Port
+        InstallFSDemoApp: !Ref InstallFSDemoApp
+        InstallSQLDemoApp: !Ref InstallSQLDemoApp
+        AdditonalESStorageinGiB: !Ref AdditonalESStorageinGiB
+        KeyPairName: !Ref KeyPairName
+        LicenseAgreement: !Ref LicenseAgreement
+        MFDSServiceAccountName: !Ref MFDSServiceAccountName
+        MFDSServiceAccountPassword: !Ref MFDSServiceAccountPassword
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        RegionsPerInstance: !Ref RegionsPerInstance
+        SQLDemoApp3270Port: !Ref SQLDemoApp3270Port
+        SubnetID: !Ref PrivateSubnet1AID
   ESDemoAppsPublicNetworkLoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
     Condition: InstallingAtLeastOneDemoApp
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
       LoadBalancerAttributes:
-      - Key: load_balancing.cross_zone.enabled
-        Value: "true"
+        - Key: load_balancing.cross_zone.enabled
+          Value: 'true'
       Scheme: internet-facing
       Subnets:
-      - !Ref PublicSubnet1ID
-      - !Ref PublicSubnet2ID
+        - !Ref PublicSubnet1ID
+        - !Ref PublicSubnet2ID
       Tags:
-      - Key: Name
-        Value: !Sub
-        - ${StackNamePrefix}ESPublicNetworkLoadBalancer
-        - StackNamePrefix: !If
-          - NamePrefixIsUndefined
-          - ''
-          - !If
-            - NamePrefixIsAWSStackname
-            - !Sub ${AWS::StackName}-
-            - !Sub ${ESResourceNamePrefix}-
+        - Key: Name
+          Value: !Sub
+            - '${StackNamePrefix}ESPublicNetworkLoadBalancer'
+            - StackNamePrefix: !If
+                - NamePrefixIsUndefined
+                - ''
+                - !If
+                  - NamePrefixIsAWSStackname
+                  - !Sub '${AWS::StackName}-'
+                  - !Sub '${ESResourceNamePrefix}-'
       Type: network
-
   FSDemoApp3270AppsLoadBalancerTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Condition: InstallingFSDemoApp
     Properties:
       HealthCheckIntervalSeconds: 30
       HealthCheckPort: !Ref FSDemoApp3270Port
@@ -1105,40 +1107,40 @@ Resources:
       Port: !Ref FSDemoApp3270Port
       Protocol: TCP
       Tags:
-      - Key: Name
-        Value: !Sub
-        - ${StackNamePrefix}FSDemoApp3270
-        - StackNamePrefix: !If
-          - NamePrefixIsUndefined
-          - ''
-          - !If
-            - NamePrefixIsAWSStackname
-            - !Sub ${AWS::StackName}-
-            - !Sub ${ESResourceNamePrefix}-
+        - Key: Name
+          Value: !Sub
+            - '${StackNamePrefix}FSDemoApp3270'
+            - StackNamePrefix: !If
+                - NamePrefixIsUndefined
+                - ''
+                - !If
+                  - NamePrefixIsAWSStackname
+                  - !Sub '${AWS::StackName}-'
+                  - !Sub '${ESResourceNamePrefix}-'
       Targets:
-      - Id: !GetAtt ESInstanceStack1.Outputs.ESInstanceID
-        Port: !Ref FSDemoApp3270Port
-      - !If 
-        - Start2Instances
-        - Id: !GetAtt ESInstanceStack2.Outputs.ESInstanceID
+        - Id: !GetAtt ESInstanceStack1.Outputs.ESInstanceID
           Port: !Ref FSDemoApp3270Port
-        - !Ref AWS::NoValue
+        - !If
+          - Start2Instances
+          - Id: !GetAtt ESInstanceStack2.Outputs.ESInstanceID
+            Port: !Ref FSDemoApp3270Port
+          - !Ref 'AWS::NoValue'
       TargetType: instance
       UnhealthyThresholdCount: 3
       VpcId: !Ref VPCID
-
   FSDemoApp3270AppsLoadBalancerListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Condition: InstallingFSDemoApp
     Properties:
       DefaultActions:
-      - Type: forward
-        TargetGroupArn: !Ref FSDemoApp3270AppsLoadBalancerTargetGroup
+        - Type: forward
+          TargetGroupArn: !Ref FSDemoApp3270AppsLoadBalancerTargetGroup
       LoadBalancerArn: !Ref ESDemoAppsPublicNetworkLoadBalancer
       Port: !Ref FSDemoApp3270Port
       Protocol: TCP
-
   SQLDemoApp3270AppsLoadBalancerTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Condition: InstallingSQLDemoApp
     Properties:
       HealthCheckIntervalSeconds: 30
       HealthCheckPort: !Ref SQLDemoApp3270Port
@@ -1148,49 +1150,46 @@ Resources:
       Port: !Ref SQLDemoApp3270Port
       Protocol: TCP
       Tags:
-      - Key: Name
-        Value: !Sub
-        - ${StackNamePrefix}SQLDemoApp3270
-        - StackNamePrefix: !If
-          - NamePrefixIsUndefined
-          - ''
-          - !If
-            - NamePrefixIsAWSStackname
-            - !Sub ${AWS::StackName}-
-            - !Sub ${ESResourceNamePrefix}-
+        - Key: Name
+          Value: !Sub
+            - '${StackNamePrefix}SQLDemoApp3270'
+            - StackNamePrefix: !If
+                - NamePrefixIsUndefined
+                - ''
+                - !If
+                  - NamePrefixIsAWSStackname
+                  - !Sub '${AWS::StackName}-'
+                  - !Sub '${ESResourceNamePrefix}-'
       Targets:
-      - Id: !GetAtt ESInstanceStack1.Outputs.ESInstanceID
-        Port: !Ref SQLDemoApp3270Port
-      - !If 
-        - Start2Instances
-        - Id: !GetAtt ESInstanceStack2.Outputs.ESInstanceID
+        - Id: !GetAtt ESInstanceStack1.Outputs.ESInstanceID
           Port: !Ref SQLDemoApp3270Port
-        - !Ref AWS::NoValue
+        - !If
+          - Start2Instances
+          - Id: !GetAtt ESInstanceStack2.Outputs.ESInstanceID
+            Port: !Ref SQLDemoApp3270Port
+          - !Ref 'AWS::NoValue'
       TargetType: instance
       UnhealthyThresholdCount: 3
       VpcId: !Ref VPCID
-
   SQLDemoApp3270AppsLoadBalancerListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Condition: InstallingSQLDemoApp
     Properties:
       DefaultActions:
-      - Type: forward
-        TargetGroupArn: !Ref SQLDemoApp3270AppsLoadBalancerTargetGroup
+        - Type: forward
+          TargetGroupArn: !Ref SQLDemoApp3270AppsLoadBalancerTargetGroup
       LoadBalancerArn: !Ref ESDemoAppsPublicNetworkLoadBalancer
       Port: !Ref SQLDemoApp3270Port
       Protocol: TCP
-
 Outputs:
   ESDemoAppsPublicNetworkLoadBalancer:
     Condition: InstallingAtLeastOneDemoApp
     Description: The DNS name for the load balancer.
     Value: !GetAtt ESDemoAppsPublicNetworkLoadBalancer.DNSName
-
   FSDemoApp3270Port:
     Condition: InstallingFSDemoApp
     Description: The Fileshare Bank Demo TN3270 port number
     Value: !Ref FSDemoApp3270Port
-
   SQLDemoApp3270Port:
     Condition: InstallingSQLDemoApp
     Description: The SQLServer Bank Demo TN3270 port number

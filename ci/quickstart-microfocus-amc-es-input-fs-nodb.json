@@ -9,7 +9,7 @@
     },
     {
         "ParameterKey": "DatabaseType",
-        "ParameterValue": "Create-RDS-Remote-Database"
+        "ParameterValue": "None"
     },
     {
         "ParameterKey": "DBBackupRetentionPeriod",
@@ -133,7 +133,7 @@
     },
     {
         "ParameterKey": "InstallSQLDemoApp",
-        "ParameterValue": "true"
+        "ParameterValue": "false"
     },
     {
         "ParameterKey": "KeyPairName",
