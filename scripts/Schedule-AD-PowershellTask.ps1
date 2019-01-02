@@ -34,7 +34,7 @@ try {
                     New-ScheduledTaskTrigger -Once -At $run.AddSeconds(5)
                 ) `
                 -Settings (
-                    New-ScheduledTaskSettingsSet  -DeleteExpiredTaskAfter 00:00:01 # Delete one second after trigger expires
+                    New-ScheduledTaskSettingsSet  -DeleteExpiredTaskAfter 01:00:00 # Delete one hour after trigger expires (leave around for awhile for debugging)
                 ) 
             ) | %{ $_.Triggers[0].EndBoundary = $run.AddSeconds(65).ToString('s') ; $_ } # Run through a pipe to set the end boundary of the trigger
     )

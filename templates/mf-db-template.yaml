@@ -14,14 +14,13 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
   "This template deploys a Micro Focus Enterprise Server Database instance in
-  private subnets.
-  **WARNING** This template creates EC2 instances and related resources. You
-  will be billed for the AWS resources used if you create a stack from this
-  template. Micro Focus Enterprise Server is licensed separately, please review
-  the terms and conditions here (https://www.microfocus.com/about/legal/) for
-  further details. (qs-1p5pra0dj)"
+  private subnets. **WARNING** This template creates EC2 instances and related
+  resources. You will be billed for the AWS resources used if you create a stack
+  from this template. Micro Focus Enterprise Server is licensed separately,
+  please review the terms and conditions here
+  (https://www.microfocus.com/about/legal/) for further details. (qs-1p440hhtu)"
 Metadata:
-  "AWS::CloudFormation::Interface":
+  'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
           default: Network Configuration
@@ -40,7 +39,6 @@ Metadata:
           - DBStorageInGiB
           - DBMasterUsername
           - DBMasterUserPassword
-          - DBMasterUserPasswordConfirm
           - ESClientAccessSGID
           - NotificationARN
           - ESResourceNamePrefix
@@ -57,8 +55,6 @@ Metadata:
         default: Database Master Username
       DBMasterUserPassword:
         default: Database Master User password
-      DBMasterUserPasswordConfirm:
-        default: Re-enter database Master User password
       DBPreferredBackupWindow:
         default: Database Preferred Backup Window
       DBPreferredMaintenanceWindow:
@@ -85,7 +81,6 @@ Parameters:
   DBBackupRetentionPeriod:
     Type: String
     Default: 30
-
   DBInstanceClass:
     AllowedValues:
       - db.r4.large
@@ -95,71 +90,55 @@ Parameters:
       - db.r2.8xlarge
     Default: db.r4.large
     Type: String
-
   DBPreferredBackupWindow:
     Type: String
     Description: >-
       Must be in the format hh24:mi-hh24:mi, in UTC. Must be at least 30
       minutes. Must not conflict with the preferred maintenance window.
     Default: ''
-
   DBPreferredMaintenanceWindow:
     Type: String
     Description: >-
       Must be in the format ddd:hh24:mi-ddd:hh24:mi, in UTC. Must be at least 30
       minutes.
     Default: ''
-
   DBStorageInGiB:
     Type: String
     Default: 1024
-
   DBMasterUsername:
     Type: String
     Default: DBAdmin
-
   DBMasterUserPassword:
     Type: String
     NoEcho: true
-
-  DBMasterUserPasswordConfirm:
-    Type: String
-    NoEcho: true
-
   DeployMultiAZ:
     AllowedValues:
-      - True
-      - False
-    Default: False
-    Description: >-
-      Choose 'True' to deploy the database across multiple Availability Zones
+      - true
+      - false
+    Default: false
+    Description: Choose 'true' to deploy the database across multiple Availability Zones
     Type: String
-
   DirectoryServiceID:
     Type: String
-
   ESClientAccessSGID:
     Type: 'AWS::EC2::SecurityGroup::Id'
-
   ESResourceNamePrefix:
     Type: String
     Default: 'AWS::StackName'
-
   NotificationARN:
-    Description: An existing Amazon SNS topic where notifications about are sent, e.g., email notifications
+    Description: >-
+      An existing Amazon SNS topic where notifications about are sent, e.g.,
+      email notifications
     Type: String
-    Default: ""
-
+    Default: ''
   PrivateSubnet1AID:
     Description: 'ID of private subnet A in Availability Zone 1 (e.g., subnet-a0246dcd)'
     Type: 'AWS::EC2::Subnet::Id'
-
   PrivateSubnet2AID:
     Description: >-
       ID of private subnet A in Availability Zone 2 (e.g.,
       subnet-01a43dc1ca1fa7f9b)
     Type: 'AWS::EC2::Subnet::Id'
-
   VPCID:
     Description: ID of your existing VPC for deployment
     Type: 'AWS::EC2::VPC::Id'
@@ -173,12 +152,6 @@ Rules:
                 - VpcId
             - 'Fn::RefAll': 'AWS::EC2::VPC::Id'
         AssertDescription: All subnets must in the VPC
-  DBMasterUserPasswordMatchRule:
-    Assertions:
-      - Assert: !Equals
-          - !Ref DBMasterUserPassword
-          - !Ref DBMasterUserPasswordConfirm
-        AssertDescription: Database Master User password values do not match.
 Conditions:
   NamePrefixIaUndefined: !Equals
     - !Ref ESResourceNamePrefix
@@ -201,7 +174,7 @@ Conditions:
   HaveNotificationARN: !Not
     - !Equals
       - !Ref NotificationARN
-      - ""
+      - ''
 Resources:
   ESDatabaseSG:
     Type: 'AWS::EC2::SecurityGroup'
@@ -209,11 +182,11 @@ Resources:
       GroupDescription: Enterprise Server SQL Server Security Group
       VpcId: !Ref VPCID
       SecurityGroupIngress:
-      - Description: Allow client access
-        IpProtocol: tcp
-        FromPort: 1433
-        ToPort: 1433
-        SourceSecurityGroupId: !Ref ESClientAccessSGID
+        - Description: Allow client access
+          IpProtocol: tcp
+          FromPort: 1433
+          ToPort: 1433
+          SourceSecurityGroupId: !Ref ESClientAccessSGID
   ESDatabaseSubnetGroup:
     Type: 'AWS::RDS::DBSubnetGroup'
     Properties:
@@ -236,7 +209,7 @@ Resources:
       AssumeRolePolicyDocument:
         Statement:
           - Action:
-              - "sts:AssumeRole"
+              - 'sts:AssumeRole'
             Effect: Allow
             Principal:
               Service:
@@ -257,8 +230,8 @@ Resources:
         - HaveDirectoryService
         - !Ref ESDatabaseADIAMRole
         - !Ref 'AWS::NoValue'
-      AllowMajorVersionUpgrade: False
-      AutoMinorVersionUpgrade: True
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
       PreferredBackupWindow: !If
         - HaveDBPreferredBackupWindow
         - !Ref DBPreferredBackupWindow
@@ -268,9 +241,7 @@ Resources:
         - !Ref DBPreferredMaintenanceWindow
         - !Ref 'AWS::NoValue'
       VPCSecurityGroups:
-        - !GetAtt
-            - ESDatabaseSG
-            - GroupId
+        - !GetAtt ESDatabaseSG.GroupId
       LicenseModel: license-included
       Engine: sqlserver-se
       EngineVersion: 14.00.3035.2.v1
@@ -279,7 +250,7 @@ Resources:
       AllocatedStorage: !Ref DBStorageInGiB
       MasterUsername: !Ref DBMasterUsername
       MasterUserPassword: !Ref DBMasterUserPassword
-      PubliclyAccessible: False
+      PubliclyAccessible: false
       Tags:
         - Key: Name
           Value: !Sub
@@ -293,18 +264,18 @@ Resources:
                   - !Sub '${ESResourceNamePrefix}-'
       BackupRetentionPeriod: !Ref DBBackupRetentionPeriod
   ESDatabaseEventSubscriptions:
-    Type: AWS::RDS::EventSubscription
+    Type: 'AWS::RDS::EventSubscription'
     Condition: HaveNotificationARN
     Properties:
-      Enabled: True
+      Enabled: true
       EventCategories:
-        - "configuration change"
-        - "failure"
-        - "deletion"
+        - configuration change
+        - failure
+        - deletion
       SnsTopicArn: !Ref NotificationARN
       SourceIds:
         - !Ref ESDatabase
-      SourceType: "db-instance"
+      SourceType: db-instance
 Outputs:
   ESDatabaseEndpointAddress:
     Description: The connection endpoint for the database
@@ -312,5 +283,3 @@ Outputs:
   ESDatabaseEndpointPort:
     Description: The port number on which the database accepts connections
     Value: !GetAtt ESDatabase.Endpoint.Port
-
-
