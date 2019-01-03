@@ -297,7 +297,6 @@ Rules:
             - 'Fn::RefAll': 'AWS::EC2::VPC::Id'
         AssertDescription: All subnets must in the VPC
 Mappings:
-  AWSAMIRegionMap:
     AMI:
       MFES40AMI: ES_40PU4_V3
     ap-northeast-1:
