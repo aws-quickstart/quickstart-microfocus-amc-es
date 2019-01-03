@@ -19,7 +19,7 @@ Description: >-
   template. License: Apache 2.0 (Please do not remove) Sept,05,2018. Micro Focus
   Enterprise Server is licensed separately, please review the terms and
   conditions here (https://www.microfocus.com/about/legal/) for further details.
-  (qs-1p440hhtu)"
+  (qs-1p6hinfg3)"
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -624,6 +624,29 @@ Parameters:
     Description: CIDR block for the VPC
     Type: String
 Rules:
+  DSSupportedRegionRule:
+    Assertions:
+      - Assert: !Contains
+          - - ap-northeast-1  # Asia Pacific (Tokyo)
+            - ap-northeast-2  # Asia Pacific (Seoul)
+            - ap-south-1      # Asia Pacific (Mumbai)
+            - ap-southeast-1  # Asia Pacific (Singapore)
+            - ap-southeast-2  # Asia Pacific (Sydney)
+            - ca-central-1    # Canada (Central)
+            - eu-central-1    # EU (Frankfurt)
+            - eu-west-1       # EU (Ireland)
+            - eu-west-2       # EU (London)
+            - sa-east-1       # South America (São Paulo)
+            - us-east-1       # US East (N. Virginia)
+            - us-east-2       # US East (Ohio)
+            - us-west-1       # US West (N. California)
+            - us-west-2       # US West (Oregon)
+          - !Ref AWS::Region
+        AssertDescription: |-
+          This Quick Start utilizes AWS Directory Service for Microsoft Active Directory
+          which is not available in the chosen region. Please refer to 
+          https://docs.aws.amazon.com/general/latest/gr/rande.html#ds_region for a list
+          of currently supported regions and launch the stack in one of those regions.
   LicenseAgreementRule:
     Assertions:
       - Assert:
