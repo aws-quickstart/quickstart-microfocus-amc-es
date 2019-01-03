@@ -20,7 +20,7 @@ Description: >-
   template. License: Apache 2.0 (Please do not remove) Sept,05,2018. Micro Focus
   Enterprise Server is licensed separately, please review the terms and
   conditions here (https://www.microfocus.com/about/legal/) for further details.
-  (qs-1p440hhtu)"
+  (qs-1p6hinfje)"
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -347,41 +347,39 @@ Rules:
 Mappings:
   AWSAMIRegionMap:
     AMI:
-      MFES40AMI: ES_40PU6_V3
+      MFES40AMI: ES_40PU4_V3
     ap-northeast-1:
-      MFES40AMI: ami-09e76643c8a22f628
+      MFES40AMI: ami-0d8abeda47ca57871
     ap-northeast-2:
-      MFES40AMI: ami-0d5bad2415e8c277e
-    ap-northeast-3:
-      MFES40AMI: ami-0c5460a03bd1332eb
+      MFES40AMI: ami-05dccbfcdcf0adf6f
     ap-south-1:
-      MFES40AMI: ami-01f5a8b9196bfaa17
+      MFES40AMI: ami-09beff70828ed8de7
     ap-southeast-1:
-      MFES40AMI: ami-06c1e1f93ccf6e589
+      MFES40AMI: ami-056340469fc88e360
     ap-southeast-2:
-      MFES40AMI: ami-0f244f4fa36543578
+      MFES40AMI: ami-00f7e3a908d0e4499
     ca-central-1:
-      MFES40AMI: ami-0d2dbb0a46afc823b
+      MFES40AMI: ami-09b7e0eccba7305d5
     eu-central-1:
-      MFES40AMI: ami-02fbf9c68236dbc4e
+      MFES40AMI: ami-0748eb1177837591c
     eu-north-1:
-      MFES40AMI: ami-04eadf41386ca1048
+      MFES40AMI: ami-0dbf576f5ad8a6bbd
     eu-west-1:
-      MFES40AMI: ami-06f605a14a1067a91
+      MFES40AMI: ami-0afd368a7655b6dfb
     eu-west-2:
-      MFES40AMI: ami-08f3dd097d6a562a5
+      MFES40AMI: ami-0619eb00e92ab7b00
     eu-west-3:
-      MFES40AMI: ami-055e0febac6ec29d1
+      MFES40AMI: ami-02eaa14fb48885cc9
     sa-east-1:
-      MFES40AMI: ami-093942a1ab4222cd5
+      MFES40AMI: ami-01bba1206e8807019
     us-east-1:
-      MFES40AMI: ami-0d374f214a0a06be3
+      MFES40AMI: ami-0a4603cadffc7170d
     us-east-2:
-      MFES40AMI: ami-09bccccae991b0625
+      MFES40AMI: ami-0a2b689af8ad19ff3
     us-west-1:
-      MFES40AMI: ami-0d46a8356c3bab803
+      MFES40AMI: ami-09577a4bbdc01a65d
     us-west-2:
-      MFES40AMI: ami-0799b8f0dbfbce83e
+      MFES40AMI: ami-047e3be248b380812
 Conditions:
   GovCloudCondition: !Equals
     - !Ref 'AWS::Region'

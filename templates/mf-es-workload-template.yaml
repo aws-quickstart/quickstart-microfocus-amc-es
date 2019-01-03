@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 AWSTemplateFormatVersion: 2010-09-09
-Description: >-
+Description:
   "This template deploys a Micro Focus Enterprise Server reference architecture
   including optional Remote Fileshare and SQLServer Database services into an
   existing VPC. **WARNING** This template creates EC2 instances and related
@@ -20,7 +20,7 @@ Description: >-
   from this template. License: Apache 2.0 (Please do not remove) Sept,05,2018.
   Micro Focus Enterprise Server is licensed separately, please review the terms
   and conditions here (https://www.microfocus.com/about/legal/) for further
-  details. (qs-1p440hhtu)"
+  details. (qs-1p6hinfi)"
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
