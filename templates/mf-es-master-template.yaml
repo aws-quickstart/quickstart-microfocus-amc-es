@@ -634,8 +634,10 @@ Rules:
             - ap-southeast-2  # Asia Pacific (Sydney)
             - ca-central-1    # Canada (Central)
             - eu-central-1    # EU (Frankfurt)
+#            - eu-north-1      # EU (Stockholm)             --> DirSrv not supported 2019-01-01
             - eu-west-1       # EU (Ireland)
             - eu-west-2       # EU (London)
+#            - eu-west-3       # EU (Paris)                 --> DirSrv not supported 2019-01-01
             - sa-east-1       # South America (São Paulo)
             - us-east-1       # US East (N. Virginia)
             - us-east-2       # US East (Ohio)
@@ -643,10 +645,37 @@ Rules:
             - us-west-2       # US West (Oregon)
           - !Ref AWS::Region
         AssertDescription: |-
-          This Quick Start utilizes AWS Directory Service for Microsoft Active Directory
-          which is not available in the chosen region. Please refer to 
-          https://docs.aws.amazon.com/general/latest/gr/rande.html#ds_region for a list
+          This Quick Start utilizes AWS Directory Service which is not available in the chosen region. 
+          Please refer to https://docs.aws.amazon.com/general/latest/gr/rande.html#ds_region for a list
           of currently supported regions and launch the stack in one of those regions.
+  RDSWinAthSupportedRegionRule:
+    RuleCondition: !Equals
+      - !Ref DatabaseType
+      - Create-RDS-Remote-Database
+    Assertions:
+      - Assert: !Contains
+          - - ap-northeast-1  # Asia Pacific (Tokyo)
+            - ap-northeast-2  # Asia Pacific (Seoul)
+#            - ap-south-1      # Asia Pacific (Mumbai)      --> RDS-WinAuth not supported 2019-01-01
+            - ap-southeast-1  # Asia Pacific (Singapore)
+            - ap-southeast-2  # Asia Pacific (Sydney)
+            - ca-central-1    # Canada (Central)
+            - eu-central-1    # EU (Frankfurt)
+            - eu-north-1      # EU (Stockholm)
+            - eu-west-1       # EU (Ireland)
+            - eu-west-2       # EU (London)
+            - eu-west-3       # EU (Paris)
+#            - sa-east-1       # South America (São Paulo)  --> RDS-WinAuth not supported 2019-01-01
+            - us-east-1       # US East (N. Virginia)
+            - us-east-2       # US East (Ohio)
+#            - us-west-1       # US West (N. California)    --> RDS-WinAuth not supported 2019-01-01
+            - us-west-2       # US West (Oregon)
+          - !Ref AWS::Region
+        AssertDescription: |-
+          This Quick Start utilizes Amazon Relational Database Service (Amazon RDS) Windows
+          Authentication which is not available in the chosen region. Please refer to
+          https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_SQLServerWinAuth.html
+          for more details and launch the stack in one of the supported regions.
   LicenseAgreementRule:
     Assertions:
       - Assert:
