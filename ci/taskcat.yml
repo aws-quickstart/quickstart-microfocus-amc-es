@@ -44,20 +44,11 @@ tests:
  #     - ap-south-1      # Asia Pacific (Mumbai) --> RDS-WinAuth not supported 2019-01-01
  #     - sa-east-1       # South America (São Paulo) --> RDS-WinAuth not supported 2019-01-01
 
-  # Full: FS & DB (ap-southeast-2 only)
-  # m5/c5.large not available in ap-southeast-2a
-  master-fs-db-ap-southeast-2:
-    parameter_input: quickstart-microfocus-amc-es-input-full-ap-southeast-2.json
-    template_file: mf-es-master-template.yaml
-    regions:
-      - ap-southeast-2  # Asia Pacific (Sydney)
-
   # # FS, No DB
   master-fs-nodb:
     parameter_input: quickstart-microfocus-amc-es-input-fs-nodb.json
     template_file: mf-es-master-template.yaml
     regions:
-      - us-east-1       # US East (N. Virginia)
       - us-west-1       # US West (N. California)
       - us-west-2       # US West (Oregon)
       - ca-central-1    # Canada (Central)
@@ -80,6 +71,4 @@ tests:
     template_file: mf-es-master-template.yaml
     regions:
       - ap-southeast-1  # Asia Pacific (Singapore)
-      - ap-southeast-2  # Asia Pacific (Sydney)
       - us-east-2       # US East (Ohio)
-      - sa-east-1       # South America (São Paulo)
