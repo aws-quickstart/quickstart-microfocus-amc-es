@@ -742,7 +742,8 @@ Resources:
           commands:
             a-restartSSM:
               command: powershell.exe -Command Restart-Service AmazonSSMAgent
-              waitAfterCompletion: '30'
+              ignoreErrors: true
+              waitAfterCompletion: 0
         030-InitPowerShell:
           files:
             'C:\cfn\scripts\Unzip-Archive.ps1':
@@ -1133,7 +1134,7 @@ Resources:
               powershell.exe -Command "iwr https://${QSS3Region}.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe -UseBasicParsing -OutFile C:\AmazonSSMAgentSetup.exe"
               start /wait C:\AmazonSSMAgentSetup.exe /install /quiet
 
-              rem Run  cfn-init helper to process AWS::CloudFormation::Init directives
+              rem Run cfn-init helper to process AWS::CloudFormation::Init directives
               cfn-init.exe -v -c config -s ${AWS::StackName} --resource ESInstance --region ${AWS::Region}
             </script>
           - QSS3Region: !If

@@ -779,6 +779,7 @@ Resources:
   DSMicrosoftAD:
     # See https://aws.amazon.com/blogs/database/integrate-amazon-rds-for-sql-server-db-instances-with-an-existing-active-directory-domain/
     Type: 'AWS::DirectoryService::MicrosoftAD'
+    DependsOn: VPCStack
     Properties:
       Edition: Standard
       Name: !Ref DomainDNSName
@@ -791,6 +792,7 @@ Resources:
           - !GetAtt VPCStack.Outputs.PrivateSubnet2AID
   ADDNSInDDHCPOptions:
     Type: 'AWS::EC2::DHCPOptions'
+    DependsOn: DSMicrosoftAD
     Properties:
       DomainName: !Ref DomainDNSName
       DomainNameServers: !GetAtt DSMicrosoftAD.DnsIpAddresses
@@ -799,6 +801,7 @@ Resources:
           Value: !Ref DomainDNSName
   VPCDHCPOptionsAssociation:
     Type: 'AWS::EC2::VPCDHCPOptionsAssociation'
+    DependsOn: VPCStack
     Properties:
       VpcId: !GetAtt VPCStack.Outputs.VPCID
       DhcpOptionsId: !Ref ADDNSInDDHCPOptions
@@ -807,12 +810,14 @@ Resources:
     Type: 'AWS::CloudFormation::WaitConditionHandle'
   VPCDHCPOptionsAssociationWaitCondition:
     Type: 'AWS::CloudFormation::WaitCondition'
+    DependsOn: VPCDHCPOptionsAssociationCreateWaitHandle
     Properties:
       Handle: !Ref VPCDHCPOptionsAssociationCreateWaitHandle
       Timeout: '1'
       Count: 0
   DomainMemberSG:
     Type: 'AWS::EC2::SecurityGroup'
+    DependsOn: VPCStack
     Properties:
       GroupDescription: Security group for Windows Domain Member communication
       SecurityGroupIngress:
@@ -865,7 +870,9 @@ Resources:
   RDGWStack:
     Type: 'AWS::CloudFormation::Stack'
     Condition: IncludeRDGW
-    DependsOn: VPCDHCPOptionsAssociationWaitCondition
+    DependsOn: 
+      - VPCStack
+      - VPCDHCPOptionsAssociationWaitCondition
     Properties:
       TemplateURL: !Sub
         - >-
