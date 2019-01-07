@@ -657,7 +657,8 @@ Resources:
               command:
                 powershell.exe
                   -Command Restart-Service AmazonSSMAgent
-              waitAfterCompletion: '30'
+              ignoreErrors: true
+              waitAfterCompletion: 0
         030-InitPowerShell:
           files:
             'C:\cfn\scripts\Unzip-Archive.ps1':
