@@ -44,7 +44,15 @@ tests:
 #      - ap-south-1      # Asia Pacific (Mumbai) --> RDS-WinAuth not supported 2019-01-01
 #      - sa-east-1       # South America (São Paulo) --> RDS-WinAuth not supported 2019-01-01
 
-  # # FS, No DB
+  # Full: FS & DB (ap-southeast-2 only)
+  # m5/c5.large not available in ap-southeast-2a
+  master-fs-db-ap-southeast-2:
+    parameter_input: quickstart-microfocus-amc-es-input-full-ap-southeast-2.json
+    template_file: mf-es-master-template.yaml
+    regions:
+      - ap-southeast-2  # Asia Pacific (Sydney)  (Separate test below with hard coded AZs since m5/c5.large not available in ap-southeast-2a)
+
+  # FS, No DB
   master-fs-nodb:
     parameter_input: quickstart-microfocus-amc-es-input-fs-nodb.json
     template_file: mf-es-master-template.yaml
@@ -54,7 +62,7 @@ tests:
       - ca-central-1    # Canada (Central)
       - ap-south-1      # Asia Pacific (Mumbai)
 
-  # # DB, No FS
+  # DB, No FS
   master-db-nofs:
     parameter_input: quickstart-microfocus-amc-es-input-db-nofs.json
     template_file: mf-es-master-template.yaml
@@ -65,7 +73,7 @@ tests:
       - ap-northeast-1  # Asia Pacific (Tokyo)
       - ap-northeast-2  # Asia Pacific (Seoul)
 
-  # # Minimal: No FS, No DB
+  # Minimal: No FS, No DB
   master-nodb-nofs:
     parameter_input: quickstart-microfocus-amc-es-input-nofs-nodb.json
     template_file: mf-es-master-template.yaml
@@ -75,8 +83,8 @@ tests:
       - us-east-2       # US East (Ohio)
       - sa-east-1       # South America (São Paulo)
 
-# # Minimal: No FS, No DB (ap-southeast-2 only)
-# m5/c5.large not available in ap-southeast-2a
+  # Minimal: No FS, No DB (ap-southeast-2 only)
+  # m5/c5.large not available in ap-southeast-2a
   master-nodb-nofs-ap-southeast-2:
     parameter_input: quickstart-microfocus-amc-es-input-nofs-nodb-ap-southeast-2.json
     template_file: mf-es-master-template.yaml
