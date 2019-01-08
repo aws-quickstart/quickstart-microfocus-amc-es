@@ -45,7 +45,7 @@
     },
     {
         "ParameterKey": "DemoAppsIngressCIDR",
-        "ParameterValue": "0.0.0.0/0"
+        "ParameterValue": "10.0.0.0/16"
     },
     {
         "ParameterKey": "DeployMultiAZ",
@@ -193,7 +193,7 @@
     },
     {
         "ParameterKey": "RDGWCIDR",
-        "ParameterValue": "0.0.0.0/0"
+        "ParameterValue": "10.0.0.0/16"
     },
     {
         "ParameterKey": "RDGWInstanceType",
