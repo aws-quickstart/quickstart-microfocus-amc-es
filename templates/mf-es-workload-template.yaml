@@ -32,12 +32,12 @@ Metadata:
       - Label:
           default: Network Configuration
         Parameters:
-          - AvailabilityZones
           - VPCID
           - PublicSubnet1ID
           - PublicSubnet2ID
           - PrivateSubnet1AID
           - PrivateSubnet2AID
+          - AvailabilityZones
       - Label:
           default: Microsoft Active Directory Configuration
         Parameters:
@@ -45,11 +45,10 @@ Metadata:
           - DomainDNSName
           - DomainNetBIOSName
           - DomainMemberSGID
-          - DomainAdminUser
           - DomainAdminPassword
           - DomainAdminPasswordConfirm
       - Label:
-          default: Microsoft Remote Desktop Gateway Configuration
+          default: Remote Desktop Gateway Configuration
         Parameters:
           - RDGWAccessSGID
       - Label:
@@ -59,7 +58,7 @@ Metadata:
           - NumberOfESInstance
           - KeyPairName
           - RegionsPerInstance
-          - AdditonalESStorageinGiB
+          - AdditionalESStorageinGiB
           - ESCCITCPListenerPort
           - ESCWLogGroupRetentionInDays
           - MFDSServiceAccountName
@@ -69,15 +68,15 @@ Metadata:
           - ESS3BucketName
           - ESResourceNamePrefix
       - Label:
-          default: Fileshare Configuration
+          default: Enterprise Server Fileshare Configuration
         Parameters:
           - FileshareType
           - InstallFSDemoApp
           - FSInstanceType
           - FSStorageInGiB
           - FSCCITCPListenerPort
-          - FSViewUserPassword
-          - FSViewUserPasswordConfirm
+          - FSVIEWUserPassword
+          - FSVIEWUserPasswordConfirm
       - Label:
           default: Database Configuration
         Parameters:
@@ -106,7 +105,7 @@ Metadata:
           - QSS3BucketName
           - QSS3KeyPrefix
     ParameterLabels:
-      AdditonalESStorageinGiB:
+      AdditionalESStorageinGiB:
         default: Additional Enterprise Server instance storage
       AvailabilityZones:
         default: Availability Zones
@@ -117,9 +116,9 @@ Metadata:
       DBInstanceClass:
         default: Database instance class
       DBMasterUserPassword:
-        default: Database Master User password
+        default: Database Master password
       DBMasterUserPasswordConfirm:
-        default: Re-enter the database Master User password
+        default: Re-enter the database Master password
       DBMasterUsername:
         default: Database Master username
       DBPreferredBackupWindow:
@@ -127,19 +126,17 @@ Metadata:
       DBPreferredMaintenanceWindow:
         default: Database preferred maintenance window
       DBStorageInGiB:
-        default: Database storage
+        default: Database allocated storage size
       DemoAppsIngressCIDR:
         default: Allowed Demo Apps external access CIDR
       DeployMultiAZ:
         default: Deploy in multiple Availability Zones
       DirectoryServiceID:
         default: Directory Service ID
-      DomainAdminUser:
-        default: Domain admin username
       DomainAdminPassword:
-        default: Domain admin password
+        default: Domain Admin account password
       DomainAdminPasswordConfirm:
-        default: Re-enter the Domain admin password
+        default: Re-enter the domain Admin account password
       DomainDNSName:
         default: Domain DNS name
       DomainMemberSGID:
@@ -149,7 +146,7 @@ Metadata:
       ESCCITCPListenerPort:
         default: Enterprise Server CCITCP listener port
       ESCWLogGroupRetentionInDays:
-        default: CloudWatch log retention
+        default: Amazon CloudWatch log retention
       ESDemoUserPassword:
         default: Enterprise Server Demo User password
       ESDemoUserPasswordConfirm:
@@ -169,31 +166,31 @@ Metadata:
       FSCCITCPListenerPort:
         default: Enterprise Server Fileshare CCITCP listener port
       FSStorageInGiB:
-        default: Fileshare storage size
+        default: Fileshare allocated storage size
       FSDemoApp3270Port:
         default: Fileshare Bank Demo TN3270 Port
-      FSViewUserPassword:
-        default: FSView User Password
-      FSViewUserPasswordConfirm:
-        default: Re-enter the FSView User Password
+      FSVIEWUserPassword:
+        default: FSVIEW user password
+      FSVIEWUserPasswordConfirm:
+        default: Re-enter the FSVIEW user password
       InstallFSDemoApp:
         default: Install Fileshare Demo App
       InstallSQLDemoApp:
         default: Install SQLServer Demo App
       KeyPairName:
-        default: Key Pair Name
+        default: Key pair name
       LicenseAgreement:
         default: License agreement
       MFDSServiceAccountName:
-        default: Micro Focus Directory Service, Service Domain Account Name
+        default: Micro Focus Directory Server service domain account name
       MFDSServiceAccountPassword:
-        default: Micro Focus Directory Service, Service Account Password
+        default: Micro Focus Directory Server service account password
       MFDSServiceAccountPasswordConfirm:
-        default: Re-enter the Micro Focus Directory Service, Service Account Password
+        default: Re-enter the Micro Focus Directory Server service account password
       NumberOfESInstance:
-        default: Number of Enterprise Server Instances to start
+        default: Number of Enterprise Server instances to start
       OperatorEmail:
-        default: Operator email
+        default: Operator email address
       PrivateSubnet1AID:
         default: Private Subnet 1A ID
       PrivateSubnet2AID:
@@ -209,36 +206,44 @@ Metadata:
       RDGWAccessSGID:
         default: Remote Desktop Gateway Security Group ID
       RegionsPerInstance:
-        default: Number of Enterprise Server "Regions" per instance
+        default: Number of Enterprise Server regions per instance
       SQLDemoApp3270Port:
         default: SQLServer Bank Demo TN3270 Port
       VPCID:
         default: VPC ID
 Parameters:
-  AdditonalESStorageinGiB:
+  AdditionalESStorageinGiB:
     Type: Number
     Description: >-
-      Enter 0-16384 GiB. Additional EBS storage capacity added to each Enterprise
-      Server instance.
+      Additional EBS storage capacity in gibibytes (GiBs) added to each
+      Enterprise Server instance. Enter 0-16384 GiB.
     MinValue: 0
     MaxValue: 16384
     Default: 100
   AvailabilityZones:
     Description: >-
-      List of Availability Zones to use for the subnets in the VPC. Only two
-      Availability Zones are used for this deployment, and the logical order of
-      your selections is preserved.
+      The list of Availability Zones to use for the subnets in the VPC. The
+      Quick Start uses two Availability Zones from your list and preserves the
+      logical order you specify.
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
   DatabaseType:
     AllowedValues:
       - None
       - Create-RDS-Remote-Database
     Default: Create-RDS-Remote-Database
-    Description: 'If ''None'', the remaining Database Configuration parameters are ignored'
+    Description: >-
+      If you choose 'None', the remaining Database Configuration parameters are
+      ignored.
     Type: String
   DBBackupRetentionPeriod:
+    Description: >-
+      Select the number of days that Amazon RDS should retain automatic backups
+      of the DB instance. A backup retention period of zero days will disable
+      automated backups for the DB Instance.
     Default: 30
-    Type: String
+    MinValue: 0
+    MaxValue: 35
+    Type: Number
   DBInstanceClass:
     AllowedValues:
       - db.r4.large
@@ -246,21 +251,48 @@ Parameters:
       - db.r4.2xlarge
       - db.r4.4xlarge
       - db.r2.8xlarge
+    Description: The type of Amazon RDS DB instance.
     Default: db.r4.large
     Type: String
   DBMasterUsername:
+    Description: >-
+      Specify an alphanumeric string that defines the login ID for the master
+      user. Master Username must start with a letter. Must contain 1 to 64
+      alphanumeric characters.
+    AllowedPattern: >-
+      ^[a-zA-Z][a-zA-Z0-9]{1,64}$
+    ConstraintDescription: >-
+      Must start with a letter. Must contain 1 to 64 alphanumeric characters.
     Default: DBAdmin
     Type: String
   DBMasterUserPassword:
+    AllowedPattern: >-
+      ^((?![\/"@])[^\x00-\x1F\x80-\x9F]){8,}$
+    ConstraintDescription: >-
+      Must be at least eight characters long, as in "mypassword". Can be any
+      printable ASCII character except "/", """, or "@".
+    Description: >-
+      The password for the DB master user. Must be at least eight characters
+      long, as in "mypassword". Can be any printable ASCII character except
+      "/", """, or "@".
     Type: String
     NoEcho: true
   DBMasterUserPasswordConfirm:
+    AllowedPattern: >-
+      ^((?![\/"@])[^\x00-\x1F\x80-\x9F]){8,}$
+    ConstraintDescription: >-
+      Must be at least eight characters long, as in "mypassword". Can be any
+      printable ASCII character except "/", """, or "@".
+    Description: >-
+      Confirm the password for the DB master user. Must be at least eight
+      characters long, as in "mypassword". Can be any printable ASCII character
+      except "/", """, or "@".
     Type: String
     NoEcho: true
   DBPreferredBackupWindow:
     Description: >-
       Must be in the format hh24:mi-hh24:mi, in UTC. Must be at least 30
-      minutes. Must not conflict with the preferred maintenance window.
+      minutes, and must not conflict with the preferred maintenance window.
     Type: String
   DBPreferredMaintenanceWindow:
     Description: >-
@@ -269,31 +301,37 @@ Parameters:
     Type: String
   DBStorageInGiB:
     Type: Number
-    Description: Enter 1-16384 GiB
-    MinValue: 1
+    Description: Enter 20-16384 GiB.
+    MinValue: 20
     MaxValue: 16384
     Default: 100
   DemoAppsIngressCIDR:
     AllowedPattern: >-
       ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
-    Description: Allowed CIDR Block for external access to the Demo Apps
+    ConstraintDescription: The CIDR block parameter must be in the form x.x.x.x/x.
+    Description: >-
+      The allowed CIDR block for external access to the demo apps. The CIDR block
+      parameter must be in the form x.x.x.x/x.
     Type: String
   DeployMultiAZ:
     AllowedValues:
       - true
       - false
     Default: false
-    Description: Choose 'true' to deploy the database across multiple Availability Zones
+    Description: >-
+      Choose 'true' to deploy the database across multiple Availability Zones.
     Type: String
   DirectoryServiceID:
     Type: String
+    Description: >-
+      The ID of the AWS Managed Microsoft AD directory in which you want to
+      deploy.
   DomainAdminPassword:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
     Description: >-
-      Password for the domain admin user. Must be at least 8 characters
-      containing letters, numbers and symbols
+      The password for the domain Admin account. Must be at least 8 characters
+      containing letters, numbers, and symbols.
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
@@ -302,66 +340,68 @@ Parameters:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
     Description: >-
-      Confirm Password for the domain admin user. Must be at least 8 characters
-      containing letters, numbers and symbols
+      Confirm the password for the domain Admin account. Must be at least 8
+      characters containing letters, numbers, and symbols.
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
     Type: String
-  DomainAdminUser:
-    AllowedPattern: '[a-zA-Z0-9]*'
-    Default: Admin
-    Description: >-
-      Username for the domain administrator. This is separate from the default
-      "Administrator" account
-    MaxLength: '25'
-    MinLength: '5'
-    Type: String
   DomainDNSName:
     AllowedPattern: '[a-zA-Z0-9\-]+\..+'
     Default: example.com
-    Description: Fully qualified domain name (FQDN) e.g. example.com
+    Description: >-
+      The fully qualified domain name (FQDN), e.g., example.com. Must be 2-255
+      characters.
     MaxLength: '255'
     MinLength: '2'
     Type: String
   DomainMemberSGID:
-    Description: 'ID of the Domain Member Security Group (e.g., sg-7f16e910)'
+    Description: >-
+      The ID of the Domain Member Security Group (e.g., sg-7f16e910).
     Type: 'AWS::EC2::SecurityGroup::Id'
   DomainNetBIOSName:
     AllowedPattern: '[a-zA-Z0-9\-]+'
     Default: example
     Description: >-
-      NetBIOS name of the domain (up to 15 characters) for users of earlier
-      versions of Windows e.g. EXAMPLE
+      The NetBIOS name of the domain (up to 15 characters) for users of
+      earlier versions of Microsoft Windows, e.g., example.
     MaxLength: '15'
     Type: String
   ESCCITCPListenerPort:
     ConstraintDescription: The port number must be between 1 and 65535
     Default: 86
-    Description: TCP Port in the range 1-65535
+    Description: The TCP port in the range 1-65535.
     MaxValue: 65535
     MinValue: 1
     Type: Number
   ESCWLogGroupRetentionInDays:
     Default: 7
-    Description: The number of days log events are kept in AWS CloudWatch Logs.
+    Description: The number of days that log events are kept in Amazon CloudWatch Logs.
     Type: Number
   ESDemoUserPassword:
     AllowedPattern: >-
-      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+      ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,32}$
     Description: >-
-      Password for ESDemoUser. Must be at least 8 characters containing letters,
-      numbers and symbols
+      The password for the ESDemoUser. Must contain 8 to 32 characters, at least
+      one uppercase letter, one lowercase letter, one number and one special
+      character.
+    ConstraintDescription: >-
+      Must contain 8 to 32 characters, at least one uppercase letter, one
+      lowercase letter, one number and one special character.
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
     Type: String
   ESDemoUserPasswordConfirm:
     AllowedPattern: >-
-      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+      ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,32}$
     Description: >-
-      Confirm password for the ESDemoUser . Must be at least 8 characters
-      containing letters, numbers and symbols
+      Confirm the password for the ESDemoUser. Must contain 8 to 32 characters,
+      at least one uppercase letter, one lowercase letter, one number and
+      one special character.
+    ConstraintDescription: >-
+      Must contain 8 to 32 characters, at least one uppercase letter, one
+      lowercase letter, one number and one special character.
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
@@ -372,46 +412,51 @@ Parameters:
       - c5.xlarge
       - c5.2xlarge
       - c5.4xlarge
+    Description: The type of Enterprise Server instance.
     Default: c5.large
     Type: String
-  NumberOfESInstance:
-    AllowedValues:
-      - 1
-      - 2
-    Default: 1
-    Description: The number of Enterprise Server instances to start.
-    Type: Number
   ESLicenseFilename:
     Description: >-
       Place the license file obtained from Micro Focus in the S3 bucket folder:
-      s3://<ESS3BucketName>/license/
+      s3://<Enterprise Server S3 bucket name>/license/
     Type: String
   ESResourceNamePrefix:
     Default: 'AWS::StackName'
     Description: >-
-      Used to prefix resource 'Name' tags. Leave empty for no prefix,
-      'AWS::StackName' or a value such as the parent stacks' name
+      Used to prefix resource 'Name' tags. Leave empty for no prefix.
+      Otherwise, use 'AWS::StackName' or a value such as the parent stack's
+      name.
     Type: String
   ESS3BucketName:
     AllowedPattern: '^[a-z0-9][a-z0-9-.]*$'
     Description: >-
-      Name of the existing S3 bucket used to store/retrieve objects specific to
-      this stack. A system integrator extending this Quick Start should use this
-      bucket to store  or retrieve items needed. This string can include numbers,
-      lowercase letters,  uppercase letters, and hyphens (-). It cannot start or
-      end with a hyphen (-).
+      The name of the existing S3 bucket used to store/retrieve objects specific
+      to this stack. A system integrator extending this Quick Start should use
+      this bucket to store or retrieve items needed. This string can include
+      numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot
+      start or end with a hyphen (-).
+    Type: String
+  FileshareType:
+    AllowedValues:
+      - None
+      - Create-Remote-Fileshare-Server
+    Default: Create-Remote-Fileshare-Server
+    Description: >-
+      If you choose 'None', the remaining Fileshare Configuration parameters
+      are ignored.
     Type: String
   FSCCITCPListenerPort:
     ConstraintDescription: The port number must be between 1 and 65535
     Default: 3000
-    Description: TCP Port in the range 1-65535
+    Description: The TCP port in the range 1-65535.
     MaxValue: 65535
     MinValue: 1
     Type: Number
   FSDemoApp3270Port:
     AllowedPattern: >-
       ^([1-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9]|[1-8][0-9]{3}|9[0-8][0-9]{2}|99[0-8][0-9]|999[0-9]|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$
-    ConstraintDescription: TN3270 Port must be a number (1-65535)
+    ConstraintDescription: Must be a number (1-65535).
+    Description: The TN3270 port must be a number (1-65535).
     Default: '5555'
     Type: String
   FSInstanceType:
@@ -420,37 +465,39 @@ Parameters:
       - c5.xlarge
       - c5.2xlarge
       - c5.4xlarge
+    Description: The type of Enterprise Server Fileshare instance.
     Default: c5.large
     Type: String
   FSStorageInGiB:
     Default: 250
-    Description: Enter 1-16384 GiB
+    Description: Enter 1-16384 GiB.
     MaxValue: 16384
     MinValue: 1
     Type: Number
-  FileshareType:
-    AllowedValues:
-      - None
-      - Create-Remote-Fileshare-Server
-    Default: Create-Remote-Fileshare-Server
-    Description: 'If ''None'', the remaining Fileshare Configuration parameters are ignored'
-    Type: String
-  FSViewUserPassword:
+  FSVIEWUserPassword:
     AllowedPattern: >-
-      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+      ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,32}$
     Description: >-
-      Password for FSVIEW user. Must be at least 8 characters containing letters,
-      numbers and symbols
+      The password for the FSVIEW user. Must contain 8 to 32 characters,
+      at least one uppercase letter, one lowercase letter, one number and
+      one special character.
+    ConstraintDescription: >-
+      Must contain 8 to 32 characters, at least one uppercase letter, one
+      lowercase letter, one number and one special character.
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
     Type: String
-  FSViewUserPasswordConfirm:
+  FSVIEWUserPasswordConfirm:
     AllowedPattern: >-
-      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+      ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,32}$
     Description: >-
-      Confirm password for FSVIEW user. Must be at least 8 characters containing letters,
-      numbers and symbols
+      Confirm the password for the FSVIEW user. Must contain 8 to 32 characters,
+      at least one uppercase letter, one lowercase letter, one number and
+      one special character.
+    ConstraintDescription: >-
+      Must contain 8 to 32 characters, at least one uppercase letter, one
+      lowercase letter, one number and one special character.
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
@@ -462,21 +509,20 @@ Parameters:
       - false
     Default: true
     Description: >-
-      Choose 'false' to not install the Enterprise Server Fileshare demo app.
-      Requires selection of the 'Create-Remote-Fileshare-Server' Fileshare Type
+      Choose 'false' if you don't want to install the Enterprise Server Fileshare demo
+      app. Requires selection of the 'Create-Remote-Fileshare-Server' Fileshare type.
   InstallSQLDemoApp:
     AllowedValues:
       - true
       - false
     Default: true
     Description: >-
-      Choose 'false' to not install the Enterprise Server SQLServer demo app.
-      Requires selection of the 'Create-RDS-Remote-Database' Database Type
+      Choose 'false' if you don't want to install the Enterprise Server SQLServer demo
+      app. Requires selection of the 'Create-RDS-Remote-Database' Database type.
     Type: String
   KeyPairName:
     Description: >-
-      Name of an existing EC2 key pair. All instances will launch with this key
-      pair.
+      The name of an existing EC2 key pair. All instances will launch with this key pair.
     Type: 'AWS::EC2::KeyPair::KeyName'
   LicenseAgreement:
     Description: >-
@@ -488,13 +534,15 @@ Parameters:
     AllowedValues:
       - I agree
       - '-'
-    ConstraintDescription: must answer 'I agree'
+    ConstraintDescription: Must answer 'I agree'.
   MFDSServiceAccountName:
     Type: String
     AllowedPattern: '[a-zA-Z0-9]*'
     Default: 'MFDSServiceAccount'
     Description: >-
-      Existing domain account name under which the service will run. If left as default, a domain account 'MFDSServiceAccount' will be created.
+      The existing domain account name under which the service will run. If left as
+      default, a domain account 'MFDSServiceAccount' is created. The name must be
+      5-25 characters.
     MaxLength: '25'
     MinLength: '5'
   MFDSServiceAccountPassword:
@@ -502,7 +550,8 @@ Parameters:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
     Description: >-
-       Must be at least 8 characters containing letters, numbers and symbols
+      Enter a password for MFDSServiceAccount. Must be at least 8 characters
+      containing letters, numbers, and symbols.
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
@@ -510,49 +559,59 @@ Parameters:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
     Description: >-
-      Confirm password for MFDSServiceAccount. Must be at least 8 characters containing letters,
-      numbers and symbols
+      Confirm the password for MFDSServiceAccount. Must be at least 8 characters
+      containing letters, numbers, and symbols.
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
     Type: String
+  NumberOfESInstance:
+    AllowedValues:
+      - 1
+      - 2
+    Default: 1
+    Description: The number of Enterprise Server instances to start.
+    Type: Number
   OperatorEmail:
     AllowedPattern: >-
       (?i)^None$|([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)
     ConstraintDescription: Must be a valid email address.
     Description: >-
-      (optional) Email address that notifications are sent to (database, VM
-      failures etc)
+      (optional) The email address that notifications are sent to (e.g.,
+      database, VM failures, etc.).
     Type: String
     Default: None
   PrivateSubnet1AID:
-    Description: 'ID of private subnet A in Availability Zone 1 (e.g., subnet-a0246dcd)'
+    Description: >-
+      The ID of private subnet 1A in Availability Zone 1 (e.g.,
+      subnet-a0246dcd).
     Type: 'AWS::EC2::Subnet::Id'
   PrivateSubnet2AID:
     Description: >-
-      ID of private subnet A in Availability Zone 2 (e.g.,
-      subnet-01a43dc1ca1fa7f9b)
+      The ID of private subnet 2A in Availability Zone 2 (e.g.,
+      subnet-01a43dc1ca1fa7f9b).
     Type: 'AWS::EC2::Subnet::Id'
   PublicSubnet1ID:
     Description: >-
-      ID of public subnet 1 in Availability Zone 1 for the ELB load balancer
-      (e.g., subnet-9bc642ac)
+      The ID of public subnet 1 in Availability Zone 1 for the Elastic Load
+      Balancing (ELB) load balancer (e.g., subnet-9bc642ac).
     Type: 'AWS::EC2::Subnet::Id'
   PublicSubnet2ID:
     Description: >-
-      ID of public subnet 2 in Availability Zone 2 for the ELB load balancer
-      (e.g., subnet-e3246d8e)
+      The ID of public subnet 2 in Availability Zone 2 for the Elastic Load
+      Balancing (ELB) load balancer (e.g., subnet-e3246d8e).
     Type: 'AWS::EC2::Subnet::Id'
   QSS3BucketName:
     AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
     ConstraintDescription: >-
-      Quick Start bucket name can include numbers, lowercase letters, uppercase
-      letters, and hyphens (-). It cannot start or end with a hyphen (-).
+      The bucket name can include numbers, lowercase letters, uppercase
+      letters, and hyphens (-), but should not start or end with a hyphen.
     Default: aws-quickstart
     Description: >-
-      S3 bucket name for the Quick Start assets. Quick Start bucket name can
-      include numbers, lowercase letters, uppercase letters, and hyphens (-). It
-      cannot start or end with a hyphen (-).
+      The S3 bucket you have created for your copy of Quick Start assets, if
+      you decide to customize or extend the Quick Start for your own use. The
+      bucket name can include numbers, lowercase letters, uppercase letters,
+      and hyphens (-), but should not start or end with a hyphen.
     Type: String
   QSS3KeyPrefix:
     AllowedPattern: '^[0-9a-zA-Z-/]*$'
@@ -561,14 +620,20 @@ Parameters:
       letters, hyphens (-), and forward slash (/).
     Default: quickstart-microfocus-amc/
     Description: >-
-      S3 key prefix for the Quick Start assets. Quick Start key prefix can
-      include numbers, lowercase letters, uppercase letters, hyphens (-), and
-      forward slash (/).
+      The S3 key name prefix used to simulate a folder for your copy of Quick
+      Start assets, if you decide to customize or extend the Quick Start for
+      your own use. This prefix can include numbers, lowercase letters,
+      uppercase letters, hyphens (-), and forward slashes (/).
     Type: String
   RDGWAccessSGID:
     Type: 'AWS::EC2::SecurityGroup::Id'
+    Description: >-
+      The security group ID for access from the Remote Desktop Gateway.
   RegionsPerInstance:
-    ConstraintDescription: Must be between 1 and 10 regions per instance
+    ConstraintDescription: Must be between 1 and 10 regions per instance.
+    Description: >-
+      The number of regions per Enterprise Server instance. Must be between 1 and
+      10 regions per instance.
     Default: 1
     MaxValue: 10
     MinValue: 1
@@ -576,11 +641,12 @@ Parameters:
   SQLDemoApp3270Port:
     AllowedPattern: >-
       ^([1-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9]|[1-8][0-9]{3}|9[0-8][0-9]{2}|99[0-8][0-9]|999[0-9]|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$
-    ConstraintDescription: TN3270 Port must be a number (1-65535)
+    ConstraintDescription: Must be a number (1-65535).
+    Description: The TN3270 port must be a number (1-65535).
     Default: '5349'
     Type: String
   VPCID:
-    Description: ID of your existing VPC for deployment
+    Description: ID of your existing VPC for deployment.
     Type: 'AWS::EC2::VPC::Id'
 Rules:
   DBMasterUserPasswordMatchRule:
@@ -588,24 +654,24 @@ Rules:
       - Assert: !Equals
           - !Ref DBMasterUserPassword
           - !Ref DBMasterUserPasswordConfirm
-        AssertDescription: Database Master User password values do not match.
+        AssertDescription: Database Master password values do not match.
   DomainAdminPasswordsMatchRule:
     Assertions:
       - Assert: !Equals
           - !Ref DomainAdminPassword
           - !Ref DomainAdminPasswordConfirm
-        AssertDescription: Domain Admin user password values do not match.
+        AssertDescription: Domain Admin account password values do not match.
   ESDemoUserPasswordMatchRule:
     Assertions:
       - Assert: !Equals
           - !Ref ESDemoUserPassword
           - !Ref ESDemoUserPasswordConfirm
         AssertDescription: Enterprise Server Demo user password values do not match.
-  FSViewUserPasswordMatchRule:
+  FSVIEWUserPasswordMatchRule:
     Assertions:
       - Assert: !Equals
-          - !Ref FSViewUserPassword
-          - !Ref FSViewUserPasswordConfirm
+          - !Ref FSVIEWUserPassword
+          - !Ref FSVIEWUserPasswordConfirm
         AssertDescription: FSVIEW user password values do not match.
   InstallFSDemoAppRule:
     RuleCondition: !Equals
@@ -618,7 +684,7 @@ Rules:
             - None
         AssertDescription: >-
           Either choose a Fileshare Type or select 'false' for Install Fileshare
-          Demo App parameter
+          Demo App parameter.
   InstallSQLDemoAppRule:
     RuleCondition: !Equals
       - !Ref InstallSQLDemoApp
@@ -630,14 +696,14 @@ Rules:
             - None
         AssertDescription: >-
           Either choose a Database Type or select 'false' for Install SQLServer
-          Demo App parameter
+          Demo App parameter.
   KeyPairsNotEmpty:
     Assertions:
       - Assert: !Not
           - 'Fn::EachMemberEquals':
               - 'Fn::RefAll': 'AWS::EC2::KeyPair::KeyName'
               - ''
-        AssertDescription: All key pair parameters must not be empty
+        AssertDescription: All key pair parameters must not be empty.
   LicenseAgreementRule:
     Assertions:
       - Assert:
@@ -650,7 +716,7 @@ Rules:
       - Assert: !Equals
           - !Ref MFDSServiceAccountPassword
           - !Ref MFDSServiceAccountPasswordConfirm
-        AssertDescription: The Micro Focus Directory Service, Service Account password values do not match.
+        AssertDescription: The Micro Focus Directory Server, Service Account password values do not match.
 Conditions:
   CreateRDSRemoteDatabaseStack: !Equals
     - !Ref DatabaseType
@@ -750,7 +816,6 @@ Resources:
           - ','
           - !Ref AvailabilityZones
         DomainAdminPassword: !Ref DomainAdminPassword
-        DomainAdminUser: !Ref DomainAdminUser
         DomainDNSName: !Ref DomainDNSName
         DomainMemberSGID: !Ref DomainMemberSGID
         DomainNetBIOSName: !Ref DomainNetBIOSName
@@ -763,7 +828,7 @@ Resources:
         FSInstanceType: !Ref FSInstanceType
         FSServerName: FSServer
         FSStorageInGiB: !Ref FSStorageInGiB
-        FSViewUserPassword: !Ref FSViewUserPassword
+        FSVIEWUserPassword: !Ref FSVIEWUserPassword
         InstallDemoApps: !Ref InstallFSDemoApp
         KeyPairName: !Ref KeyPairName
         LicenseAgreement: !Ref LicenseAgreement
@@ -884,7 +949,7 @@ Resources:
       SecurityGroupIngress:
         - Description: >-
             Allows RDP access into the instance from the Remote Desktop Gateway
-            (for admin purposes)
+            (for administrative purposes)
           IpProtocol: tcp
           FromPort: 3389
           ToPort: 3389
@@ -940,7 +1005,6 @@ Resources:
         DBMasterUsername: !Ref DBMasterUsername
         DBMasterUserPassword: !Ref DBMasterUserPassword
         DomainAdminPassword: !Ref DomainAdminPassword
-        DomainAdminUser: !Ref DomainAdminUser
         DomainDNSName: !Ref DomainDNSName
         DomainMemberSGID: !Ref DomainMemberSGID
         DomainNetBIOSName: !Ref DomainNetBIOSName
@@ -980,7 +1044,6 @@ Resources:
           - ','
           - !Ref AvailabilityZones
         DomainAdminPassword: !Ref DomainAdminPassword
-        DomainAdminUser: !Ref DomainAdminUser
         DomainDNSName: !Ref DomainDNSName
         DomainMemberSGID: !Ref DomainMemberSGID
         DomainNetBIOSName: !Ref DomainNetBIOSName
@@ -1006,7 +1069,7 @@ Resources:
         FSDemoApp3270Port: !Ref FSDemoApp3270Port
         InstallFSDemoApp: !Ref InstallFSDemoApp
         InstallSQLDemoApp: !Ref InstallSQLDemoApp
-        AdditonalESStorageinGiB: !Ref AdditonalESStorageinGiB
+        AdditionalESStorageinGiB: !Ref AdditionalESStorageinGiB
         KeyPairName: !Ref KeyPairName
         LicenseAgreement: !Ref LicenseAgreement
         MFDSServiceAccountName: !Ref MFDSServiceAccountName
@@ -1034,7 +1097,6 @@ Resources:
           - ','
           - !Ref AvailabilityZones
         DomainAdminPassword: !Ref DomainAdminPassword
-        DomainAdminUser: !Ref DomainAdminUser
         DomainDNSName: !Ref DomainDNSName
         DomainMemberSGID: !Ref DomainMemberSGID
         DomainNetBIOSName: !Ref DomainNetBIOSName
@@ -1060,7 +1122,7 @@ Resources:
         FSDemoApp3270Port: !Ref FSDemoApp3270Port
         InstallFSDemoApp: !Ref InstallFSDemoApp
         InstallSQLDemoApp: !Ref InstallSQLDemoApp
-        AdditonalESStorageinGiB: !Ref AdditonalESStorageinGiB
+        AdditionalESStorageinGiB: !Ref AdditionalESStorageinGiB
         KeyPairName: !Ref KeyPairName
         LicenseAgreement: !Ref LicenseAgreement
         MFDSServiceAccountName: !Ref MFDSServiceAccountName

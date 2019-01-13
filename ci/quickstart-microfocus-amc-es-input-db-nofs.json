@@ -1,6 +1,6 @@
 [
     {
-        "ParameterKey": "AdditonalESStorageinGiB",
+        "ParameterKey": "AdditionalESStorageinGiB",
         "ParameterValue": "1024"
     },
     {
@@ -40,6 +40,10 @@
         "ParameterValue": ""
     },
     {
+        "ParameterKey": "DSMicrosoftADEdition",
+        "ParameterValue": "Enterprise"
+    },
+    {
         "ParameterKey": "DBStorageInGiB",
         "ParameterValue": "1024"
     },
@@ -58,10 +62,6 @@
     {
         "ParameterKey": "DomainAdminPasswordConfirm",
         "ParameterValue": "$[taskcat_getval_DomainAdminPassword]"
-    },
-    {
-        "ParameterKey": "DomainAdminUser",
-        "ParameterValue": "Admin"
     },
     {
         "ParameterKey": "DomainDNSName",
@@ -120,12 +120,12 @@
         "ParameterValue": "None"
     },
     {
-        "ParameterKey": "FSViewUserPassword",
-        "ParameterValue": "$[taskcat_genpass_12A]"
+        "ParameterKey": "FSVIEWUserPassword",
+        "ParameterValue": "$[taskcat_genpass_12S]"
     },
     {
-        "ParameterKey": "FSViewUserPasswordConfirm",
-        "ParameterValue": "$[taskcat_getval_FSViewUserPassword]"
+        "ParameterKey": "FSVIEWUserPasswordConfirm",
+        "ParameterValue": "$[taskcat_getval_FSVIEWUserPassword]"
     },
     {
         "ParameterKey": "InstallFSDemoApp",

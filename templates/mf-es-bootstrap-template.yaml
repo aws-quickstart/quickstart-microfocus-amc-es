@@ -27,31 +27,33 @@ Metadata:
       - Label:
           default: Network Configuration
         Parameters:
-          - AvailabilityZones
           - SubnetID
+          - AvailabilityZones
       - Label:
           default: Microsoft Active Directory Configuration
         Parameters:
           - DomainDNSName
           - DomainNetBIOSName
           - DomainMemberSGID
-          - DomainAdminUser
           - DomainAdminPassword
       - Label:
           default: Enterprise Server Configuration
         Parameters:
+          - KeyPairName
+          - ESClientAccessSGID
           - MFDSServiceAccountName
           - MFDSServiceAccountPassword
+          - ESS3BucketName
+      - Label:
+          default: Fileshare Configuration
+        Parameters:
+          - FileshareDataFolderUNC
       - Label:
           default: Database Configuration
         Parameters:
           - DBMasterUsername
           - DBMasterUserPassword
           - ESDatabaseEndpointAddress
-      - Label:
-          default: Fileshare Configuration
-        Parameters:
-          - FileshareDataFolderUNC
       - Label:
           default: Enterprise Server Demo Apps Configuration
         Parameters:
@@ -67,19 +69,19 @@ Metadata:
       AvailabilityZones:
         default: Availability Zones
       DBMasterUserPassword:
-        default: Database Master User password
+        default: Database Master password
       DBMasterUsername:
         default: Database Master username
-      DomainAdminUser:
-        default: Domain admin username
       DomainAdminPassword:
-        default: Domain admin password
+        default: Domain Admin account password
       DomainDNSName:
         default: Domain DNS name
       DomainNetBIOSName:
         default: Domain NetBIOS name
       DomainMemberSGID:
         default: Domain member Security Group ID
+      ESClientAccessSGID:
+        default: ES Client Access Security Group ID
       ESDemoUserPassword:
         default: Enterprise Server Demo User password
       ESDatabaseEndpointAddress:
@@ -93,13 +95,13 @@ Metadata:
       InstallSQLDemoApp:
         default: Install SQLServer Demo App
       KeyPairName:
-        default: Key Pair Name
+        default: Key pair name
       MFDSServiceAccountName:
-        default: Micro Focus Directory Service, Service Domain Account Name
+        default: Micro Focus Directory Server service domain account name
       MFDSServiceAccountPassword:
-        default: Micro Focus Directory Service, Service Account Password
+        default: Micro Focus Directory Server service account password
       SubnetID:
-        default: Subnet 1A ID
+        default: Subnet ID
       QSS3BucketName:
         default: Quick Start S3 bucket name
       QSS3KeyPrefix:
@@ -107,82 +109,99 @@ Metadata:
 Parameters:
   AvailabilityZones:
     Description: >-
-      List of Availability Zones to use for the subnets in the VPC. Only two
-      Availability Zones are used for this deployment, and the logical order of
-      your selections is preserved.
+      The list of Availability Zones to use for the subnets in the VPC. The
+      Quick Start uses two Availability Zones from your list and preserves the
+      logical order you specify.
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
-  DBMasterUserPassword:
-    Type: String
-    NoEcho: true
   DBMasterUsername:
+    Description: >-
+      Specify an alphanumeric string that defines the login ID for the master
+      user. Master Username must start with a letter. Must contain 1 to 64
+      alphanumeric characters.
+    AllowedPattern: >-
+      ^[a-zA-Z][a-zA-Z0-9]{1,64}$
+    ConstraintDescription: >-
+      Must start with a letter. Must contain 1 to 64 alphanumeric characters.
     Default: DBAdmin
     Type: String
+  DBMasterUserPassword:
+    AllowedPattern: >-
+      ^((?![\/"@])[^\x00-\x1F\x80-\x9F]){8,}$
+    ConstraintDescription: >-
+      Must be at least eight characters long, as in "mypassword". Can be any
+      printable ASCII character except "/", """, or "@".
+    Description: >-
+      The password for the DB master user. Must be at least eight characters
+      long, as in "mypassword". Can be any printable ASCII character except
+      "/", """, or "@".
+    Type: String
+    NoEcho: true
   DomainAdminPassword:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
     Description: >-
-      Password for the domain admin user. Must be at least 8 characters
-      containing letters, numbers and symbols
+      The password for the domain Admin account. Must be at least 8 characters
+      containing letters, numbers, and symbols.
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
     Type: String
-  DomainAdminUser:
-    AllowedPattern: '[a-zA-Z0-9]*'
-    Default: Admin
-    Description: >-
-      User name for the domain administrator. This is separate from the default
-      "Administrator" account
-    MaxLength: '25'
-    MinLength: '5'
-    Type: String
   DomainDNSName:
     AllowedPattern: '[a-zA-Z0-9\-]+\..+'
     Default: example.com
-    Description: Fully qualified domain name (FQDN) e.g. example.com
+    Description: >-
+      The fully qualified domain name (FQDN), e.g., example.com. Must be 2-255
+      characters.
     MaxLength: '255'
     MinLength: '2'
     Type: String
   DomainMemberSGID:
-    Description: 'ID of the Domain Member Security Group (e.g., sg-7f16e910)'
+    Description: >-
+      The ID of the Domain Member Security Group (e.g., sg-7f16e910).
     Type: 'AWS::EC2::SecurityGroup::Id'
   DomainNetBIOSName:
     AllowedPattern: '[a-zA-Z0-9\-]+'
     Default: example
     Description: >-
-      NetBIOS name of the domain (up to 15 characters) for users of earlier
-      versions of Windows e.g. EXAMPLE
+      The NetBIOS name of the domain (up to 15 characters) for users of
+      earlier versions of Microsoft Windows, e.g., example.
     MaxLength: '15'
-    Type: String
-  ESDemoUserPassword:
-    AllowedPattern: >-
-      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
-    Description: >-
-      Password for ESDemoUser. Must be at least 8 characters containing letters,
-      numbers and symbols
-    MaxLength: '32'
-    MinLength: '8'
-    NoEcho: true
     Type: String
   ESClientAccessSGID:
     Type: 'AWS::EC2::SecurityGroup::Id'
     Description: >-
       Security Group ID for application ingress into the Enterpriser Server
-      instance (e.g., sg-1234abcd)
+      instance (e.g., sg-1234abcd).
   ESDatabaseEndpointAddress:
     Type: String
+    Description: The connection endpoint for the database
     Default: ''
+  ESDemoUserPassword:
+    AllowedPattern: >-
+      ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,32}$
+    Description: >-
+      The password for the ESDemoUser. Must contain 8 to 32 characters, at least
+      one uppercase letter, one lowercase letter, one number and one special
+      character.
+    ConstraintDescription: >-
+      Must contain 8 to 32 characters, at least one uppercase letter, one
+      lowercase letter, one number and one special character.
+    MaxLength: '32'
+    MinLength: '8'
+    NoEcho: true
+    Type: String
   ESS3BucketName:
     AllowedPattern: '^[a-z0-9][a-z0-9-.]*$'
     Description: >-
-      Name of the existing S3 bucket used to store/retrieve objects specific to
-      this stack. A system integrator extending this Quick Start should use this
-      bucket to store  or retrieve items needed. This string can include numbers,
-      lowercase letters,  uppercase letters, and hyphens (-). It cannot start or
-      end with a hyphen (-).
+      The name of the existing S3 bucket used to store/retrieve objects specific
+      to this stack. A system integrator extending this Quick Start should use
+      this bucket to store or retrieve items needed. This string can include
+      numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot
+      start or end with a hyphen (-).
     Type: String
   FileshareDataFolderUNC:
     Type: String
+    Description: The UNC of the Enterprise Server Fileshare data folder
     Default: ''
   InstallFSDemoApp:
     Type: String
@@ -191,28 +210,29 @@ Parameters:
       - false
     Default: true
     Description: >-
-      Choose 'false' to install the Enterprise Server Fileshare demo app. Requires
-      selection of the 'Create-Remote-Fileshare-Server' Fileshare Type
+      Choose 'false' if you don't want to install the Enterprise Server Fileshare demo
+      app. Requires selection of the 'Create-Remote-Fileshare-Server' Fileshare type.
   InstallSQLDemoApp:
     AllowedValues:
       - true
       - false
     Default: true
     Description: >-
-      Choose 'false' to install the Enterprise Server SQLServer demo app. Requires
-      selection of the 'Create-RDS-Remote-Database' Database Type
+      Choose 'false' if you don't want to install the Enterprise Server SQLServer demo
+      app. Requires selection of the 'Create-RDS-Remote-Database' Database type.
     Type: String
   KeyPairName:
     Description: >-
-      Name of an existing EC2 key pair. All instances will launch with this key
-      pair.
+      The name of an existing EC2 key pair. All instances will launch with this key pair.
     Type: 'AWS::EC2::KeyPair::KeyName'
   MFDSServiceAccountName:
     Type: String
     AllowedPattern: '[a-zA-Z0-9]*'
     Default: 'MFDSServiceAccount'
     Description: >-
-      Existing domain account name under which the service will run. If left as default, a domain account 'MFDSServiceAccount' will be created.
+      The existing domain account name under which the service will run. If left as
+      default, a domain account 'MFDSServiceAccount' is created. The name must be
+      5-25 characters.
     MaxLength: '25'
     MinLength: '5'
   MFDSServiceAccountPassword:
@@ -220,33 +240,37 @@ Parameters:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
     Description: >-
-      Must be at least 8 characters containing letters, numbers and symbols
+      Enter a password for MFDSServiceAccount. Must be at least 8 characters
+      containing letters, numbers, and symbols.
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
   SubnetID:
-    Description: 'ID of private subnet A in Availability Zone 1 (e.g., subnet-a0246dcd)'
+    Description: 'The ID of a private subnet in an Availability Zone (e.g., subnet-a0246dcd).'
     Type: 'AWS::EC2::Subnet::Id'
   QSS3BucketName:
     AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
     ConstraintDescription: >-
-      Quick Start bucket name can include numbers, lowercase letters, uppercase
-      letters, and hyphens (-). It cannot start or end with a hyphen (-).
+      The bucket name can include numbers, lowercase letters, uppercase
+      letters, and hyphens (-), but should not start or end with a hyphen.
+    Default: aws-quickstart
     Description: >-
-      S3 bucket name for the Quick Start assets. This string can include
-      numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot
-      start or end with a hyphen (-).
+      The S3 bucket you have created for your copy of Quick Start assets, if
+      you decide to customize or extend the Quick Start for your own use. The
+      bucket name can include numbers, lowercase letters, uppercase letters,
+      and hyphens (-), but should not start or end with a hyphen.
     Type: String
   QSS3KeyPrefix:
     AllowedPattern: '^[0-9a-zA-Z-/]*$'
     ConstraintDescription: >-
       Quick Start key prefix can include numbers, lowercase letters, uppercase
       letters, hyphens (-), and forward slash (/).
-    Default: /
+    Default: quickstart-microfocus-amc/
     Description: >-
-      S3 key prefix for the Quick Start assets. Quick Start key prefix can
-      include numbers, lowercase letters, uppercase letters, hyphens (-), and
-      forward slash (/).
+      The S3 key name prefix used to simulate a folder for your copy of Quick
+      Start assets, if you decide to customize or extend the Quick Start for
+      your own use. This prefix can include numbers, lowercase letters,
+      uppercase letters, hyphens (-), and forward slashes (/).
     Type: String
 Rules:
   KeyPairsNotEmpty:
@@ -255,7 +279,7 @@ Rules:
           - 'Fn::EachMemberEquals':
               - 'Fn::RefAll': 'AWS::EC2::KeyPair::KeyName'
               - ''
-        AssertDescription: All key pair parameters must not be empty
+        AssertDescription: All key pair parameters must not be empty.
 Mappings:
   AWSAMIRegionMap:
     AMI:
@@ -549,7 +573,7 @@ Resources:
                 powershell.exe
                   -File C:\cfn\scripts\Join-Domain.ps1
                     -DomainName ${DomainDNSName}
-                    -UserName ${DomainNetBIOSName}\${DomainAdminUser}
+                    -UserName ${DomainNetBIOSName}\Admin
                     -Password ${DomainAdminPassword}
               waitAfterCompletion: forever
             # Add 'Domain Users' to local RDP Group to they can RDP into this instance
@@ -594,7 +618,7 @@ Resources:
                 - s3
               authentication: S3AccessCreds
           commands:
-            # Schedule using task scheduler, as <domain>\admin, addition of 'ESDatabase' CNAME to DNS servers
+            # Schedule using task scheduler, as <domain>\Admin, addition of 'ESDatabase' CNAME to DNS servers
             # pointing to the RDS database
             a-schedule-add-database-cname-to-dns:
               command: !Sub
@@ -603,7 +627,7 @@ Resources:
                     -CName ESDatabase
                     -HostNameAlias ${ESDatabaseEndpointAddress}
                     -DomainDnsName ${DomainDNSName}
-                    -DomainUserName ${DomainAdminUser}
+                    -DomainUserName Admin
                     -DomainUserPassword ${DomainAdminPassword}
               waitAfterCompletion: '0'
             b-install-mssqlserver-odbcdriver:
@@ -641,9 +665,9 @@ Resources:
                   -File c:\cfn\scripts\New-ADUser.ps1
                     -NewUsername ${MFDSServiceAccountName}
                     -NewUserPassword ${MFDSServiceAccountPassword}
-                    -NewUserDescription "Micro Focus Directory Service, Service Account"
+                    -NewUserDescription "Micro Focus Directory Server, Service Account"
                     -DomainDnsName ${DomainDNSName}
-                    -DomainUserName ${DomainAdminUser}
+                    -DomainUserName Admin
                     -DomainUserPassword ${DomainAdminPassword}
               waitAfterCompletion: '0'
         050-CreateBankDemoDomainUser:
@@ -657,7 +681,7 @@ Resources:
                     -NewUserPassword ${ESDemoUserPassword}
                     -NewUserDescription "Enterprise Server Demos User"
                     -DomainDnsName ${DomainDNSName}
-                    -DomainUserName ${DomainAdminUser}
+                    -DomainUserName Admin
                     -DomainUserPassword ${DomainAdminPassword}
               waitAfterCompletion: '0'
         060-InstallBankDemoFS:
@@ -678,7 +702,7 @@ Resources:
                   -File c:\cfn\scripts\Schedule-AD-PowershellTask.ps1
                     -TaskName Create-FSServer-Mapped-Drive-GPO
                     -TaskArguments "-File C:\cfn\scripts\Create-Mapped-Drive-GPO.ps1 -PolicyName FSServer-FSDir-Share-Drive-Map -DriveLetter Z -FileshareDataFolderUNC ${FileshareDataFolderUNC} -DomainDnsName ${DomainDNSName}"
-                    -DomainUserName "${DomainNetBIOSName}\${DomainAdminUser}"
+                    -DomainUserName "${DomainNetBIOSName}\Admin"
                     -DomainUserPassword "${DomainAdminPassword}"
               waitAfterCompletion: '0'
         070-InstallBankDemoSQL:

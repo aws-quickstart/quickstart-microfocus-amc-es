@@ -40,7 +40,6 @@ Metadata:
           - DomainDNSName
           - DomainNetBIOSName
           - DomainMemberSGID
-          - DomainAdminUser
           - DomainAdminPassword
       - Label:
           default: Enterprise Server Configuration
@@ -48,7 +47,7 @@ Metadata:
           - ESInstanceType
           - KeyPairName
           - RegionsPerInstance
-          - AdditonalESStorageinGiB
+          - AdditionalESStorageinGiB
           - ESCCITCPListenerPort
           - MFDSServiceAccountName
           - MFDSServiceAccountPassword
@@ -78,14 +77,12 @@ Metadata:
           - QSS3BucketName
           - QSS3KeyPrefix
     ParameterLabels:
-      AdditonalESStorageinGiB:
+      AdditionalESStorageinGiB:
         default: Additional Enterprise Server instance storage
       AvailabilityZones:
         default: Availability Zones
-      DomainAdminUser:
-        default: Domain admin username
       DomainAdminPassword:
-        default: Domain admin password
+        default: Domain Admin account password
       DomainDNSName:
         default: Domain DNS name
       DomainNetBIOSName:
@@ -99,7 +96,7 @@ Metadata:
       ESClientAccessSGID:
         default: Enterprise Server Application (Client) Access Security Group ID
       ESCWLogGroup:
-        default: Enterprise Server CloudWatch Log Group
+        default: Amazon CloudWatch Log Group
       ESDatabaseEndpointAddress:
         default: Enterprise Server Database Endpoint Address
       ESInstanceName:
@@ -119,73 +116,67 @@ Metadata:
       InstallSQLDemoApp:
         default: Install SQLServer Demo App
       KeyPairName:
-        default: Key Pair Name
+        default: Key pair name
       LicenseAgreement:
         default: License agreement
       MFDSServiceAccountName:
-        default: Micro Focus Directory Service, Service Domain Account Name
+        default: Micro Focus Directory Server service domain account name
       MFDSServiceAccountPassword:
-        default: Micro Focus Directory Service, Service Account Password
+        default: Micro Focus Directory Server service account password
       SubnetID:
-        default: Subnet 1A ID
+        default: Subnet ID
       QSS3BucketName:
         default: Quick Start S3 bucket name
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
       RegionsPerInstance:
-        default: Number of Enterprise Server "Regions" per instance
+        default: Number of Enterprise Server regions per instance
       SQLDemoApp3270Port:
         default: SQLServer Bank Demo TN3270 Port
 Parameters:
-  AdditonalESStorageinGiB:
+  AdditionalESStorageinGiB:
     Type: Number
     Description: >-
-      Enter 0-16384 GiB. Additional EBS storage capacity added to each Enterprise
-      Server instance.
+      Additional EBS storage capacity in gibibytes (GiBs) added to each
+      Enterprise Server instance. Enter 0-16384 GiB.
     MinValue: 0
     MaxValue: 16384
     Default: 100
   AvailabilityZones:
     Description: >-
       List of Availability Zones to use for the subnets in the VPC. Only two
-      Availability Zones are used for this deployment, and the logical order of
-      your selections is preserved.
+      Availability Zones are used for this deployment, and the logical order
+      of your selections is preserved.
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
   DomainAdminPassword:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
     Description: >-
-      Password for the domain admin user. Must be at least 8 characters
-      containing letters, numbers and symbols
+      The password for the domain Admin account. Must be at least 8 characters
+      containing letters, numbers, and symbols.
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
     Type: String
-  DomainAdminUser:
-    AllowedPattern: '[a-zA-Z0-9]*'
-    Default: Admin
-    Description: >-
-      Username for the domain administrator. This is separate from the default
-      "Administrator" account
-    MaxLength: '25'
-    MinLength: '5'
-    Type: String
   DomainDNSName:
     AllowedPattern: '[a-zA-Z0-9\-]+\..+'
     Default: example.com
-    Description: Fully qualified domain name (FQDN) e.g. example.com
+    Description: >-
+      The fully qualified domain name (FQDN), e.g., example.com. Must be 2-255
+      characters.
     MaxLength: '255'
     MinLength: '2'
     Type: String
   DomainMemberSGID:
-    Description: 'ID of the Domain Member Security Group (e.g., sg-7f16e910)'
+    Description: >-
+      The ID of the Domain Member Security Group (e.g., sg-7f16e910).
     Type: 'AWS::EC2::SecurityGroup::Id'
   DomainNetBIOSName:
     AllowedPattern: '[a-zA-Z0-9\-]+'
     Default: example
     Description: >-
-      NetBIOS name of the domain (up to 15 characters) for users of earlier
-      versions of Windows e.g. EXAMPLE
+      The NetBIOS name of the domain (up to 15 characters) for users of
+      earlier versions of Microsoft Windows, e.g., example.
     MaxLength: '15'
     Type: String
   EMailNotificationTopic:
@@ -195,50 +186,56 @@ Parameters:
     Type: 'AWS::EC2::SecurityGroup::Id'
     Description: >-
       Security Group ID for application ingress into the Enterpriser Server
-      instance (e.g., sg-1234abcd)
+      instance (e.g., sg-1234abcd).
   ESCCITCPListenerPort:
-    ConstraintDescription: The port number must be between 1 and 65535
+    ConstraintDescription: The port number must be between 1 and 65535.
     Default: 86
-    Description: TCP Port in the range 1-65535
+    Description: The TCP port in the range 1-65535.
     MaxValue: 65535
     MinValue: 1
     Type: Number
   ESCWLogGroup:
     Type: String
+    Description: The logical ID of the Amazon CloudWatch Logs Log Group
   ESDatabaseEndpointAddress:
     Type: String
+    Description: The connection endpoint for the database
     Default: ''
   ESInstanceName:
     Type: String
+    Description: The name to assign to the Enterprise Server instance Windows Hostname
   ESInstanceType:
     AllowedValues:
       - c5.large
       - c5.xlarge
       - c5.2xlarge
       - c5.4xlarge
+    Description: The type of Enterprise Server instance.
     Default: c5.large
     Type: String
   ESLicenseFilename:
     Description: >-
       Place the license file obtained from Micro Focus in the S3 bucket folder:
-      s3://<ESS3BucketName>/license/
+      s3://<Enterprise Server S3 bucket name>/license/
     Type: String
   ESS3BucketName:
     AllowedPattern: '^[a-z0-9][a-z0-9-.]*$'
     Description: >-
-      Name of the existing S3 bucket used to store/retrieve objects specific to
-      this stack. A system integrator extending this Quick Start should use this
-      bucket to store  or retrieve items needed. This string can include numbers,
-      lowercase letters,  uppercase letters, and hyphens (-). It cannot start or
-      end with a hyphen (-).
+      The name of the existing S3 bucket used to store/retrieve objects specific
+      to this stack. A system integrator extending this Quick Start should use
+      this bucket to store or retrieve items needed. This string can include
+      numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot
+      start or end with a hyphen (-).
     Type: String
   FileshareDataFolderUNC:
     Type: String
+    Description: The UNC of the Enterprise Server Fileshare data folder
     Default: ''
   FSDemoApp3270Port:
     AllowedPattern: >-
       ^([1-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9]|[1-8][0-9]{3}|9[0-8][0-9]{2}|99[0-8][0-9]|999[0-9]|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$
-    ConstraintDescription: TN3270 Port must be a number (1-65535)
+    ConstraintDescription: Must be a number (1-65535).
+    Description: The TN3270 port must be a number (1-65535).
     Default: '5555'
     Type: String
   InstallFSDemoApp:
@@ -248,21 +245,20 @@ Parameters:
       - false
     Default: true
     Description: >-
-      Choose 'false' to not install the Enterprise Server Fileshare demo app.
-      Requires selection of the 'Create-Remote-Fileshare-Server' Fileshare Type
+      Choose 'false' if you don't want to install the Enterprise Server Fileshare demo
+      app. Requires selection of the 'Create-Remote-Fileshare-Server' Fileshare type.
   InstallSQLDemoApp:
     AllowedValues:
       - true
       - false
     Default: true
     Description: >-
-      Choose 'false' to not install the Enterprise Server SQLServer demo app.
-      Requires selection of the 'Create-RDS-Remote-Database' Database Type
+      Choose 'false' if you don't want to install the Enterprise Server SQLServer demo
+      app. Requires selection of the 'Create-RDS-Remote-Database' Database type.
     Type: String
   KeyPairName:
     Description: >-
-      Name of an existing EC2 key pair. All instances will launch with this key
-      pair.
+      The name of an existing EC2 key pair. All instances will launch with this key pair.
     Type: 'AWS::EC2::KeyPair::KeyName'
   LicenseAgreement:
     Description: >-
@@ -274,13 +270,15 @@ Parameters:
     AllowedValues:
       - I agree
       - '-'
-    ConstraintDescription: must answer 'I agree'
+    ConstraintDescription: must answer 'I agree'.
   MFDSServiceAccountName:
     Type: String
     AllowedPattern: '[a-zA-Z0-9]*'
     Default: 'MFDSServiceAccount'
     Description: >-
-      Existing domain account name under which the service will run. If left as default, a domain account 'MFDSServiceAccount' will be created.
+      The existing domain account name under which the service will run. If left as
+      default, a domain account 'MFDSServiceAccount' is created. The name must be
+      5-25 characters.
     MaxLength: '25'
     MinLength: '5'
   MFDSServiceAccountPassword:
@@ -288,12 +286,13 @@ Parameters:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
     Description: >-
-      Must be at least 8 characters containing letters, numbers and symbols
+      Enter a password for MFDSServiceAccount. Must be at least 8 characters
+      containing letters, numbers, and symbols.
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
   SubnetID:
-    Description: 'ID of private subnet A in Availability Zone 1 (e.g., subnet-a0246dcd)'
+    Description: 'The ID of a private subnet in an Availability Zone (e.g., subnet-a0246dcd).'
     Type: 'AWS::EC2::Subnet::Id'
   QSS3BucketName:
     AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
@@ -318,7 +317,10 @@ Parameters:
       forward slash (/).
     Type: String
   RegionsPerInstance:
-    ConstraintDescription: Must be between 1 and 10 regions per instance
+    ConstraintDescription: Must be between 1 and 10 regions per instance.
+    Description: >-
+      The number of regions per Enterprise Server instance. Must be between 1 and
+      10 regions per instance.
     Default: 1
     MaxValue: 10
     MinValue: 1
@@ -326,7 +328,8 @@ Parameters:
   SQLDemoApp3270Port:
     AllowedPattern: >-
       ^([1-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9]|[1-8][0-9]{3}|9[0-8][0-9]{2}|99[0-8][0-9]|999[0-9]|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$
-    ConstraintDescription: TN3270 Port must be a number (1-65535)
+    ConstraintDescription: Must be a number (1-65535).
+    Description: The TN3270 port must be a number (1-65535).
     Default: '5349'
     Type: String
 Rules:
@@ -336,7 +339,7 @@ Rules:
           - 'Fn::EachMemberEquals':
               - 'Fn::RefAll': 'AWS::EC2::KeyPair::KeyName'
               - ''
-        AssertDescription: All key pair parameters must not be empty
+        AssertDescription: All key pair parameters must not be empty.
   LicenseAgreementRule:
     Assertions:
       - Assert:
@@ -493,7 +496,7 @@ Resources:
           var response = require('cfn-response');
           exports.handler = function(event, context) {
             var props = event.ResourceProperties;
-            var result = (parseInt(props.RegionsPerInstance) * parseInt(props.RegionStorageOverheadInGiB)) + parseInt(props.AdditonalESStorageinGiB);
+            var result = (parseInt(props.RegionsPerInstance) * parseInt(props.RegionStorageOverheadInGiB)) + parseInt(props.AdditionalESStorageinGiB);
             response.send(event, context, response.SUCCESS, {Value: result});
           };
       Runtime: nodejs8.10
@@ -503,7 +506,7 @@ Resources:
       ServiceToken: !GetAtt CalcPrimaryDataVolumeStorageSizeFunction.Arn
       RegionsPerInstance: !Ref RegionsPerInstance
       RegionStorageOverheadInGiB: 50
-      AdditonalESStorageinGiB: !Ref AdditonalESStorageinGiB
+      AdditionalESStorageinGiB: !Ref AdditionalESStorageinGiB
       Value: 0
   ESPrimaryDataVolume:
     Type: 'AWS::EC2::Volume'
@@ -921,7 +924,7 @@ Resources:
                 powershell.exe
                   -File C:\cfn\scripts\Join-Domain.ps1
                     -DomainName ${DomainDNSName}
-                    -UserName ${DomainNetBIOSName}\${DomainAdminUser}
+                    -UserName ${DomainNetBIOSName}\Admin
                     -Password ${DomainAdminPassword}
               waitAfterCompletion: forever
             # Add 'Domain Users' to local RDP Group to they can RDP into this instance
