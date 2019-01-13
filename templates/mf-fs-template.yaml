@@ -30,31 +30,34 @@ Metadata:
       - Label:
           default: Network Configuration
         Parameters:
-          - AvailabilityZones
           - VPCID
           - PrivateSubnet1AID
+          - AvailabilityZones
       - Label:
           default: Microsoft Active Directory Configuration
         Parameters:
           - DomainDNSName
           - DomainNetBIOSName
           - DomainMemberSGID
-          - DomainAdminUser
           - DomainAdminPassword
       - Label:
-          default: Microsoft Remote Desktop Gateway Configuration
+          default: Remote Desktop Gateway Configuration
         Parameters:
           - RDGWAccessSGID
       - Label:
           default: Enterprise Server Fileshare Configuration
         Parameters:
           - FSInstanceType
+          - FSStorageInGiB
+          - FSCCITCPListenerPort
+          - FSVIEWUserPassword
+          - FSServerName
           - KeyPairName
+          - FSClientAccessSGID
           - ESCWLogGroup
           - ESS3BucketName
           - NotificationARN
           - ESResourceNamePrefix
-          - FSViewUserPassword
       - Label:
           default: Enterprise Server Demo Apps Configuration
         Parameters:
@@ -67,16 +70,16 @@ Metadata:
     ParameterLabels:
       AvailabilityZones:
         default: Availability Zones
-      DomainAdminUser:
-        default: Domain admin username
+      DomainAdminPassword:
+        default: Domain Admin account password
       DomainDNSName:
         default: Domain DNS name
       DomainMemberSGID:
         default: Domain member Security Group ID
       DomainNetBIOSName:
-        default: Domain NetBIOS Name
+        default: Domain NetBIOS name
       ESCWLogGroup:
-        default: CloudWatch LogGroup
+        default: Amazon CloudWatch LogGroup
       ESLicenseFilename:
         default: Enterprise Server license filename
       ESResourceNamePrefix:
@@ -86,17 +89,19 @@ Metadata:
       FSInstanceType:
         default: Enterprise Server Fileshare instance type
       FSCCITCPListenerPort:
-        default: Enterprise Server Fileshare CCITCP listener
+        default: Enterprise Server Fileshare CCITCP listener port
+      FSClientAccessSGID:
+        default: ES Client Access Security Group ID
       FSServerName:
         default: Fileshare Server Name
       FSStorageInGiB:
-        default: Enterprise Server Fileshare storage size (GiB)
-      FSViewUserPassword:
-        default: FSView User Password
+        default: Fileshare allocated storage size
+      FSVIEWUserPassword:
+        default: FSVIEW user password
       InstallDemoApps:
         default: Install Demo Apps
       KeyPairName:
-        default: Key Pair Name
+        default: Key pair name
       LicenseAgreement:
         default: License agreement
       NotificationARN:
@@ -115,100 +120,105 @@ Parameters:
   AvailabilityZones:
     Description: >-
       List of Availability Zones to use for the subnets in the VPC. Only two
-      Availability Zones are used for this deployment, and the logical order of
-      your selections is preserved.
+      Availability Zones are used for this deployment, and the logical order
+      of your selections is preserved.
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
   DomainAdminPassword:
     AllowedPattern: >-
       (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
     Description: >-
-      Password for the domain admin user. Must be at least 8 characters
-      containing letters, numbers and symbols
+      The password for the domain Admin account. Must be at least 8 characters
+      containing letters, numbers, and symbols.
     MaxLength: '32'
     MinLength: '8'
-    NoEcho: false
-    Type: String
-  DomainAdminUser:
-    AllowedPattern: '[a-zA-Z0-9]*'
-    Default: Admin
-    Description: >-
-      User name for the domain administrator. This is separate from the default
-      "Administrator" account
-    MaxLength: '25'
-    MinLength: '5'
+    NoEcho: true
     Type: String
   DomainDNSName:
     AllowedPattern: '[a-zA-Z0-9\-]+\..+'
     Default: example.com
-    Description: Fully qualified domain name (FQDN) e.g. example.com
+    Description: >-
+      The fully qualified domain name (FQDN), e.g., example.com. Must be 2-255
+      characters.
     MaxLength: '255'
     MinLength: '2'
     Type: String
   DomainMemberSGID:
-    Description: 'ID of the Domain Member Security Group (e.g., sg-7f16e910)'
+    Description: >-
+      The ID of the Domain Member Security Group (e.g., sg-7f16e910).
     Type: 'AWS::EC2::SecurityGroup::Id'
   DomainNetBIOSName:
     AllowedPattern: '[a-zA-Z0-9\-]+'
     Default: example
     Description: >-
-      NetBIOS name of the domain (up to 15 characters) for users of earlier
-      versions of Windows e.g. EXAMPLE
+      The NetBIOS name of the domain (up to 15 characters) for users of
+      earlier versions of Microsoft Windows, e.g., example.
     MaxLength: '15'
     Type: String
   ESCWLogGroup:
     Type: String
+    Description: The logical ID of the Amazon CloudWatch Logs Log Group
   ESLicenseFilename:
     Description: >-
       Place the license file obtained from Micro Focus in the S3 bucket folder:
-      s3://<ESS3BucketName>/license/
+      s3://<Enterprise Server S3 bucket name>/license/
     Type: String
   ESResourceNamePrefix:
-    Type: String
     Default: 'AWS::StackName'
     Description: >-
-      Used to prefix resource 'Name' tags. Leave empty for no prefix,
-      'AWS::StackName' or a value such as the parent stacks' name
+      Used to prefix resource 'Name' tags. Leave empty for no prefix.
+      Otherwise, use 'AWS::StackName' or a value such as the parent stack's
+      name.
+    Type: String
   ESS3BucketName:
     AllowedPattern: '^[a-z0-9][a-z0-9-.]*$'
     Description: >-
-      Name of the existing S3 bucket used to store/retrieve objects specific to
-      this stack. A system integrator extending this Quick Start should use this
-      bucket to store  or retrieve items needed. This string can include numbers,
-      lowercase letters,  uppercase letters, and hyphens (-). It cannot start or
-      end with a hyphen (-).
+      The name of the existing S3 bucket used to store/retrieve objects specific
+      to this stack. A system integrator extending this Quick Start should use
+      this bucket to store or retrieve items needed. This string can include
+      numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot
+      start or end with a hyphen (-).
     Type: String
   FSCCITCPListenerPort:
-    ConstraintDescription: The port number must be between 1 and 65535
+    ConstraintDescription: The port number must be between 1 and 65535.
     Default: 3000
-    Description: TCP Port in the range 1-65535
+    Description: The TCP port in the range 1-65535.
     MaxValue: 65535
     MinValue: 1
     Type: Number
   FSClientAccessSGID:
     Type: 'AWS::EC2::SecurityGroup::Id'
+    Description: >-
+      Security Group ID for application ingress into the Enterpriser Server Fileshare
+      instance (e.g., sg-1234abcd).
   FSInstanceType:
     AllowedValues:
       - c5.large
       - c5.xlarge
       - c5.2xlarge
       - c5.4xlarge
+    Description: The type of Enterprise Server Fileshare instance.
     Default: c5.large
     Type: String
   FSServerName:
+    Description: The name to assign to the Fileshare instance Windows Hostname
     Default: FSServer
     Type: String
   FSStorageInGiB:
     Default: 250
-    Description: 1-16384 GiB
+    Description: Enter 1-16384 GiB.
     MaxValue: 16384
     MinValue: 1
     Type: Number
-  FSViewUserPassword:
+  FSVIEWUserPassword:
     AllowedPattern: >-
-      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+      ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,32}$
     Description: >-
-      Password for FSVIEW user. Must be at least 8 characters containing letters,
-      numbers and symbols
+      The password for the FSVIEW user. Must contain 8 to 32 characters,
+      at least one uppercase letter, one lowercase letter, one number and
+      one special character.
+    ConstraintDescription: >-
+      Must contain 8 to 32 characters, at least one uppercase letter, one
+      lowercase letter, one number and one special character.
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
@@ -219,17 +229,16 @@ Parameters:
       - true
       - false
     Default: true
-    Description: Choose 'false' to skip installation of Enterprise Server demo apps
+    Description: Choose 'false' if you want to skip installation of the Enterprise Server demo apps.
   KeyPairName:
     Description: >-
-      Name of an existing EC2 key pair. All instances will launch with this key
-      pair.
+      The name of an existing EC2 key pair. All instances will launch with this key pair.
     Type: 'AWS::EC2::KeyPair::KeyName'
   LicenseAgreement:
     AllowedValues:
       - I agree
       - '-'
-    ConstraintDescription: must answer 'I agree'
+    ConstraintDescription: Must answer 'I agree'.
     Default: '-'
     Description: >-
       I have read and agree to the license terms for Micro Focus Enterprise
@@ -239,11 +248,13 @@ Parameters:
   NotificationARN:
     Description: >-
       (optional) An existing Amazon SNS topic where notifications about are
-      sent, e.g., email notifications
+      sent, e.g., email notifications.
     Type: String
     Default: ''
   PrivateSubnet1AID:
-    Description: 'ID of private subnet A in Availability Zone 1 (e.g., subnet-a0246dcd)'
+    Description: >-
+      The ID of private subnet 1A in Availability Zone 1 (e.g.,
+      subnet-a0246dcd).
     Type: 'AWS::EC2::Subnet::Id'
   QSS3BucketName:
     AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
@@ -269,8 +280,10 @@ Parameters:
     Type: String
   RDGWAccessSGID:
     Type: 'AWS::EC2::SecurityGroup::Id'
+    Description: >-
+      The security group ID for access from the Remote Desktop Gateway.
   VPCID:
-    Description: ID of your existing VPC for deployment
+    Description: ID of your existing VPC for deployment.
     Type: 'AWS::EC2::VPC::Id'
 Rules:
   KeyPairsNotEmpty:
@@ -279,7 +292,7 @@ Rules:
           - 'Fn::EachMemberEquals':
               - 'Fn::RefAll': 'AWS::EC2::KeyPair::KeyName'
               - ''
-        AssertDescription: All key pair parameters must not be empty
+        AssertDescription: All key pair parameters must not be empty.
   LicenseAgreementRule:
     Assertions:
       - Assert:
@@ -295,7 +308,7 @@ Rules:
                 - 'AWS::EC2::Subnet::Id'
                 - VpcId
             - 'Fn::RefAll': 'AWS::EC2::VPC::Id'
-        AssertDescription: All subnets must in the VPC
+        AssertDescription: All subnets must in the VPC.
 Mappings:
   AWSAMIRegionMap:
     AMI:
@@ -354,7 +367,7 @@ Resources:
       SecurityGroupIngress:
         - Description: >-
             Allows RDP access into the instance from the Remote Desktop Gateway
-            (for admin purposes)
+            (for administrative purposes)
           IpProtocol: tcp
           FromPort: 3389
           ToPort: 3389
@@ -765,7 +778,7 @@ Resources:
                 powershell.exe
                   -File C:\cfn\scripts\Join-Domain.ps1
                     -DomainName ${DomainDNSName}
-                    -UserName ${DomainNetBIOSName}\${DomainAdminUser}
+                    -UserName ${DomainNetBIOSName}\Admin
                     -Password ${DomainAdminPassword}
               waitAfterCompletion: forever
             # Add 'Domain Users' to local RDP Group to they can RDP into this instance
@@ -844,7 +857,7 @@ Resources:
             d-gen-passfile:
               cwd: C:\Program Files (x86)\Micro Focus\Enterprise Server\bin
               command: !Sub >-
-                "C:\Program Files (x86)\Micro Focus\Enterprise Server\bin\fs" /pf d:\fsdir\pass.dat /u FSVIEW /pw ${FSViewUserPassword}
+                "C:\Program Files (x86)\Micro Focus\Enterprise Server\bin\fs" /pf d:\fsdir\pass.dat /u FSVIEW /pw ${FSVIEWUserPassword}
               waitAfterCompletion: '0'
             e-configure-windows-firewall-fs-ccitcp-listener-rule:
               command:
