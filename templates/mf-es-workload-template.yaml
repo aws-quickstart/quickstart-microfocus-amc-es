@@ -188,7 +188,7 @@ Metadata:
       MFDSServiceAccountPasswordConfirm:
         default: Re-enter the Micro Focus Directory Server service account password
       NumberOfESInstance:
-        default: Number of Enterprise Server instances to start
+        default: Number of Enterprise Server instances
       OperatorEmail:
         default: Operator email address
       PrivateSubnet1AID:
@@ -204,7 +204,7 @@ Metadata:
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
       RDGWAccessSGID:
-        default: Remote Desktop Gateway Security Group ID
+        default: RD Gateway Security Group ID
       RegionsPerInstance:
         default: Number of Enterprise Server regions per instance
       SQLDemoApp3270Port:
@@ -257,7 +257,7 @@ Parameters:
   DBMasterUsername:
     Description: >-
       Specify an alphanumeric string that defines the login ID for the master
-      user. Master Username must start with a letter. Must contain 1 to 64
+      user. Master user name must start with a letter. Must contain 1 to 64
       alphanumeric characters.
     AllowedPattern: >-
       ^[a-zA-Z][a-zA-Z0-9]{1,64}$

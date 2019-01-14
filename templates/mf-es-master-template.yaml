@@ -186,9 +186,9 @@ Metadata:
       MFDSServiceAccountPasswordConfirm:
         default: Re-enter the Micro Focus Directory Server service account password
       NumberOfESInstance:
-        default: Number of Enterprise Server instances to start
+        default: Number of Enterprise Server instances
       NumberOfRDGWHosts:
-        default: Number of Remote Desktop Gateway hosts
+        default: Number of RD Gateway hosts
       OperatorEmail:
         default: Operator email address
       PrivateSubnet1ACIDR:
@@ -204,9 +204,9 @@ Metadata:
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
       RDGWCIDR:
-        default: Allowed Remote Desktop Gateway external access CIDR
+        default: Allowed RD Gateway external access CIDR
       RDGWInstanceType:
-        default: Remote Desktop Gateway instance type
+        default: RD Gateway instance type
       RegionsPerInstance:
         default: Number of Enterprise Server regions per instance
       SQLDemoApp3270Port:
@@ -239,7 +239,7 @@ Parameters:
     Type: String
   DBBackupRetentionPeriod:
     Description: >-
-      Select the number of days that Amazon RDS should retain automatic backups
+      The number of days that Amazon RDS should retain automatic backups
       of the DB instance. A backup retention period of zero days will disable
       automated backups for the DB Instance.
     Default: 30
@@ -259,7 +259,7 @@ Parameters:
   DBMasterUsername:
     Description: >-
       Specify an alphanumeric string that defines the login ID for the master
-      user. Master Username must start with a letter. Must contain 1 to 64
+      user. Master user name must start with a letter. Must contain 1 to 64
       alphanumeric characters.
     AllowedPattern: >-
       ^[a-zA-Z][a-zA-Z0-9]{1,64}$
