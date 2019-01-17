@@ -726,8 +726,7 @@ Rules:
             - us-west-1       # US West (N. California)
             - us-west-2       # US West (Oregon)
           - !Ref AWS::Region
-        AssertDescription: |-
-          This Quick Start utilizes AWS Directory Service which is not available in the chosen region.
+        AssertDescription: This Quick Start utilizes AWS Directory Service which is not available in the chosen region.
           Please refer to https://docs.aws.amazon.com/general/latest/gr/rande.html#ds_region for a list
           of currently supported regions and launch the stack in one of those regions.
   RDSWinAthSupportedRegionRule:
@@ -753,8 +752,7 @@ Rules:
 #            - us-west-1       # US West (N. California)    --> RDS-WinAuth not supported 2019-01-01
             - us-west-2       # US West (Oregon)
           - !Ref AWS::Region
-        AssertDescription: |-
-          This Quick Start utilizes Amazon Relational Database Service (Amazon RDS) Windows
+        AssertDescription: This Quick Start utilizes Amazon Relational Database Service (Amazon RDS) Windows
           Authentication which is not available in the chosen region. Please refer to
           https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_SQLServerWinAuth.html
           for more details and launch the stack in one of the supported regions.
@@ -765,30 +763,30 @@ Rules:
             - - I agree
             - !Ref LicenseAgreement
         AssertDescription: User must agree to the terms of the license agreement.
-  DomainAdminPasswordsMatchRule:
-    Assertions:
-      - Assert: !Equals
-          - !Ref DomainAdminPassword
-          - !Ref DomainAdminPasswordConfirm
-        AssertDescription: Domain Admin account password values do not match.
-  DBMasterUserPasswordMatchRule:
-    Assertions:
-      - Assert: !Equals
-          - !Ref DBMasterUserPassword
-          - !Ref DBMasterUserPasswordConfirm
-        AssertDescription: Database Master password values do not match.
-  ESDemoUserPasswordMatchRule:
-    Assertions:
-      - Assert: !Equals
-          - !Ref ESDemoUserPassword
-          - !Ref ESDemoUserPasswordConfirm
-        AssertDescription: Enterprise Server Demo user password values do not match.
-  FSVIEWUserPasswordMatchRule:
-    Assertions:
-      - Assert: !Equals
-          - !Ref FSVIEWUserPassword
-          - !Ref FSVIEWUserPasswordConfirm
-        AssertDescription: FSVIEW user password values do not match.
+#  DomainAdminPasswordsMatchRule:
+#    Assertions:
+#      - Assert: !Equals
+#          - !Ref DomainAdminPassword
+#          - !Ref DomainAdminPasswordConfirm
+#        AssertDescription: Domain Admin account password values do not match.
+#  DBMasterUserPasswordMatchRule:
+#    Assertions:
+#      - Assert: !Equals
+#          - !Ref DBMasterUserPassword
+#          - !Ref DBMasterUserPasswordConfirm
+#        AssertDescription: Database Master password values do not match.
+#  ESDemoUserPasswordMatchRule:
+#    Assertions:
+#      - Assert: !Equals
+#          - !Ref ESDemoUserPassword
+#          - !Ref ESDemoUserPasswordConfirm
+#        AssertDescription: Enterprise Server Demo user password values do not match.
+#  FSVIEWUserPasswordMatchRule:
+#    Assertions:
+#      - Assert: !Equals
+#          - !Ref FSVIEWUserPassword
+#          - !Ref FSVIEWUserPasswordConfirm
+#        AssertDescription: FSVIEW user password values do not match.
   InstallFSDemoAppRule:
     RuleCondition: !Equals
       - !Ref InstallFSDemoApp
@@ -813,12 +811,12 @@ Rules:
         AssertDescription: >-
           Either choose a Database Type or select 'false' for Install SQLServer
           Demo App parameter.
-  MFDSServiceAccountPasswordsMatchRule:
-    Assertions:
-      - Assert: !Equals
-          - !Ref MFDSServiceAccountPassword
-          - !Ref MFDSServiceAccountPasswordConfirm
-        AssertDescription: The Micro Focus Directory Server, Service Account password values do not match.
+#  MFDSServiceAccountPasswordsMatchRule:
+#    Assertions:
+#      - Assert: !Equals
+#          - !Ref MFDSServiceAccountPassword
+#          - !Ref MFDSServiceAccountPasswordConfirm
+#        AssertDescription: The Micro Focus Directory Server, Service Account password values do not match.
 Conditions:
   IncludeRDGW: !Not
     - !Equals

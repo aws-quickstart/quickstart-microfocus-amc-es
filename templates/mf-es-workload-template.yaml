@@ -649,30 +649,30 @@ Parameters:
     Description: ID of your existing VPC for deployment.
     Type: 'AWS::EC2::VPC::Id'
 Rules:
-  DBMasterUserPasswordMatchRule:
-    Assertions:
-      - Assert: !Equals
-          - !Ref DBMasterUserPassword
-          - !Ref DBMasterUserPasswordConfirm
-        AssertDescription: Database Master password values do not match.
-  DomainAdminPasswordsMatchRule:
-    Assertions:
-      - Assert: !Equals
-          - !Ref DomainAdminPassword
-          - !Ref DomainAdminPasswordConfirm
-        AssertDescription: Domain Admin account password values do not match.
-  ESDemoUserPasswordMatchRule:
-    Assertions:
-      - Assert: !Equals
-          - !Ref ESDemoUserPassword
-          - !Ref ESDemoUserPasswordConfirm
-        AssertDescription: Enterprise Server Demo user password values do not match.
-  FSVIEWUserPasswordMatchRule:
-    Assertions:
-      - Assert: !Equals
-          - !Ref FSVIEWUserPassword
-          - !Ref FSVIEWUserPasswordConfirm
-        AssertDescription: FSVIEW user password values do not match.
+#  DBMasterUserPasswordMatchRule:
+#    Assertions:
+#      - Assert: !Equals
+#          - !Ref DBMasterUserPassword
+#          - !Ref DBMasterUserPasswordConfirm
+#        AssertDescription: Database Master password values do not match.
+#  DomainAdminPasswordsMatchRule:
+#    Assertions:
+#      - Assert: !Equals
+#          - !Ref DomainAdminPassword
+#          - !Ref DomainAdminPasswordConfirm
+#        AssertDescription: Domain Admin account password values do not match.
+#  ESDemoUserPasswordMatchRule:
+#    Assertions:
+#      - Assert: !Equals
+#          - !Ref ESDemoUserPassword
+#          - !Ref ESDemoUserPasswordConfirm
+#        AssertDescription: Enterprise Server Demo user password values do not match.
+#  FSVIEWUserPasswordMatchRule:
+#    Assertions:
+#      - Assert: !Equals
+#          - !Ref FSVIEWUserPassword
+#          - !Ref FSVIEWUserPasswordConfirm
+#        AssertDescription: FSVIEW user password values do not match.
   InstallFSDemoAppRule:
     RuleCondition: !Equals
       - !Ref InstallFSDemoApp
@@ -711,12 +711,12 @@ Rules:
             - - I agree
             - !Ref LicenseAgreement
         AssertDescription: User must agree to the terms of the license agreement.
-  MFDSServiceAccountPasswordsMatchRule:
-    Assertions:
-      - Assert: !Equals
-          - !Ref MFDSServiceAccountPassword
-          - !Ref MFDSServiceAccountPasswordConfirm
-        AssertDescription: The Micro Focus Directory Server, Service Account password values do not match.
+#  MFDSServiceAccountPasswordsMatchRule:
+#    Assertions:
+#      - Assert: !Equals
+#          - !Ref MFDSServiceAccountPassword
+#          - !Ref MFDSServiceAccountPasswordConfirm
+#        AssertDescription: The Micro Focus Directory Server, Service Account password values do not match.
 Conditions:
   CreateRDSRemoteDatabaseStack: !Equals
     - !Ref DatabaseType
