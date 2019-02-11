@@ -283,39 +283,39 @@ Rules:
 Mappings:
   AWSAMIRegionMap:
     AMI:
-      MFESBSTRAPAMI: Windows_Server-2012-R2_RTM-English-64Bit-Base-2018.11.28
+      WS2012R2: Windows_Server-2012-R2_RTM-English-64Bit-Base-2018.11.28
     ap-northeast-1:
-      MFESBSTRAPAMI: ami-0e8e51f50c1d7d1b6
+      WS2012R2: ami-0e8e51f50c1d7d1b6
     ap-northeast-2:
-      MFESBSTRAPAMI: ami-00dc8ef56b733f3dc
+      WS2012R2: ami-00dc8ef56b733f3dc
     ap-south-1:
-      MFESBSTRAPAMI: ami-03291442a55ad02c1
+      WS2012R2: ami-03291442a55ad02c1
     ap-southeast-1:
-      MFESBSTRAPAMI: ami-059b411d0e166914e
+      WS2012R2: ami-059b411d0e166914e
     ap-southeast-2:
-      MFESBSTRAPAMI: ami-0d5ee30b3c177dc50
+      WS2012R2: ami-0d5ee30b3c177dc50
     ca-central-1:
-      MFESBSTRAPAMI: ami-067f74c12478608c0
+      WS2012R2: ami-067f74c12478608c0
     eu-central-1:
-      MFESBSTRAPAMI: ami-07338b9e99ae289ac
+      WS2012R2: ami-07338b9e99ae289ac
     eu-west-1:
-      MFESBSTRAPAMI: ami-08d5e9721f152cfc1
+      WS2012R2: ami-08d5e9721f152cfc1
     eu-west-2:
-      MFESBSTRAPAMI: ami-0254182a5a5fba789
+      WS2012R2: ami-0254182a5a5fba789
     eu-west-3:
-      MFESBSTRAPAMI: ami-025b4a9e85a7f6602
+      WS2012R2: ami-025b4a9e85a7f6602
     eu-north-1:
-      MFESBSTRAPAMI: ami-025b1025b745eeb33
+      WS2012R2: ami-025b1025b745eeb33
     sa-east-1:
-      MFESBSTRAPAMI: ami-098c1f48dc672ab2b
+      WS2012R2: ami-098c1f48dc672ab2b
     us-east-1:
-      MFESBSTRAPAMI: ami-015e4abfa8bb28eae
+      WS2012R2: ami-015e4abfa8bb28eae
     us-east-2:
-      MFESBSTRAPAMI: ami-0a562b81f2dd5ffe6
+      WS2012R2: ami-0a562b81f2dd5ffe6
     us-west-1:
-      MFESBSTRAPAMI: ami-0aee96900bc0502fd
+      WS2012R2: ami-0aee96900bc0502fd
     us-west-2:
-      MFESBSTRAPAMI: ami-03833dcc7d9010c5a
+      WS2012R2: ami-03833dcc7d9010c5a
 Conditions:
   GovCloudCondition: !Equals
     - !Ref 'AWS::Region'
@@ -761,7 +761,7 @@ Resources:
       ImageId: !FindInMap
         - AWSAMIRegionMap
         - !Ref 'AWS::Region'
-        - MFESBSTRAPAMI
+        - WS2012R2
       Tags:
         - Key: Name
           Value: bootstrap
