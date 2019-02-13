@@ -195,6 +195,9 @@ Parameters:
     Description: The name of an existing EC2 key pair. All instances will launch with
       this key pair.
     Type: AWS::EC2::KeyPair::KeyName
+  LatestWS2012R2AmiId: 
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: '/aws/service/ami-windows-latest/Windows_Server-2012-R2_RTM-English-64Bit-Base'
   MFDSServiceAccountName:
     Type: String
     AllowedPattern: '[a-zA-Z0-9]*'
@@ -244,42 +247,6 @@ Rules:
           - Fn::RefAll: AWS::EC2::KeyPair::KeyName
           - ''
       AssertDescription: All key pair parameters must not be empty.
-Mappings:
-  AWSAMIRegionMap:
-    AMI:
-      WS2012R2: Windows_Server-2012-R2_RTM-English-64Bit-Base-2018.12.13
-    ap-northeast-1:
-      WS2012R2: ami-01a36b3a16228aabc
-    ap-northeast-2:
-      WS2012R2: ami-028139f205d2daa74
-    ap-south-1:
-      WS2012R2: ami-0fa27628302568cf8
-    ap-southeast-1:
-      WS2012R2: ami-0634a2a4e5f335566
-    ap-southeast-2:
-      WS2012R2: ami-0af54fcc300d51d81
-    ca-central-1:
-      WS2012R2: ami-0a828787cebefec3a
-    eu-central-1:
-      WS2012R2: ami-0a6b3fad1e65fbba5
-    eu-north-1:
-      WS2012R2: ami-006da02310a4342d4
-    eu-west-1:
-      WS2012R2: ami-05697bc3b1b84a9a6
-    eu-west-2:
-      WS2012R2: ami-041f490cbeaf309e1
-    eu-west-3:
-      WS2012R2: ami-0a011546c49d67bce
-    sa-east-1:
-      WS2012R2: ami-0203e28b0bd45659f
-    us-east-1:
-      WS2012R2: ami-02cb4450ba80eb057
-    us-east-2:
-      WS2012R2: ami-0335db37835305b27
-    us-west-1:
-      WS2012R2: ami-0b6ac87fe08b48203
-    us-west-2:
-      WS2012R2: ami-01d5bff29ab3fb41e
 Conditions:
   GovCloudCondition:
     !Equals
@@ -526,7 +493,7 @@ Resources:
                 C:\cfn\modules\AWSQuickStart.zip -Destination C:\Windows\system32\WindowsPowerShell\v1.0\Modules\
               waitAfterCompletion: '0'
             c-init-quickstart-module:
-              command: '!Sub powershell.exe -Command New-AWSQuickStartResourceSignal
+              command: !Sub 'powershell.exe -Command New-AWSQuickStartResourceSignal
                 -Stack ${AWS::StackName} -Resource ESInstance -Region ${AWS::Region}'
               waitAfterCompletion: '0'
         020-RenameAndJoinDomain:
@@ -536,11 +503,11 @@ Resources:
                 bstrpinstance -Restart
               waitAfterCompletion: forever
             b-join-domain-and-restart:
-              command: '!Sub powershell.exe -File C:\cfn\scripts\Join-Domain.ps1 -DomainName
+              command: !Sub 'powershell.exe -File C:\cfn\scripts\Join-Domain.ps1 -DomainName
                 ${DomainDNSName} -UserName ${DomainNetBIOSName}\Admin -Password ${DomainAdminPassword}'
               waitAfterCompletion: forever
             c-add-domain-users-rdp-users-group:
-              command: '!Sub powershell -Command "&{ try { $ErrorActionPreference
+              command: !Sub 'powershell -Command "&{ try { $ErrorActionPreference
                 = ''Stop''; $GroupObj = [ADSI]''WinNT://localhost/Remote Desktop Users'';
                 $GroupObj.Add(''WinNT://${DomainNetBIOSName}/Domain Users''); Install-WindowsFeature
                 -Name GPMC,RSAT-AD-PowerShell,RSAT-AD-AdminCenter,RSAT-ADDS-Tools,RSAT-DNS-Server;
@@ -564,7 +531,7 @@ Resources:
               authentication: S3AccessCreds
           commands:
             a-schedule-add-database-cname-to-dns:
-              command: '!Sub powershell.exe -File C:\cfn\scripts\Schedule-AD-AddDNSServerResourceRecordCName.ps1
+              command: !Sub 'powershell.exe -File C:\cfn\scripts\Schedule-AD-AddDNSServerResourceRecordCName.ps1
                 -CName ESDatabase -HostNameAlias ${ESDatabaseEndpointAddress} -DomainDnsName
                 ${DomainDNSName} -DomainUserName Admin -DomainUserPassword ${DomainAdminPassword}'
               waitAfterCompletion: '0'
@@ -583,7 +550,7 @@ Resources:
         040-CreateMFDSServiceAccount:
           commands:
             a-create-mfds-service-account:
-              command: '!Sub powershell.exe -File c:\cfn\scripts\New-ADUser.ps1 -NewUsername
+              command: !Sub 'powershell.exe -File c:\cfn\scripts\New-ADUser.ps1 -NewUsername
                 ${MFDSServiceAccountName} -NewUserPassword ${MFDSServiceAccountPassword}
                 -NewUserDescription "Micro Focus Directory Server, Service Account"
                 -DomainDnsName ${DomainDNSName} -DomainUserName Admin -DomainUserPassword
@@ -592,7 +559,7 @@ Resources:
         050-CreateBankDemoDomainUser:
           commands:
             a-create-esdemouser:
-              command: '!Sub powershell.exe -File c:\cfn\scripts\New-ADUser.ps1 -NewUsername
+              command: !Sub 'powershell.exe -File c:\cfn\scripts\New-ADUser.ps1 -NewUsername
                 ESDemoUser -NewUserPassword ${ESDemoUserPassword} -NewUserDescription
                 "Enterprise Server Demos User" -DomainDnsName ${DomainDNSName} -DomainUserName
                 Admin -DomainUserPassword ${DomainAdminPassword}'
@@ -611,7 +578,7 @@ Resources:
               authentication: S3AccessCreds
           commands:
             a-create-fsserver-mapped-drive-gpo:
-              command: '!Sub powershell.exe -File c:\cfn\scripts\Schedule-AD-PowershellTask.ps1
+              command: !Sub 'powershell.exe -File c:\cfn\scripts\Schedule-AD-PowershellTask.ps1
                 -TaskName Create-FSServer-Mapped-Drive-GPO -TaskArguments "-File C:\cfn\scripts\Create-Mapped-Drive-GPO.ps1
                 -PolicyName FSServer-FSDir-Share-Drive-Map -DriveLetter Z -FileshareDataFolderUNC
                 ${FileshareDataFolderUNC} -DomainDnsName ${DomainDNSName}" -DomainUserName
@@ -641,7 +608,7 @@ Resources:
               authentication: S3AccessCreds
           commands:
             a-create-bankdemo-sql-environment:
-              command: '!Sub powershell.exe -File c:\cfn\scripts\Prep-BankDemoDatabase.ps1
+              command: !Sub 'powershell.exe -File c:\cfn\scripts\Prep-BankDemoDatabase.ps1
                 -DomainNetBIOSName ${DomainNetBIOSName} -DBMasterUsername ${DBMasterUsername}
                 -DBMasterUserPassword ${DBMasterUserPassword}'
               waitAfterCompletion: '0'
@@ -666,11 +633,7 @@ Resources:
       InstanceInitiatedShutdownBehavior: terminate
       KeyName: !Ref KeyPairName
       InstanceType: m5.large
-      ImageId:
-        !FindInMap
-        - AWSAMIRegionMap
-        - !Ref AWS::Region
-        - WS2012R2
+      ImageId: !Ref LatestWS2012R2AmiId
       Tags:
       - Key: Name
         Value: bootstrap
