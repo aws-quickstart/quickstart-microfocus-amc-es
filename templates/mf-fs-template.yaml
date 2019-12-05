@@ -504,7 +504,7 @@ Resources:
                 https://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi
             'c:\cfn\assets\npp.Installer.x64.exe':
               source: >-
-                https://notepad-plus-plus.org/repository/7.x/7.5.9/npp.7.5.9.Installer.x64.exe
+                https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v7.8.1/npp.7.8.1.Installer.exe
           commands:
             a-install-aws-cli:
               command: 'start /wait c:\cfn\assets\AWSCLI64PY3.msi /quiet /passive /qn'
