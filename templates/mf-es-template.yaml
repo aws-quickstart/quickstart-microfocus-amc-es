@@ -499,7 +499,7 @@ Resources:
             var result = (parseInt(props.RegionsPerInstance) * parseInt(props.RegionStorageOverheadInGiB)) + parseInt(props.AdditionalESStorageinGiB);
             response.send(event, context, response.SUCCESS, {Value: result});
           };
-      Runtime: nodejs8.10
+      Runtime: nodejs10.x
   ESPrimaryDataVolumeStorageSize:
     Type: 'Custom::CalcPrimaryDataVolumeStorageSizeFunction'
     Properties:
