@@ -49,7 +49,6 @@ Metadata:
         Parameters:
           - FSInstanceType
           - FSStorageInGiB
-          - FSCCITCPListenerPort
           - FSVIEWUserPassword
           - FSServerName
           - KeyPairName
@@ -88,8 +87,6 @@ Metadata:
         default: Enterprise Server S3 bucket name
       FSInstanceType:
         default: Enterprise Server Fileshare instance type
-      FSCCITCPListenerPort:
-        default: Enterprise Server Fileshare CCITCP listener port
       FSClientAccessSGID:
         default: ES Client Access Security Group ID
       FSServerName:
@@ -178,13 +175,6 @@ Parameters:
       numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot
       start or end with a hyphen (-).
     Type: String
-  FSCCITCPListenerPort:
-    ConstraintDescription: The port number must be between 1 and 65535.
-    Default: 3000
-    Description: The TCP port in the range 1-65535.
-    MaxValue: 65535
-    MinValue: 1
-    Type: Number
   FSClientAccessSGID:
     Type: 'AWS::EC2::SecurityGroup::Id'
     Description: >-
@@ -312,39 +302,39 @@ Rules:
 Mappings:
   AWSAMIRegionMap:
     AMI:
-      MFES40AMI: ES_40PU4_V3
+      MFES40AMI: ES_50_PU05
     ap-northeast-1:
-      MFES40AMI: ami-0d8abeda47ca57871
+      MFES40AMI: ami-0dff3f5a16ecacfe5
     ap-northeast-2:
-      MFES40AMI: ami-05dccbfcdcf0adf6f
+      MFES40AMI: ami-0248d8806a80ec1be
     ap-south-1:
-      MFES40AMI: ami-09beff70828ed8de7
+      MFES40AMI: ami-07c28d590f4c42580
     ap-southeast-1:
-      MFES40AMI: ami-056340469fc88e360
+      MFES40AMI: ami-0a8d6fe92bdb3a94f
     ap-southeast-2:
-      MFES40AMI: ami-00f7e3a908d0e4499
+      MFES40AMI:  ami-05d45ddc80bfd6446
     ca-central-1:
-      MFES40AMI: ami-09b7e0eccba7305d5
+      MFES40AMI: ami-0f0adf2454aa54382
     eu-central-1:
-      MFES40AMI: ami-0748eb1177837591c
+      MFES40AMI: ami-00664de4c7c03a310
     eu-north-1:
-      MFES40AMI: ami-0dbf576f5ad8a6bbd
+      MFES40AMI: ami-09a1a20c436e7806e
     eu-west-1:
-      MFES40AMI: ami-0afd368a7655b6dfb
+      MFES40AMI: ami-03e0b7531700529c5
     eu-west-2:
-      MFES40AMI: ami-0619eb00e92ab7b00
+      MFES40AMI: ami-0ed05eb873c2da4ef
     eu-west-3:
-      MFES40AMI: ami-02eaa14fb48885cc9
+      MFES40AMI: ami-0dd39cc30ea3574b7
     sa-east-1:
-      MFES40AMI: ami-01bba1206e8807019
+      MFES40AMI: ami-082e4e947dbbf35b1
     us-east-1:
-      MFES40AMI: ami-0a4603cadffc7170d
+      MFES40AMI: ami-0e6255dfab3d7497c
     us-east-2:
-      MFES40AMI: ami-0a2b689af8ad19ff3
+      MFES40AMI: ami-048a75e3c74fdfa5f
     us-west-1:
-      MFES40AMI: ami-09577a4bbdc01a65d
+      MFES40AMI: ami-074e117de783cab22
     us-west-2:
-      MFES40AMI: ami-047e3be248b380812
+      MFES40AMI: ami-09dc8cff0a367fa32
 Conditions:
   GovCloudCondition: !Equals
     - !Ref 'AWS::Region'
@@ -374,8 +364,8 @@ Resources:
           SourceSecurityGroupId: !Ref RDGWAccessSGID
         - Description: Fileshare client ingress
           IpProtocol: tcp
-          FromPort: !Ref FSCCITCPListenerPort
-          ToPort: !Ref FSCCITCPListenerPort
+          FromPort: 3000
+          ToPort: 3000
           SourceSecurityGroupId: !Ref FSClientAccessSGID
         - Description: >-
             Micro Focus Enterprise Server Directory Service (tcp) Listener
@@ -477,7 +467,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Count: 1
-        Timeout: PT50M
+        Timeout: PT25M
     Metadata:
       'AWS::CloudFormation::Authentication':
         S3AccessCreds:
@@ -502,15 +492,9 @@ Resources:
             'c:\cfn\assets\GoogleChromeStandaloneEnterprise64.msi':
               source: >-
                 https://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi
-            'c:\cfn\assets\npp.Installer.x64.exe':
-              source: >-
-                https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v7.8.1/npp.7.8.1.Installer.exe
           commands:
             a-install-aws-cli:
               command: 'start /wait c:\cfn\assets\AWSCLI64PY3.msi /quiet /passive /qn'
-              waitAfterCompletion: '0'
-            b-install-npp:
-              command: 'start /wait c:\cfn\assets\npp.Installer.x64.exe /S'
               waitAfterCompletion: '0'
             c-install-chrome:
               command: >-
@@ -803,7 +787,7 @@ Resources:
           files:
             'd:\fsdir\fs.conf':
               content: !Sub |
-                /s FS1,MFPORT:${FSCCITCPListenerPort}
+                /s FS1,MFPORT:3000
                 /pf d:\fsdir\pass.dat
                 /wd d:\fsdir
                 /cm CCITCP
@@ -876,11 +860,11 @@ Resources:
                     -Protocol udp
               waitAfterCompletion: '0'
             g-configure-windows-firewall-fs-ccitcp-listener-rule:
-              command: !Sub
+              command:
                 powershell.exe
                   -Command New-NetFirewallRule
                     -DisplayName 'Micro Focus Enterprise Server (Fileshare) CCITCP Listener'
-                    -LocalPort ${FSCCITCPListenerPort}
+                    -LocalPort 3000
                     -Protocol tcp
               waitAfterCompletion: '0'
             h-install-fs-service:

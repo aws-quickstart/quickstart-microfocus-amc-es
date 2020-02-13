@@ -1,4 +1,3 @@
----
 AWSTemplateFormatVersion: 2010-09-09
 Description: '"This template deploys a single Micro Focus Enterprise Server instance
   as defined in the Micro Focus Enterprise Server Reference Architecture. **WARNING**
@@ -30,6 +29,12 @@ Metadata:
       - MFDSServiceAccountName
       - MFDSServiceAccountPassword
       - ESS3BucketName
+    - Label:
+        default: PAC Configuration
+      Parameters:
+        - RedisEndPoint
+        - PACDBMasterUsername
+        - PACDBMasterUserPassword
     - Label:
         default: Fileshare Configuration
       Parameters:
@@ -86,12 +91,18 @@ Metadata:
         default: Micro Focus Directory Server service domain account name
       MFDSServiceAccountPassword:
         default: Micro Focus Directory Server service account password
+      PACDBMasterUsername: 
+        default: Database Master username
+      PACDBMasterUserPassword:
+        default: Database Master password
       SubnetID:
         default: Subnet ID
       QSS3BucketName:
         default: Quick Start S3 bucket name
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
+      RedisEndPoint:
+        default: Redis endpoint address
 Parameters:
   AvailabilityZones:
     Description: The list of Availability Zones to use for the subnets in the VPC.
@@ -150,6 +161,10 @@ Parameters:
     Type: String
     Description: The connection endpoint for the database
     Default: ''
+  ESPACDatabaseEndpointAddress:
+    Type: String
+    Description: The connection endpoint for the PAC database
+    Default: ''
   ESDemoUserPassword:
     AllowedPattern: ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,32}$
     Description: The password for the ESDemoUser. Must contain 8 to 32 characters,
@@ -182,6 +197,14 @@ Parameters:
     Description: Choose 'false' if you don't want to install the Enterprise Server
       Fileshare demo app. Requires selection of the 'Create-Remote-Fileshare-Server'
       Fileshare type.
+  InstallPACDemoApp:
+    AllowedValues:
+    - true
+    - false
+    Default: true
+    Description: Choose 'false' if you don't want to install the Enterprise Server
+      PAC demo app.
+    Type: String
   InstallSQLDemoApp:
     AllowedValues:
     - true
@@ -215,6 +238,29 @@ Parameters:
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
+  PACDBMasterUsername:
+    Description: >-
+      Specify an alphanumeric string that defines the login ID for the master
+      user. Master user name must start with a letter. Must contain 1 to 64
+      alphanumeric characters.
+    AllowedPattern: >-
+      ^[a-zA-Z][a-zA-Z0-9]{1,64}$
+    ConstraintDescription: >-
+      Must start with a letter. Must contain 1 to 64 alphanumeric characters.
+    Default: DBAdmin
+    Type: String
+  PACDBMasterUserPassword:
+    AllowedPattern: >-
+      ^((?![\/"@])[^\x00-\x1F\x80-\x9F]){8,}$
+    ConstraintDescription: >-
+      Must be at least eight characters long, as in "mypassword". Can be any
+      printable ASCII character except "/", """, or "@".
+    Description: >-
+      The password for the DB master user. Must be at least eight characters
+      long, as in "mypassword". Can be any printable ASCII character except
+      "/", """, or "@".
+    Type: String
+    NoEcho: true
   SubnetID:
     Description: The ID of a private subnet in an Availability Zone (e.g., subnet-a0246dcd).
     Type: AWS::EC2::Subnet::Id
@@ -238,6 +284,10 @@ Parameters:
       your own use. This prefix can include numbers, lowercase letters, uppercase
       letters, hyphens (-), and forward slashes (/).
     Type: String
+  RedisEndPoint:
+    Type: String
+    Description: The connection endpoint for redis
+    Default: ''
 Rules:
   KeyPairsNotEmpty:
     Assertions:
@@ -256,9 +306,14 @@ Conditions:
     !Or
     - !Condition InstallingFSDemoApp
     - !Condition InstallingSQLDemoApp
+    - !Condition InstallingPACDemoApp
   InstallingFSDemoApp:
     !Equals
     - !Ref InstallFSDemoApp
+    - 'true'
+  InstallingPACDemoApp:
+    !Equals
+    - !Ref InstallPACDemoApp
     - 'true'
   InstallingSQLDemoApp:
     !Equals
@@ -278,7 +333,7 @@ Conditions:
       - !Ref MFDSServiceAccountName
       - MFDSServiceAccount
 Resources:
-  ESInstanceRole:
+  BTSTRPInstanceRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -340,14 +395,14 @@ Resources:
             - ds:Describe*
             Effect: Allow
             Resource: '*'
-        PolicyName: ESInstancePolicy
-  ESInstanceRoleProfile:
+        PolicyName: BTSTRPInstancePolicy
+  BTSTRPInstanceRoleProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
-      - !Ref ESInstanceRole
-  ESInstance:
+      - !Ref BTSTRPInstanceRole
+  BTSTRPInstance:
     Type: AWS::EC2::Instance
     CreationPolicy:
       ResourceSignal:
@@ -357,7 +412,7 @@ Resources:
       AWS::CloudFormation::Authentication:
         S3AccessCreds:
           type: S3
-          roleName: !Ref ESInstanceRole
+          roleName: !Ref BTSTRPInstanceRole
           buckets:
           - !Ref QSS3BucketName
           - !Ref ESS3BucketName
@@ -371,22 +426,26 @@ Resources:
             - 030-Setup-Database-Client-Environment
             - 000-NoOperation
           - !If
+            - InstallingPACDemoApp
+            - 040-Setup-PAC-Database-Environment
+            - 000-NoOperation
+          - !If
             - CreateMFDSServiceAccount
-            - 040-CreateMFDSServiceAccount
+            - 050-CreateMFDSServiceAccount
             - 000-NoOperation
           - !If
             - InstallingAtLeastOneDemoApp
-            - 050-CreateBankDemoDomainUser
+            - 060-CreateBankDemoDomainUser
             - 000-NoOperation
           - !If
             - InstallingFSDemoApp
-            - 060-InstallBankDemoFS
+            - 070-InstallBankDemoFS
             - 000-NoOperation
           - !If
             - InstallingSQLDemoApp
-            - 070-InstallBankDemoSQL
+            - 080-InstallBankDemoSQL
             - 000-NoOperation
-          - 080-Finalize
+          - 090-Finalize
         000-NoOperation:
           commands:
             a-no-operation:
@@ -433,8 +492,8 @@ Resources:
               content: !Sub |
                 [cfn-auto-reloader-hook]
                 triggers=post.update
-                path=Resources.ESInstance.Metadata.AWS::CloudFormation::Init
-                action=cfn-init.exe -v -c config -s ${AWS::StackId} --resource ESInstance --region ${AWS::Region}
+                path=Resources.BTSTRPInstance.Metadata.AWS::CloudFormation::Init
+                action=cfn-init.exe -v -c config -s ${AWS::StackId} --resource BTSTRPInstance --region ${AWS::Region}
             c:\cfn\scripts\AddTo-SystemPath.ps1:
               source:
                 !Sub
@@ -494,7 +553,7 @@ Resources:
               waitAfterCompletion: '0'
             c-init-quickstart-module:
               command: !Sub 'powershell.exe -Command New-AWSQuickStartResourceSignal
-                -Stack ${AWS::StackName} -Resource ESInstance -Region ${AWS::Region}'
+                -Stack ${AWS::StackName} -Resource BTSTRPInstance -Region ${AWS::Region}'
               waitAfterCompletion: '0'
         020-RenameAndJoinDomain:
           commands:
@@ -547,7 +606,59 @@ Resources:
               command: powershell.exe -File c:\cfn\scripts\AddTo-SystemPath.ps1 -PathToAdd
                 "c:\Program Files\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn"
               waitAfterCompletion: '0'
-        040-CreateMFDSServiceAccount:
+        040-Setup-PAC-Database-Environment:
+          files:
+            'c:\cfn\assets\postgres-11-winx64.exe':
+              source: https://get.enterprisedb.com/postgresql/postgresql-11.5-1-windows-x64.exe
+            'c:\cfn\scripts\Prep-PACDemoDatabase.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Prep-PACDemoDatabase.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+            'c:\cfn\scripts\Schedule-AD-AddDNSServerResourceRecordCName.ps1':
+              source:
+                !Sub
+                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Schedule-AD-AddDNSServerResourceRecordCName.ps1
+                - QSS3Region:
+                    !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+            'c:\cfn\scripts\Install-Postgres-Tools.ps1':
+              source:
+                !Sub
+                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Install-Postgres-Tools.ps1
+                - QSS3Region:
+                    !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+          commands:
+            a-install-postgres-tools:
+              command: !Sub 'powershell.exe -File c:\cfn\scripts\Schedule-AD-PowershellTask.ps1 
+              -TaskName Install-Postgres-Tools -TaskArguments "-File c:\cfn\scripts\Install-Postgres-Tools.ps1"
+              -DomainUserName "${DomainNetBIOSName}\Admin" -DomainUserPassword "${DomainAdminPassword}"'
+            b-schedule-add-database-cname-to-dns:
+              command: !Sub 'powershell.exe -File C:\cfn\scripts\Schedule-AD-AddDNSServerResourceRecordCName.ps1
+                -CName ESPACDatabase -HostNameAlias ${ESPACDatabaseEndpointAddress} -DomainDnsName
+                ${DomainDNSName} -DomainUserName Admin -DomainUserPassword ${DomainAdminPassword}'
+              waitAfterCompletion: '0'
+            c-configure-database:
+              cwd: 'C:\Program Files\PostgreSQL\11\bin'
+              command: !Sub 'powershell.exe -File c:\cfn\scripts\Prep-PACDemoDatabase.ps1 -DBMasterUsername ${PACDBMasterUsername}
+                -DBMasterUserPassword ${PACDBMasterUserPassword}'
+              waitAfterCompletion: '0'
+            d-schedule-add-redis-cname-to-dns:
+              command: !Sub 'powershell.exe -File C:\cfn\scripts\Schedule-AD-AddDNSServerResourceRecordCName.ps1
+                -CName ESRedis -HostNameAlias ${RedisEndPoint} -DomainDnsName
+                ${DomainDNSName} -DomainUserName Admin -DomainUserPassword ${DomainAdminPassword}'
+        050-CreateMFDSServiceAccount:
           commands:
             a-create-mfds-service-account:
               command: !Sub 'powershell.exe -File c:\cfn\scripts\New-ADUser.ps1 -NewUsername
@@ -556,7 +667,18 @@ Resources:
                 -DomainDnsName ${DomainDNSName} -DomainUserName Admin -DomainUserPassword
                 ${DomainAdminPassword}'
               waitAfterCompletion: '0'
-        050-CreateBankDemoDomainUser:
+        060-CreateBankDemoDomainUser:
+          files:
+            c:\cfn\scripts\Add-user-to-admin-group.ps1:
+              source:
+                !Sub
+                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Add-user-to-admin-group.ps1
+                - QSS3Region:
+                    !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
           commands:
             a-create-esdemouser:
               command: !Sub 'powershell.exe -File c:\cfn\scripts\New-ADUser.ps1 -NewUsername
@@ -564,7 +686,12 @@ Resources:
                 "Enterprise Server Demos User" -DomainDnsName ${DomainDNSName} -DomainUserName
                 Admin -DomainUserPassword ${DomainAdminPassword}'
               waitAfterCompletion: '0'
-        060-InstallBankDemoFS:
+            b-add-esdemouser-to-admins:
+              command: !Sub 'powershell.exe -File c:\cfn\scripts\Add-user-to-admin-group.ps1 -Username
+                ESDemoUser -DomainDnsName ${DomainDNSName} -DomainUserName
+                Admin -DomainUserPassword ${DomainAdminPassword}'
+              waitAfterCompletion: '0'
+        070-InstallBankDemoFS:
           files:
             c:\cfn\scripts\Create-Mapped-Drive-GPO.ps1:
               source:
@@ -584,7 +711,7 @@ Resources:
                 ${FileshareDataFolderUNC} -DomainDnsName ${DomainDNSName}" -DomainUserName
                 "${DomainNetBIOSName}\Admin" -DomainUserPassword "${DomainAdminPassword}"'
               waitAfterCompletion: '0'
-        070-InstallBankDemoSQL:
+        080-InstallBankDemoSQL:
           files:
             C:\BankDemo_SQL\System\BankDemoCreateAll.SQL:
               source:
@@ -612,7 +739,7 @@ Resources:
                 -DomainNetBIOSName ${DomainNetBIOSName} -DBMasterUsername ${DBMasterUsername}
                 -DBMasterUserPassword ${DBMasterUserPassword}'
               waitAfterCompletion: '0'
-        080-Finalize:
+        090-Finalize:
           commands:
             a-finalize-init:
               command: powershell.exe -Command Write-AWSQuickStartStatus
@@ -629,7 +756,7 @@ Resources:
       SecurityGroupIds:
       - !Ref DomainMemberSGID
       - !Ref ESClientAccessSGID
-      IamInstanceProfile: !Ref ESInstanceRoleProfile
+      IamInstanceProfile: !Ref BTSTRPInstanceRoleProfile
       InstanceInitiatedShutdownBehavior: terminate
       KeyName: !Ref KeyPairName
       InstanceType: m5.large
@@ -654,11 +781,10 @@ Resources:
               start /wait C:\AmazonSSMAgentSetup.exe /install /quiet
 
               rem Run  cfn-init helper to process AWS::CloudFormation::Init directives
-              cfn-init.exe -v -c config -s ${AWS::StackName} --resource ESInstance --region ${AWS::Region}
+              cfn-init.exe -v -c config -s ${AWS::StackName} --resource BTSTRPInstance --region ${AWS::Region}
             </script>
           - QSS3Region:
               !If
               - GovCloudCondition
               - s3-us-gov-west-1
               - s3
-...

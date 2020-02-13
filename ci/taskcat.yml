@@ -3,8 +3,8 @@ global:
   owner: chris.turner@microfocus.com
   qsname: quickstart-microfocus-amc-es
   regions:
-    - ap-northeast-1  # Asia Pacific (Tokyo)
-    - ap-northeast-2  # Asia Pacific (Seoul)
+          #    - ap-northeast-1  # Asia Pacific (Tokyo)
+          #    - ap-northeast-2  # Asia Pacific (Seoul)
 #    - ap-south-1      # Asia Pacific (Mumbai) --> RDS-WinAuth not supported 2019-01-01
     - ap-southeast-1  # Asia Pacific (Singapore)
 #    - ap-southeast-2  # Asia Pacific (Sydney) --> Skipped since m5/c5.large not available in ap-southeast-2a)
@@ -22,56 +22,38 @@ global:
   reporting: true
 
 tests:
-  # Full: FS & DB
-  master-fs-db:
-    parameter_input: quickstart-microfocus-amc-es-input-full.json
+  # Full: FS & DB (Linux)
+  master-linux-fs-db:
+    parameter_input: quickstart-microfocus-amc-es-input-linux-full.json
     template_file: mf-es-master-template.yaml
     regions:
-#      - us-east-1       # US East (N. Virginia)
-#      - us-east-2       # US East (Ohio)
-#      - us-west-1       # US West (N. California) --> RDS-WinAuth not supported 2019-01-01
-#      - us-west-2       # US West (Oregon)
-      - ca-central-1    # Canada (Central)
-      - eu-central-1    # EU (Frankfurt)
-      - eu-west-1       # EU (Ireland)
-#      - eu-west-2       # EU (London)
-#      - eu-west-3       # EU (Paris) --> DirSrv not supported 2019-01-01
-#      - eu-north-1      # EU (Stockholm) --> DirSrv not supported 2019-01-01
-#      - ap-northeast-1  # Asia Pacific (Tokyo)
-#      - ap-northeast-2  # Asia Pacific (Seoul)
-#      - ap-southeast-1  # Asia Pacific (Singapore)
-#      - ap-southeast-2  # Asia Pacific (Sydney) --> Skipped since m5/c5.large not available in ap-southeast-2a)
-#      - ap-south-1      # Asia Pacific (Mumbai) --> RDS-WinAuth not supported 2019-01-01
-#      - sa-east-1       # South America (São Paulo) --> RDS-WinAuth not supported 2019-01-01
+       # - us-east-2          # US East (Ohio)          --> Windows testing below
+       - us-east-1          # US East (N. Virginia)
+       # - us-west-1          # US West (N. California) --> RDS-WinAuth not supported 2020-Feb-07
+       - us-west-2          # US West (Oregon)
+       # - ap-east-1          # Asia Pacific (Hong Kong) --> MFES not available
+       # - ap-south-1         # Asia Pacific (Mumbai) --> RDS-WinAuth not supported 2020-Feb-07
+       # - ap-northeast-3     # Asia Pacific (Osaka-Local) --> Osaka-Local not supported, DirSrv not supported 2020-Feb-07
+       # - ap-northeast-2     # Asia Pacific (Seoul) --> Skip testing due to 'Failed to locate Availability Zone: ap-northeast-2b' issue
+       - ap-southeast-1     # Asia Pacific (Singapore)
+       - ap-southeast-2     # Asia Pacific (Sydney)
+       - ap-northeast-1     # Asia Pacific (Tokyo)
+       - ca-central-1       # Canada (Central)
+       # - cn-north-1         # China (Beijing) --> China not supported
+       # - cn-northwest-1     # China (Ningxia) --> China not supported
+       - eu-central-1       # Europe (Frankfurt)
+       - eu-west-1          # Europe (Ireland)
+       - eu-west-2          # Europe (London)
+       # - eu-west-3          # Europe (Paris) --> DirSrv not supported 2020-Feb-07
+       # - eu-north-1         # Europe (Stockholm) --> RDGW required t2.x no longer available
+       # - me-south-1         # Middle East (Bahrain) --> MFES not available, DirSrv not supported 2020-Feb-07
+       # - sa-east-1          # South America (Sao Paulo) --> RDS-WinAuth not supported 2020-Feb-07
+       # - us-gov-east-1      # AWS GovCloud (US-East) --> GovCloud not supported, RDS-WinAuth not supported 2020-Feb-07
+       # - us-gov-west-1      # AWS GovCloud (US-West) --> GovCloud not supported, RDS-WinAuth not supported 2020-Feb-07
 
-  # FS, No DB
-  master-fs-nodb:
-    parameter_input: quickstart-microfocus-amc-es-input-fs-nodb.json
+  # Full: FS & DB (Windows)
+  master-windows-fs-db:
+    parameter_input: quickstart-microfocus-amc-es-input-windows-full.json
     template_file: mf-es-master-template.yaml
     regions:
-      - us-west-1       # US West (N. California)
-#      - us-west-2       # US West (Oregon)
-#      - ca-central-1    # Canada (Central)
-      - ap-south-1      # Asia Pacific (Mumbai)
-      - ap-southeast-2
-
-  # DB, No FS
-  master-db-nofs:
-    parameter_input: quickstart-microfocus-amc-es-input-db-nofs.json
-    template_file: mf-es-master-template.yaml
-    regions:
-      - eu-central-1    # EU (Frankfurt)
-      - eu-west-1       # EU (Ireland)
-      - eu-west-2       # EU (London)
-#      - ap-northeast-1  # Asia Pacific (Tokyo)
-#      - ap-northeast-2  # Asia Pacific (Seoul)
-
-  # Minimal: No FS, No DB
-  master-nodb-nofs:
-    parameter_input: quickstart-microfocus-amc-es-input-nofs-nodb.json
-    template_file: mf-es-master-template.yaml
-    regions:
-      - ap-southeast-1  # Asia Pacific (Singapore)
-#      - ap-southeast-2  # Asia Pacific (Sydney) --> Skipped since m5/c5.large not available in ap-southeast-2a
       - us-east-2       # US East (Ohio)
-#      - sa-east-1       # South America (São Paulo) --> Skipped since NAT GW not available in sa-east-1a

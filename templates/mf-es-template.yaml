@@ -48,7 +48,6 @@ Metadata:
           - KeyPairName
           - RegionsPerInstance
           - AdditionalESStorageinGiB
-          - ESCCITCPListenerPort
           - MFDSServiceAccountName
           - MFDSServiceAccountPassword
           - ESInstanceName
@@ -57,9 +56,9 @@ Metadata:
           - EMailNotificationTopic
           - ESCWLogGroup
       - Label:
-          default: Fileshare Configuration
+          default: PAC Configuration
         Parameters:
-          - FileshareDataFolderUNC
+          - PACDBMasterUserPassword
       - Label:
           default: Database Configuration
         Parameters:
@@ -69,8 +68,7 @@ Metadata:
         Parameters:
           - InstallFSDemoApp
           - InstallSQLDemoApp
-          - FSDemoApp3270Port
-          - SQLDemoApp3270Port
+          - InstallPACDemoApp
       - Label:
           default: AWS Quick Start Configuration
         Parameters:
@@ -91,8 +89,6 @@ Metadata:
         default: Domain member Security Group ID
       EMailNotificationTopic:
         default: EMail Notification Topic
-      ESCCITCPListenerPort:
-        default: Enterprise Server CCITCP listener port
       ESClientAccessSGID:
         default: Enterprise Server Application (Client) Access Security Group ID
       ESCWLogGroup:
@@ -107,14 +103,12 @@ Metadata:
         default: Enterprise Server license filename
       ESS3BucketName:
         default: Enterprise Server S3 bucket name
-      FileshareDataFolderUNC:
-        default: FileShare Data Folder UNC
-      FSDemoApp3270Port:
-        default: Fileshare Bank Demo TN3270 Port
       InstallFSDemoApp:
         default: Install Fileshare Demo App
       InstallSQLDemoApp:
         default: Install SQLServer Demo App
+      InstallPACDemoApp:
+        default: Install PAC Demo App
       KeyPairName:
         default: Key pair name
       LicenseAgreement:
@@ -123,6 +117,8 @@ Metadata:
         default: Micro Focus Directory Server service domain account name
       MFDSServiceAccountPassword:
         default: Micro Focus Directory Server service account password
+      PACDBMasterUserPassword:
+        default: Database Master password
       SubnetID:
         default: Subnet ID
       QSS3BucketName:
@@ -131,8 +127,6 @@ Metadata:
         default: Quick Start S3 key prefix
       RegionsPerInstance:
         default: Number of Enterprise Server regions per instance
-      SQLDemoApp3270Port:
-        default: SQLServer Bank Demo TN3270 Port
 Parameters:
   AdditionalESStorageinGiB:
     Type: Number
@@ -187,13 +181,6 @@ Parameters:
     Description: >-
       Security Group ID for application ingress into the Enterpriser Server
       instance (e.g., sg-1234abcd).
-  ESCCITCPListenerPort:
-    ConstraintDescription: The port number must be between 1 and 65535.
-    Default: 86
-    Description: The TCP port in the range 1-65535.
-    MaxValue: 65535
-    MinValue: 1
-    Type: Number
   ESCWLogGroup:
     Type: String
     Description: The logical ID of the Amazon CloudWatch Logs Log Group
@@ -227,17 +214,6 @@ Parameters:
       numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot
       start or end with a hyphen (-).
     Type: String
-  FileshareDataFolderUNC:
-    Type: String
-    Description: The UNC of the Enterprise Server Fileshare data folder
-    Default: ''
-  FSDemoApp3270Port:
-    AllowedPattern: >-
-      ^([1-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9]|[1-8][0-9]{3}|9[0-8][0-9]{2}|99[0-8][0-9]|999[0-9]|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$
-    ConstraintDescription: Must be a number (1-65535).
-    Description: The TN3270 port must be a number (1-65535).
-    Default: '5555'
-    Type: String
   InstallFSDemoApp:
     Type: String
     AllowedValues:
@@ -256,6 +232,15 @@ Parameters:
       Choose 'false' if you don't want to install the Enterprise Server SQLServer demo
       app. Requires selection of the 'Create-RDS-Remote-Database' Database type.
     Type: String
+  InstallPACDemoApp:
+    Type: String
+    AllowedValues:
+      - true
+      - false
+    Default: true
+    Description: >-
+      Choose 'false' if you don't want to install the Enterprise Server PAC demo
+      app.
   KeyPairName:
     Description: >-
       The name of an existing EC2 key pair. All instances will launch with this key pair.
@@ -291,6 +276,18 @@ Parameters:
     MaxLength: '32'
     MinLength: '8'
     NoEcho: true
+  PACDBMasterUserPassword:
+    AllowedPattern: >-
+      ^((?![\/"@])[^\x00-\x1F\x80-\x9F]){8,}$
+    ConstraintDescription: >-
+      Must be at least eight characters long, as in "mypassword". Can be any
+      printable ASCII character except "/", """, or "@".
+    Description: >-
+      The password for the DB master user. Must be at least eight characters
+      long, as in "mypassword". Can be any printable ASCII character except
+      "/", """, or "@".
+    Type: String
+    NoEcho: true
   SubnetID:
     Description: 'The ID of a private subnet in an Availability Zone (e.g., subnet-a0246dcd).'
     Type: 'AWS::EC2::Subnet::Id'
@@ -325,13 +322,6 @@ Parameters:
     MaxValue: 10
     MinValue: 1
     Type: Number
-  SQLDemoApp3270Port:
-    AllowedPattern: >-
-      ^([1-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9]|[1-8][0-9]{3}|9[0-8][0-9]{2}|99[0-8][0-9]|999[0-9]|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$
-    ConstraintDescription: Must be a number (1-65535).
-    Description: The TN3270 port must be a number (1-65535).
-    Default: '5349'
-    Type: String
 Rules:
   KeyPairsNotEmpty:
     Assertions:
@@ -350,39 +340,39 @@ Rules:
 Mappings:
   AWSAMIRegionMap:
     AMI:
-      MFES40AMI: ES_40PU4_V3
+      MFES40AMI: ES_50_PU05
     ap-northeast-1:
-      MFES40AMI: ami-0d8abeda47ca57871
+      MFES40AMI: ami-0dff3f5a16ecacfe5
     ap-northeast-2:
-      MFES40AMI: ami-05dccbfcdcf0adf6f
+      MFES40AMI: ami-0248d8806a80ec1be
     ap-south-1:
-      MFES40AMI: ami-09beff70828ed8de7
+      MFES40AMI: ami-07c28d590f4c42580
     ap-southeast-1:
-      MFES40AMI: ami-056340469fc88e360
+      MFES40AMI: ami-0a8d6fe92bdb3a94f
     ap-southeast-2:
-      MFES40AMI: ami-00f7e3a908d0e4499
+      MFES40AMI:  ami-05d45ddc80bfd6446
     ca-central-1:
-      MFES40AMI: ami-09b7e0eccba7305d5
+      MFES40AMI: ami-0f0adf2454aa54382
     eu-central-1:
-      MFES40AMI: ami-0748eb1177837591c
+      MFES40AMI: ami-00664de4c7c03a310
     eu-north-1:
-      MFES40AMI: ami-0dbf576f5ad8a6bbd
+      MFES40AMI: ami-09a1a20c436e7806e
     eu-west-1:
-      MFES40AMI: ami-0afd368a7655b6dfb
+      MFES40AMI: ami-03e0b7531700529c5
     eu-west-2:
-      MFES40AMI: ami-0619eb00e92ab7b00
+      MFES40AMI: ami-0ed05eb873c2da4ef
     eu-west-3:
-      MFES40AMI: ami-02eaa14fb48885cc9
+      MFES40AMI: ami-0dd39cc30ea3574b7
     sa-east-1:
-      MFES40AMI: ami-01bba1206e8807019
+      MFES40AMI: ami-082e4e947dbbf35b1
     us-east-1:
-      MFES40AMI: ami-0a4603cadffc7170d
+      MFES40AMI: ami-0e6255dfab3d7497c
     us-east-2:
-      MFES40AMI: ami-0a2b689af8ad19ff3
+      MFES40AMI: ami-048a75e3c74fdfa5f
     us-west-1:
-      MFES40AMI: ami-09577a4bbdc01a65d
+      MFES40AMI: ami-074e117de783cab22
     us-west-2:
-      MFES40AMI: ami-047e3be248b380812
+      MFES40AMI: ami-09dc8cff0a367fa32
 Conditions:
   GovCloudCondition: !Equals
     - !Ref 'AWS::Region'
@@ -396,6 +386,9 @@ Conditions:
     - 'true'
   InstallingSQLDemoApp: !Equals
     - !Ref InstallSQLDemoApp
+    - 'true'
+  InstallingPACDemoApp: !Equals
+    - !Ref InstallPACDemoApp
     - 'true'
   HaveDatabaseEnvironment: !Not
     - !Equals
@@ -499,7 +492,7 @@ Resources:
             var result = (parseInt(props.RegionsPerInstance) * parseInt(props.RegionStorageOverheadInGiB)) + parseInt(props.AdditionalESStorageinGiB);
             response.send(event, context, response.SUCCESS, {Value: result});
           };
-      Runtime: nodejs10.x
+      Runtime: nodejs12.x
   ESPrimaryDataVolumeStorageSize:
     Type: 'Custom::CalcPrimaryDataVolumeStorageSizeFunction'
     Properties:
@@ -524,7 +517,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Count: 1
-        Timeout: PT20M
+        Timeout: PT25M
     Metadata:
       'AWS::CloudFormation::Authentication':
         S3AccessCreds:
@@ -550,23 +543,35 @@ Resources:
               - 070-Setup-Database-Client-Environment
               - 000-NoOperation
             - !If
+              - InstallingPACDemoApp
+              - 080-Setup-PAC-Database-Envrionment
+              - 000-NoOperation
+            - !If
               - InstallingFSDemoApp
-              - 080-InstallBankDemoFS
+              - 090-InstallBankDemoFS
               - 000-NoOperation
             - !If
               - InstallingSQLDemoApp
-              - 090-InstallBankDemoSQL
+              - 100-InstallBankDemoSQL
               - 000-NoOperation
-            - 100-ChangeMFDSServiceStartName
+            - !If
+              - InstallingPACDemoApp
+              - 110-InstallBankDemoPAC
+              - 000-NoOperation
+            - 120-ChangeMFDSServiceStartName
             - !If
               - InstallingFSDemoApp
-              - 110-Start-BNKDMFS
+              - 130-Start-BNKDMFS
               - 000-NoOperation
             - !If
               - InstallingSQLDemoApp
-              - 120-Start-BNKDMSQL
+              - 140-Start-BNKDMSQL
               - 000-NoOperation
-            - 130-Finalize
+            - !If
+              - InstallingPACDemoApp
+              - 150-Start-BNKDM
+              - 000-NoOperation
+            - 160-Finalize
         000-NoOperation:
           commands:
             a-no-operation:
@@ -857,31 +862,87 @@ Resources:
                     -PathToAdd "C:\Program Files (x86)\Micro Focus\Enterprise Server\bin"
               waitAfterCompletion: '0'
             b-configure-windows-firewall-es-admin-portal-rule:
-              command: !Sub
+              command:
                 powershell.exe
                   -Command New-NetFirewallRule
                     -DisplayName 'Micro Focus Enterprise Server Admin Portal'
-                    -LocalPort ${ESCCITCPListenerPort}
+                    -LocalPort 86
                     -Protocol tcp
               waitAfterCompletion: '0'
             c-configure-windows-firewall-fs-demoapp-tn3270-portal-rule:
               test: !Sub >-
                 if /I "${InstallFSDemoApp}"=="true" (exit 0) else (exit 1)
-              command: !Sub
+              command:
                 powershell.exe
                   -Command New-NetFirewallRule
                     -DisplayName 'FS Demo App TN3270 Ingress'
-                    -LocalPort ${FSDemoApp3270Port}
+                    -LocalPort 5555
                     -Protocol tcp
               waitAfterCompletion: '0'
             d-configure-windows-firewall-sql-demoapp-tn3270-portal-rule:
               test: !Sub >-
                 if /I "${InstallSQLDemoApp}"=="true" (exit 0) else (exit 1)
-              command: !Sub
+              command:
                 powershell.exe
                   -Command New-NetFirewallRule
                     -DisplayName 'SQLServer Demo App TN3270 Ingress'
-                    -LocalPort ${SQLDemoApp3270Port}
+                    -LocalPort 5556
+                    -Protocol tcp
+              waitAfterCompletion: '0'
+            e-configure-windows-firewall-pac-demoapp-tn3270-portal-rule:
+              test: !Sub >-
+                if /I "${InstallPACDemoApp}"=="true" (exit 0) else (exit 1)
+              command:
+                powershell.exe
+                  -Command New-NetFirewallRule
+                    -DisplayName 'SQLServer Demo App TN3270 Ingress'
+                    -LocalPort 5557
+                    -Protocol tcp
+              waitAfterCompletion: '0'
+            f-configure-windows-firewall-fs-demoapp-esmac-portal-rule:
+              test: !Sub >-
+                if /I "${InstallFSDemoApp}"=="true" (exit 0) else (exit 1)
+              command:
+                powershell.exe
+                  -Command New-NetFirewallRule
+                    -DisplayName 'FS esmac Ingress'
+                    -LocalPort 5558
+                    -Protocol tcp
+              waitAfterCompletion: '0'
+            g-configure-windows-firewall-sql-demoapp-esmac-portal-rule:
+              test: !Sub >-
+                if /I "${InstallSQLDemoApp}"=="true" (exit 0) else (exit 1)
+              command:
+                powershell.exe
+                  -Command New-NetFirewallRule
+                    -DisplayName 'SQLServer esmac Ingress'
+                    -LocalPort 5559
+                    -Protocol tcp
+              waitAfterCompletion: '0'
+            h-configure-windows-firewall-pac-demoapp-esmac-portal-rule:
+              test: !Sub >-
+                if /I "${InstallPACDemoApp}"=="true" (exit 0) else (exit 1)
+              command:
+                powershell.exe
+                  -Command New-NetFirewallRule
+                    -DisplayName 'PAC esmac Ingress'
+                    -LocalPort 5560
+                    -Protocol tcp
+              waitAfterCompletion: '0'
+            i-configure-windows-firewall-es-admin-portal-rule:
+              command:
+                powershell.exe
+                  -Command New-NetFirewallRule
+                    -DisplayName 'Micro Focus Enterprise Server Admin Portal'
+                    -LocalPort 86
+                    -Protocol udp
+              waitAfterCompletion: '0'
+            j-configure-windows-firewall-es-escwa-portal-rule:
+              command:
+                powershell.exe
+                  -Command New-NetFirewallRule
+                    -DisplayName 'Micro Focus Enterprise Server Admin Portal'
+                    -LocalPort 10004
                     -Protocol tcp
               waitAfterCompletion: '0'
         050-ApplyESLicenseFile:
@@ -895,6 +956,15 @@ Resources:
                     - s3-us-gov-west-1
                     - s3
               authentication: S3AccessCreds
+            'c:\cfn\scripts\MFDS-Listen-all.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/MFDS-Listen-all.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
           commands:
             a-install-license:
               cwd: 'C:\Program Files (x86)\Common Files\SafeNet Sentinel\Sentinel RMS License Manager\WinNT\'
@@ -903,6 +973,10 @@ Resources:
                   cesadmintool
                     -term install
                     -f d:\esdir\Enterprise-Server.mflic
+              waitAfterCompletion: '0'
+            b-set-MFDS-listen-all:
+              command:
+                powershell.exe -File C:\cfn\scripts\MFDS-Listen-all.ps1
               waitAfterCompletion: '0'
         060-RenameAndJoinDomain:
           commands:
@@ -980,7 +1054,48 @@ Resources:
                   -File c:\cfn\scripts\AddTo-SystemPath.ps1
                     -PathToAdd "c:\Program Files\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn"
               waitAfterCompletion: '0'
-        080-InstallBankDemoFS:
+        080-Setup-PAC-Database-Envrionment:
+          files:
+            'c:\cfn\assets\psqlodbc1_11_x86.zip':
+              source:
+                https://ftp.postgresql.org/pub/odbc/versions/msi/psqlodbc_11_01_0000-x86.zip
+            'c:\cfn\assets\psqlodbc1_11_x64.zip':
+              source:
+                https://ftp.postgresql.org/pub/odbc/versions/msi/psqlodbc_11_01_0000-x64.zip
+          commands:
+            a-Unzip-PsqlODBC-Driver-x86:
+              command:
+                powershell.exe
+                -File C:\cfn\scripts\Unzip-Archive.ps1
+                    -Source C:\cfn\assets\psqlodbc1_11_x86.zip
+                    -Destination C:\cfn\assets\psqlodbc_11_x86
+              waitAfterCompletion: '0'
+            b-Unzip-PsqlODBC-Driver-x64:
+              command:
+                powershell.exe
+                -File C:\cfn\scripts\Unzip-Archive.ps1
+                    -Source C:\cfn\assets\psqlodbc1_11_x64.zip
+                    -Destination C:\cfn\assets\psqlodbc_11_x64
+              waitAfterCompletion: '0'
+            c-install-PsqlODBC-Driver-x86:
+              command:
+                start /wait
+                  msiexec
+                    /quiet
+                    /passive
+                    /qn
+                    /i c:\cfn\assets\psqlodbc_11_x86\psqlodbc_x86.msi
+              waitAfterCompletion: '0'
+            d-install-PsqlODBC-Driver-x64:
+              command:
+                start /wait
+                  msiexec
+                    /quiet
+                    /passive
+                    /qn
+                    /i c:\cfn\assets\psqlodbc_11_x64\psqlodbc_x64.msi
+              waitAfterCompletion: '0'
+        090-InstallBankDemoFS:
           commands:
             a-import-region:
               cwd: C:\Program Files (x86)\Micro Focus\Enterprise Server\bin
@@ -991,7 +1106,7 @@ Resources:
                     C:\BankDemo_FS\Repo\BNKDMFS.xml
                     D
               waitAfterCompletion: '0'
-        090-InstallBankDemoSQL:
+        100-InstallBankDemoSQL:
           files:
             'c:\cfn\scripts\CreateDSN.ps1':
               content: |
@@ -1021,7 +1136,102 @@ Resources:
                     C:\BankDemo_SQL\BNKDMSQLRegionDefForImport\BNKDMSQL.xml
                     D
               waitAfterCompletion: '0'
-        100-ChangeMFDSServiceStartName:
+        110-InstallBankDemoPAC:
+          files:
+            'C:\cfn\scripts\deploy.bat':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/deploy.bat
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+            'C:\cfn\scripts\configure-and-import-pac-region.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/configure-and-import-pac-region.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+            'C:\cfn\scripts\Add-region-to-PAC.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Add-region-to-PAC.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+            'c:\cfn\scripts\CreateDSN_PAC.ps1':
+              content: !Sub |
+                try{
+                  # Create ODBC DNS to the BankDemo database
+                  Add-OdbcDsn `
+                      -Name PG.VSAM `
+                      -DriverName "PostgreSQL ANSI" `
+                      -DsnType "System" `
+                      -Platform "32-bit" `
+                      -SetPropertyValue @("Server=ESPACDatabase", "UserName=esuser", 'Database=MicroFocus$SEE$Files$VSAM', "Password=${PACDBMasterUserPassword}")
+
+                  Add-OdbcDsn `
+                      -Name PG.POSTGRES `
+                      -DriverName "PostgreSQL ANSI" `
+                      -DsnType "System" `
+                      -Platform "32-bit" `
+                      -SetPropertyValue @("Server=ESPACDatabase", "UserName=esuser", "Database=postgres", "Password=${PACDBMasterUserPassword}")
+                  
+                  Add-OdbcDsn `
+                      -Name PG.REGION `
+                      -DriverName "PostgreSQL ANSI" `
+                      -DsnType "System" `
+                      -Platform "32-bit" `
+                      -SetPropertyValue @("Server=ESPACDatabase", "UserName=esuser", 'Database=MicroFocus$CAS$Region$DEMOPAC', "Password=${PACDBMasterUserPassword}")
+
+                  Add-OdbcDsn `
+                      -Name PG.CROSSREGION `
+                      -DriverName "PostgreSQL ANSI" `
+                      -DsnType "System" `
+                      -Platform "32-bit" `
+                      -SetPropertyValue @("Server=ESPACDatabase", "UserName=esuser", 'Database=MicroFocus$CAS$CrossRegion', "Password=${PACDBMasterUserPassword}")
+                } catch {
+                  $_ | Write-AWSQuickStartException
+                }
+          commands:
+            a-CreateDSN:
+              command:
+                powershell.exe
+                  -File c:\cfn\scripts\CreateDSN_PAC.ps1
+              waitAfterCompletion: '0'
+            b-configure-and-import-region1:
+              test: !Sub >-
+                if /I "${ESInstanceName}"=="ESSERVER1" (exit 0) else (exit 1)
+              cwd: C:\Program Files (x86)\Micro Focus\Enterprise Server\bin
+              command:
+                powershell.exe -File c:\cfn\scripts\configure-and-import-pac-region.ps1 -Regionname BNKDM
+              waitAfterCompletion: '0'
+            c-configure-and-import-region2:
+              test: !Sub >-
+                if /I "${ESInstanceName}"=="ESSERVER2" (exit 0) else (exit 1)
+              cwd: C:\Program Files (x86)\Micro Focus\Enterprise Server\bin
+              command:
+                powershell.exe -File c:\cfn\scripts\configure-and-import-pac-region.ps1 -Regionname BNKDM2
+            d-import-data-files:
+              cwd: C:\Program Files (x86)\Micro Focus\Enterprise Server\bin
+              test: !Sub >-
+                if /I "${ESInstanceName}"=="ESSERVER1" (exit 0) else (exit 1)
+              command:
+                start /wait c:\cfn\scripts\deploy.bat
+              waitAfterCompletion: '0'
+            e-add-region-to-PAC:
+              command: !Sub
+                powershell.exe
+                  -File c:\cfn\scripts\Add-region-to-PAC.ps1
+                  -ESInstanceName ${ESInstanceName}
+              waitAfterCompletion: '0'
+        120-ChangeMFDSServiceStartName:
           files:
             'c:\cfn\scripts\Configure-UserLogonPrivileges.ps1':
               source: !Sub
@@ -1036,6 +1246,15 @@ Resources:
               source: !Sub
                 - >-
                   https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Change-NTServiceStartName.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+            'C:\cfn\scripts\Configure-ESCWA.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Configure-ESCWA.ps1
                 - QSS3Region: !If
                     - GovCloudCondition
                     - s3-us-gov-west-1
@@ -1058,7 +1277,12 @@ Resources:
                     -PrivilegeName "SeBatchLogonRight"
                     -Status Grant
               waitAfterCompletion: '0'
-            c-change-mfds-service-startname:
+            c-grant-mfds-account-permissions:
+              cwd: C:\ProgramData
+              command: !Sub
+                icacls "C:\ProgramData\Micro Focus" /grant ${DomainNetBIOSName}\${MFDSServiceAccountName}:(OI)(CI)F /T
+              waitAfterCompletion: '0'
+            d-change-mfds-service-startname:
               command: !Sub
                 powershell.exe
                   -File c:\cfn\scripts\Change-NTServiceStartName.ps1
@@ -1066,7 +1290,23 @@ Resources:
                     -StartName "${DomainNetBIOSName}\${MFDSServiceAccountName}"
                     -StartPassword ${MFDSServiceAccountPassword}
               waitAfterCompletion: '0'
-        110-Start-BNKDMFS:
+            e-configure-escwa:
+              command: !Sub
+                powershell.exe
+                  -File c:\cfn\scripts\Configure-ESCWA.ps1
+                  -DomainNetBIOSName ${DomainNetBIOSName}
+                  -ServiceUser ${MFDSServiceAccountName}
+                  -ServicePassword ${MFDSServiceAccountPassword}
+              waitAfterCompletion: '0'
+            f-grant-ESDemouser-account-remote-logon:
+              command: !Sub
+                powershell.exe
+                  -File c:\cfn\scripts\Configure-UserLogonPrivileges.ps1
+                    -Username "${DomainNetBIOSName}\ESDemoUser"
+                    -PrivilegeName "SeRemoteInteractiveLogonRight"
+                    -Status Grant
+              waitAfterCompletion: '0'
+        130-Start-BNKDMFS:
           commands:
             a-start-BNKDMFS-region:
               command: !Sub
@@ -1077,7 +1317,7 @@ Resources:
                     -DomainUserName "${DomainNetBIOSName}\${MFDSServiceAccountName}"
                     -DomainUserPassword "${MFDSServiceAccountPassword}"
               waitAfterCompletion: '0'
-        120-Start-BNKDMSQL:
+        140-Start-BNKDMSQL:
           commands:
             a-start-BNKDMSQL-region:
               command: !Sub
@@ -1088,7 +1328,41 @@ Resources:
                     -DomainUserName "${DomainNetBIOSName}\${MFDSServiceAccountName}"
                     -DomainUserPassword "${MFDSServiceAccountPassword}"
               waitAfterCompletion: '0'
-        130-Finalize:
+        150-Start-BNKDM:
+          files:
+            'c:\cfn\scripts\StartESRegion-cold.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/StartESRegion-cold.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+          commands:
+            a-start-BNKDM-region:
+              test: !Sub >-
+                if /I "${ESInstanceName}"=="ESSERVER1" (exit 0) else (exit 1)
+              command: !Sub
+                powershell.exe
+                  -File c:\cfn\scripts\Schedule-AD-PowershellTask.ps1
+                    -TaskName startBNKDM
+                    -TaskArguments "-File c:\cfn\scripts\StartESRegion-cold.ps1 -RegionName BNKDM"
+                    -DomainUserName "${DomainNetBIOSName}\${MFDSServiceAccountName}"
+                    -DomainUserPassword "${MFDSServiceAccountPassword}"
+              waitAfterCompletion: '0'
+            b-start-BNKDM2-region:
+              test: !Sub >-
+                if /I "${ESInstanceName}"=="ESSERVER2" (exit 0) else (exit 1)
+              command: !Sub
+                powershell.exe
+                  -File c:\cfn\scripts\Schedule-AD-PowershellTask.ps1
+                    -TaskName startBNKDM
+                    -TaskArguments "-File c:\cfn\scripts\StartESRegion.ps1 -RegionName BNKDM2 -Delay yes"
+                    -DomainUserName "${DomainNetBIOSName}\${MFDSServiceAccountName}"
+                    -DomainUserPassword "${MFDSServiceAccountPassword}"
+              waitAfterCompletion: '0'
+        160-Finalize:
           commands:
             a-finalize-init:
               command:

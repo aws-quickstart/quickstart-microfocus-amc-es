@@ -1,0 +1,927 @@
+# © Copyright 2018 Micro Focus or one of its affiliates
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  "This template deploys a single Micro Focus Enterprise Server instance as
+  defined in the Micro Focus Enterprise Server Reference Architecture.
+  **WARNING** This template creates EC2 instances and related resources. You
+  will be billed for the AWS resources used if you create a stack from this
+  template. License: Apache 2.0 (Please do not remove) Sept,05,2018. Micro Focus
+  Enterprise Server is licensed separately, please review the terms and
+  conditions here (https://www.microfocus.com/about/legal/) for further details.
+  (qs-1qeg3mku7)"
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: Software License Agreement
+        Parameters:
+          - LicenseAgreement
+          - ESLicenseFilename
+      - Label:
+          default: Network Configuration
+        Parameters:
+          - AvailabilityZones
+          - SubnetID
+      - Label:
+          default: Microsoft Active Directory Configuration
+        Parameters:
+          - DomainDNSName
+          - DomainNetBIOSName
+          - DomainMemberSGID
+          - DomainAdminPassword
+      - Label:
+          default: Enterprise Server Configuration
+        Parameters:
+          - ESCWAInstanceType
+          - KeyPairName
+          - MFDSServiceAccountName
+          - MFDSServiceAccountPassword
+          - ESClientAccessSGID
+          - ESS3BucketName
+          - EMailNotificationTopic
+          - ESCWLogGroup
+      - Label:
+          default: AWS Quick Start Configuration
+        Parameters:
+          - QSS3BucketName
+          - QSS3KeyPrefix
+    ParameterLabels:
+      AvailabilityZones:
+        default: Availability Zones
+      DomainAdminPassword:
+        default: Domain Admin account password
+      DomainDNSName:
+        default: Domain DNS name
+      DomainNetBIOSName:
+        default: Domain NetBIOS name
+      DomainMemberSGID:
+        default: Domain member Security Group ID
+      EMailNotificationTopic:
+        default: EMail Notification Topic
+      ESClientAccessSGID:
+        default: Enterprise Server Application (Client) Access Security Group ID
+      ESCWLogGroup:
+        default: Amazon CloudWatch Log Group
+      ESCWAInstanceType:
+        default: Enterprise Server instance type
+      ESLicenseFilename:
+        default: Enterprise Server license filename
+      ESS3BucketName:
+        default: Enterprise Server S3 bucket name
+      KeyPairName:
+        default: Key pair name
+      LicenseAgreement:
+        default: License agreement
+      MFDSServiceAccountName:
+        default: Micro Focus Directory Server service domain account name
+      MFDSServiceAccountPassword:
+        default: Micro Focus Directory Server service account password
+      SubnetID:
+        default: Subnet ID
+      QSS3BucketName:
+        default: Quick Start S3 bucket name
+      QSS3KeyPrefix:
+        default: Quick Start S3 key prefix
+Parameters:
+  AvailabilityZones:
+    Description: >-
+      List of Availability Zones to use for the subnets in the VPC. Only two
+      Availability Zones are used for this deployment, and the logical order
+      of your selections is preserved.
+    Type: 'List<AWS::EC2::AvailabilityZone::Name>'
+  DomainAdminPassword:
+    AllowedPattern: >-
+      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+    Description: >-
+      The password for the domain Admin account. Must be at least 8 characters
+      containing letters, numbers, and symbols.
+    MaxLength: '32'
+    MinLength: '8'
+    NoEcho: true
+    Type: String
+  DomainDNSName:
+    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
+    Default: example.com
+    Description: >-
+      The fully qualified domain name (FQDN), e.g., example.com. Must be 2-255
+      characters.
+    MaxLength: '255'
+    MinLength: '2'
+    Type: String
+  DomainMemberSGID:
+    Description: >-
+      The ID of the Domain Member Security Group (e.g., sg-7f16e910).
+    Type: 'AWS::EC2::SecurityGroup::Id'
+  DomainNetBIOSName:
+    AllowedPattern: '[a-zA-Z0-9\-]+'
+    Default: example
+    Description: >-
+      The NetBIOS name of the domain (up to 15 characters) for users of
+      earlier versions of Microsoft Windows, e.g., example.
+    MaxLength: '15'
+    Type: String
+  EMailNotificationTopic:
+    Type: String
+    Default: ''
+  ESClientAccessSGID:
+    Type: 'AWS::EC2::SecurityGroup::Id'
+    Description: >-
+      Security Group ID for application ingress into the Enterpriser Server
+      instance (e.g., sg-1234abcd).
+  ESCWLogGroup:
+    Type: String
+    Description: The logical ID of the Amazon CloudWatch Logs Log Group
+  ESCWAInstanceType:
+    AllowedValues:
+      - c5.large
+      - c5.xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+    Description: The type of Enterprise Server instance.
+    Default: c5.large
+    Type: String
+  ESLicenseFilename:
+    Description: >-
+      Place the license file obtained from Micro Focus in the S3 bucket folder:
+      s3://<Enterprise Server S3 bucket name>/license/
+    Type: String
+  ESS3BucketName:
+    AllowedPattern: '^[a-z0-9][a-z0-9-.]*$'
+    Description: >-
+      The name of the existing S3 bucket used to store/retrieve objects specific
+      to this stack. A system integrator extending this Quick Start should use
+      this bucket to store or retrieve items needed. This string can include
+      numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot
+      start or end with a hyphen (-).
+    Type: String
+  KeyPairName:
+    Description: >-
+      The name of an existing EC2 key pair. All instances will launch with this key pair.
+    Type: 'AWS::EC2::KeyPair::KeyName'
+  LicenseAgreement:
+    Description: >-
+      I have read and agree to the license terms for Micro Focus Enterprise
+      Server
+      (https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-0562B3C9-2271-4CE8-AF64-93DE4940077F.html).
+    Type: String
+    Default: '-'
+    AllowedValues:
+      - I agree
+      - '-'
+    ConstraintDescription: must answer 'I agree'.
+  MFDSServiceAccountName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9]*'
+    Default: 'MFDSServiceAccount'
+    Description: >-
+      The existing domain account name under which the service will run. If left as
+      default, a domain account 'MFDSServiceAccount' is created. The name must be
+      5-25 characters.
+    MaxLength: '25'
+    MinLength: '5'
+  MFDSServiceAccountPassword:
+    Type: String
+    AllowedPattern: >-
+      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+    Description: >-
+      Enter a password for MFDSServiceAccount. Must be at least 8 characters
+      containing letters, numbers, and symbols.
+    MaxLength: '32'
+    MinLength: '8'
+    NoEcho: true
+  SubnetID:
+    Description: 'The ID of a private subnet in an Availability Zone (e.g., subnet-a0246dcd).'
+    Type: 'AWS::EC2::Subnet::Id'
+  QSS3BucketName:
+    AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
+    ConstraintDescription: >-
+      Quick Start bucket name can include numbers, lowercase letters, uppercase
+      letters, and hyphens (-). It cannot start or end with a hyphen (-).
+    Default: aws-quickstart
+    Description: >-
+      S3 bucket name for the Quick Start assets. Quick Start bucket name can
+      include numbers, lowercase letters, uppercase letters, and hyphens (-). It
+      cannot start or end with a hyphen (-).
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: '^[0-9a-zA-Z-/]*$'
+    ConstraintDescription: >-
+      Quick Start key prefix can include numbers, lowercase letters, uppercase
+      letters, hyphens (-), and forward slash (/).
+    Default: quickstart-microfocus-amc-es/
+    Description: >-
+      S3 key prefix for the Quick Start assets. Quick Start key prefix can
+      include numbers, lowercase letters, uppercase letters, hyphens (-), and
+      forward slash (/).
+    Type: String
+Rules:
+  KeyPairsNotEmpty:
+    Assertions:
+      - Assert: !Not
+          - 'Fn::EachMemberEquals':
+              - 'Fn::RefAll': 'AWS::EC2::KeyPair::KeyName'
+              - ''
+        AssertDescription: All key pair parameters must not be empty.
+  LicenseAgreementRule:
+    Assertions:
+      - Assert:
+          'Fn::Contains':
+            - - I agree
+            - !Ref LicenseAgreement
+        AssertDescription: User must agree to the terms of the license agreement.
+Mappings:
+  AWSAMIRegionMap:
+    AMI:
+      MFES40AMI: ES_50_PU05
+    ap-northeast-1:
+      MFES40AMI: ami-0dff3f5a16ecacfe5
+    ap-northeast-2:
+      MFES40AMI: ami-0248d8806a80ec1be
+    ap-south-1:
+      MFES40AMI: ami-07c28d590f4c42580
+    ap-southeast-1:
+      MFES40AMI: ami-0a8d6fe92bdb3a94f
+    ap-southeast-2:
+      MFES40AMI:  ami-05d45ddc80bfd6446
+    ca-central-1:
+      MFES40AMI: ami-0f0adf2454aa54382
+    eu-central-1:
+      MFES40AMI: ami-00664de4c7c03a310
+    eu-north-1:
+      MFES40AMI: ami-09a1a20c436e7806e
+    eu-west-1:
+      MFES40AMI: ami-03e0b7531700529c5
+    eu-west-2:
+      MFES40AMI: ami-0ed05eb873c2da4ef
+    eu-west-3:
+      MFES40AMI: ami-0dd39cc30ea3574b7
+    sa-east-1:
+      MFES40AMI: ami-082e4e947dbbf35b1
+    us-east-1:
+      MFES40AMI: ami-0e6255dfab3d7497c
+    us-east-2:
+      MFES40AMI: ami-048a75e3c74fdfa5f
+    us-west-1:
+      MFES40AMI: ami-074e117de783cab22
+    us-west-2:
+      MFES40AMI: ami-09dc8cff0a367fa32
+Conditions:
+  GovCloudCondition: !Equals
+    - !Ref 'AWS::Region'
+    - us-gov-west-1
+  HaveESlicenseFilename: !Not
+    - !Equals
+      - !Ref ESLicenseFilename
+      - ''
+  HaveEMailNotificationTopic: !Not
+    - !Equals
+      - !Ref EMailNotificationTopic
+      - ''
+Resources:
+  ESCWAInstanceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - 's3:GetObject'
+                Effect: Allow
+                Resource:
+                  - !Sub
+                    - 'arn:${partition}:s3:::${QSS3BucketName}'
+                    - partition: !If
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
+                  - !Sub
+                    - 'arn:${partition}:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*'
+                    - partition: !If
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
+            Version: 2012-10-17
+          PolicyName: aws-quick-start-s3-policy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - 's3:*'
+                Effect: Allow
+                Resource:
+                  - !Sub
+                    - 'arn:${partition}:s3:::${ESS3BucketName}'
+                    - partition: !If
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
+                  - !Sub
+                    - 'arn:${partition}:s3:::${ESS3BucketName}/*'
+                    - partition: !If
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
+              - Action:
+                  - 'ds:Describe*'
+                Effect: Allow
+                Resource: '*'
+          PolicyName: ESCWAInstancePolicy
+  ESCWAInstanceRoleProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: /
+      Roles:
+        - !Ref ESCWAInstanceRole
+  LambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+  ESCWAInstance:
+    Type: 'AWS::EC2::Instance'
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT25M
+    Metadata:
+      'AWS::CloudFormation::Authentication':
+        S3AccessCreds:
+          type: S3
+          roleName: !Ref ESCWAInstanceRole
+          buckets:
+            - !Ref QSS3BucketName
+            - !Ref ESS3BucketName
+      'AWS::CloudFormation::Init':
+        configSets:
+          config:
+            - 010-InstallTools
+            - 020-ConfigureCWLogs
+            - 030-InitPowerShell
+            - 040-ConfigureEnterpriseServer
+            - !If
+              - HaveESlicenseFilename
+              - 050-ApplyESLicenseFile
+              - 000-NoOperation
+            - 060-RenameAndJoinDomain
+            - 070-Setup-ESCWA-Environment
+            - 090-Finalize
+        000-NoOperation:
+          commands:
+            a-no-operation:
+              command: echo "No-Operation" > nul
+              waitAfterCompletion: '0'
+        010-InstallTools:
+          files:
+            'c:\cfn\assets\AWSCLI64PY3.msi':
+              source: 'https://s3.amazonaws.com/aws-cli/AWSCLI64PY3.msi'
+            'c:\cfn\assets\GoogleChromeStandaloneEnterprise64.msi':
+              source: >-
+                https://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi
+          commands:
+            a-install-aws-cli:
+              command: 'start /wait c:\cfn\assets\AWSCLI64PY3.msi /quiet /passive /qn'
+              waitAfterCompletion: '0'
+            b-install-chrome:
+              command: >-
+                start /wait c:\cfn\assets\GoogleChromeStandaloneEnterprise64.msi
+                /quiet /passive
+              waitAfterCompletion: '0'
+        020-ConfigureCWLogs:
+          files:
+            'C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json':
+              content: !Sub |
+                {
+                  "IsEnabled": true,
+                  "EngineConfiguration": {
+                    "PollInterval": "00:00:05",
+                    "Components": [
+                      {
+                        "Id": "ApplicationEventLog",
+                        "FullName": "AWS.EC2.Windows.CloudWatch.EventLog.EventLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                        "Parameters": {
+                          "LogName": "Application",
+                          "Levels": "7"
+                        }
+                      },
+                      {
+                        "Id": "SystemEventLog",
+                        "FullName": "AWS.EC2.Windows.CloudWatch.EventLog.EventLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                        "Parameters": {
+                          "LogName": "System",
+                          "Levels": "7"
+                        }
+                      },
+                      {
+                        "Id": "SecurityEventLog",
+                        "FullName": "AWS.EC2.Windows.CloudWatch.EventLog.EventLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                        "Parameters": {
+                          "LogName": "Security",
+                          "Levels": "7"
+                        }
+                      },
+                      {
+                        "Id": "EC2ConfigLog",
+                        "FullName": "AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                        "Parameters": {
+                          "LogDirectoryPath": "C:\\Program Files\\Amazon\\Ec2ConfigService\\Logs",
+                          "TimestampFormat": "yyyy-MM-ddTHH:mm:ss.fffZ:",
+                          "Encoding": "ASCII",
+                          "Filter": "EC2ConfigLog.txt",
+                          "CultureName": "en-US",
+                          "TimeZoneKind": "UTC"
+                        }
+                      },
+                      {
+                        "Id": "CfnInitLog",
+                        "FullName": "AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                        "Parameters": {
+                          "LogDirectoryPath": "C:\\cfn\\log",
+                          "TimestampFormat": "yyyy-MM-dd HH:mm:ss,fff",
+                          "Encoding": "ASCII",
+                          "Filter": "cfn-init.log",
+                          "CultureName": "en-US",
+                          "TimeZoneKind": "Local"
+                        }
+                      },
+                      {
+                        "Id": "MemoryPerformanceCounter",
+                        "FullName": "AWS.EC2.Windows.CloudWatch.PerformanceCounterComponent.PerformanceCounterInputComponent,AWS.EC2.Windows.CloudWatch",
+                        "Parameters": {
+                          "CategoryName": "Memory",
+                          "CounterName": "Available MBytes",
+                          "InstanceName": "",
+                          "MetricName": "Memory",
+                          "Unit": "Megabytes",
+                          "DimensionName": "",
+                          "DimensionValue": ""
+                        }
+                      },
+                      {
+                        "Id": "CloudWatchApplicationEventLog",
+                        "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                        "Parameters": {
+                          "AccessKey": "",
+                          "SecretKey": "",
+                          "Region": "${AWS::Region}",
+                          "LogGroup": "${ESCWLogGroup}",
+                          "LogStream": "ES/{instance_id}/ApplicationEventLog"
+                        }
+                      },
+                      {
+                        "Id": "CloudWatchSystemEventLog",
+                        "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                        "Parameters": {
+                          "AccessKey": "",
+                          "SecretKey": "",
+                          "Region": "${AWS::Region}",
+                          "LogGroup": "${ESCWLogGroup}",
+                          "LogStream": "ES/{instance_id}/SystemEventLog"
+                        }
+                      },
+                      {
+                        "Id": "CloudWatchSecurityEventLog",
+                        "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                        "Parameters": {
+                          "AccessKey": "",
+                          "SecretKey": "",
+                          "Region": "${AWS::Region}",
+                          "LogGroup": "${ESCWLogGroup}",
+                          "LogStream": "ES/{instance_id}/SecurityEventLog"
+                        }
+                      },
+                      {
+                        "Id": "CloudWatchEC2ConfigLog",
+                        "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                        "Parameters": {
+                          "AccessKey": "",
+                          "SecretKey": "",
+                          "Region": "${AWS::Region}",
+                          "LogGroup": "${ESCWLogGroup}",
+                          "LogStream": "ES/{instance_id}/EC2ConfigLog"
+                        }
+                      },
+                      {
+                        "Id": "CloudWatchCfnInitLog",
+                        "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                        "Parameters": {
+                          "AccessKey": "",
+                          "SecretKey": "",
+                          "Region": "${AWS::Region}",
+                          "LogGroup": "${ESCWLogGroup}",
+                          "LogStream": "ES/{instance_id}/CfnInitLog"
+                        }
+                      },
+                      {
+                        "Id": "CloudWatch",
+                        "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatch.CloudWatchOutputComponent,AWS.EC2.Windows.CloudWatch",
+                        "Parameters": {
+                          "AccessKey": "",
+                          "SecretKey": "",
+                          "Region": "${AWS::Region}",
+                          "NameSpace": "Windows/Default"
+                        }
+                      }
+                    ],
+                    "Flows": {
+                      "Flows": [
+                        "ApplicationEventLog,CloudWatchApplicationEventLog",
+                        "SystemEventLog,CloudWatchSystemEventLog",
+                        "SecurityEventLog,CloudWatchSecurityEventLog",
+                        "EC2ConfigLog,CloudWatchEC2ConfigLog",
+                        "CfnInitLog,CloudWatchCfnInitLog",
+                        "MemoryPerformanceCounter,CloudWatch"
+                      ]
+                    }
+                  }
+                }
+          commands:
+            a-restartSSM:
+              command: powershell.exe -Command Restart-Service AmazonSSMAgent
+              ignoreErrors: true
+              waitAfterCompletion: 0
+        030-InitPowerShell:
+          files:
+            'C:\cfn\scripts\Unzip-Archive.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Unzip-Archive.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+            'C:\cfn\modules\AWSQuickStart.zip':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/modules/AWSQuickStart.zip
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+            'c:\cfn\cfn-hup.conf':
+              content: !Sub |
+                [main]
+                stack=${AWS::StackName}
+                region=${AWS::Region}
+            'c:\cfn\hooks.d\cfn-auto-reloader.conf':
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.ESCWAInstance.Metadata.AWS::CloudFormation::Init
+                action=cfn-init.exe -v -c config -s ${AWS::StackId} --resource ESCWAInstance --region ${AWS::Region}
+            'c:\cfn\scripts\AddTo-SystemPath.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/AddTo-SystemPath.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+            'c:\cfn\scripts\Schedule-AD-PowershellTask.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Schedule-AD-PowershellTask.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+            'C:\cfn\scripts\Join-Domain.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Join-Domain.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+            'C:\cfn\scripts\Rename-Computer.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Rename-Computer.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+          services:
+            windows:
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                  - 'c:\cfn\cfn-hup.conf'
+                  - 'c:\cfn\hooks.d\cfn-auto-reloader.conf'
+          commands:
+            a-set-execution-policy:
+              command:
+                powershell.exe
+                  -Command "Set-ExecutionPolicy RemoteSigned"
+                  -Force
+              waitAfterCompletion: '0'
+            b-unpack-quickstart-module:
+              command:
+                powershell.exe
+                  -File C:\cfn\scripts\Unzip-Archive.ps1
+                    -Source C:\cfn\modules\AWSQuickStart.zip
+                    -Destination C:\Windows\system32\WindowsPowerShell\v1.0\Modules\
+              waitAfterCompletion: '0'
+            c-init-quickstart-module:
+              command: !Sub
+                powershell.exe
+                  -Command New-AWSQuickStartResourceSignal
+                    -Stack ${AWS::StackName}
+                    -Resource ESCWAInstance
+                    -Region ${AWS::Region}
+              waitAfterCompletion: '0'
+        040-ConfigureEnterpriseServer:
+          files:
+            'c:\cfn\scripts\StartESRegion.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/StartESRegion.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+          commands:
+            a-update-system-path:
+              command:
+                powershell.exe
+                  -File c:\cfn\scripts\AddTo-SystemPath.ps1
+                    -PathToAdd "C:\Program Files (x86)\Micro Focus\Enterprise Server\bin"
+              waitAfterCompletion: '0'
+            b-configure-windows-firewall-es-admin-portal-rule:
+              command:
+                powershell.exe
+                  -Command New-NetFirewallRule
+                    -DisplayName 'Micro Focus Enterprise Server Admin Portal'
+                    -LocalPort 86
+                    -Protocol tcp
+              waitAfterCompletion: '0'
+            c-configure-windows-firewall-es-admin-portal-rule:
+              command:
+                powershell.exe
+                  -Command New-NetFirewallRule
+                    -DisplayName 'Micro Focus Enterprise Server Admin Portal'
+                    -LocalPort 86
+                    -Protocol udp
+              waitAfterCompletion: '0'
+            d-configure-windows-firewall-fs-demoapp-tn3270-portal-rule:
+              command:
+                powershell.exe
+                  -Command New-NetFirewallRule
+                    -DisplayName 'Enterprise Server Common Web Administration Portal'
+                    -LocalPort 10004
+                    -Protocol tcp
+              waitAfterCompletion: '0'
+        050-ApplyESLicenseFile:
+          files:
+            'c:\esdir\Enterprise-Server.mflic':
+              source: !Sub
+                - >-
+                  https://${ESS3BucketName}.${QSS3Region}.amazonaws.com/license/${ESLicenseFilename}
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+          commands:
+            a-install-license:
+              cwd: 'C:\Program Files (x86)\Common Files\SafeNet Sentinel\Sentinel RMS License Manager\WinNT\'
+              command:
+                start /wait
+                  cesadmintool
+                    -term install
+                    -f c:\esdir\Enterprise-Server.mflic
+              waitAfterCompletion: '0'
+        060-RenameAndJoinDomain:
+          commands:
+            a-rename-computer:
+              command:
+                powershell.exe
+                  -File C:\cfn\scripts\Rename-Computer.ps1
+                    -NewName ESCWAInstance
+                    -Restart
+              waitAfterCompletion: forever
+            b-join-domain-and-restart:
+              command: !Sub
+                powershell.exe
+                  -File C:\cfn\scripts\Join-Domain.ps1
+                    -DomainName ${DomainDNSName}
+                    -UserName ${DomainNetBIOSName}\Admin
+                    -Password ${DomainAdminPassword}
+              waitAfterCompletion: forever
+            # Add 'Domain Users' to local RDP Group to they can RDP into this instance
+            # Install A/D Management Tools
+            c-add-domain-users-rdp-users-group:
+              command: !Sub
+                powershell
+                  -Command
+                    "&{
+                        try {
+                          $ErrorActionPreference = 'Stop';
+                          $GroupObj = [ADSI]'WinNT://localhost/Remote Desktop Users';
+                          $GroupObj.Add('WinNT://${DomainNetBIOSName}/Domain Users');
+                          Install-WindowsFeature
+                            -Name GPMC,RSAT-AD-PowerShell,RSAT-AD-AdminCenter,RSAT-ADDS-Tools,RSAT-DNS-Server;
+                        } catch {
+                          $_ | Write-AWSQuickStartException;
+                        }
+                      }"
+              waitAfterCompletion: '0'
+        070-Setup-ESCWA-Environment:
+          files:
+            'c:\cfn\scripts\Configure-ESCWA.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Configure-ESCWA.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+            'c:\cfn\scripts\Add-Other-MFDS.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Add-Other-MFDS.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+            'c:\cfn\scripts\Configure-PAC.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Configure-PAC.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+            'c:\cfn\scripts\Configure-UserLogonPrivileges.ps1':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Configure-UserLogonPrivileges.ps1
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              authentication: S3AccessCreds
+          commands:
+            a-grant-mfds-account-logon-as-a-service:
+              command: !Sub
+                powershell.exe
+                  -File c:\cfn\scripts\Configure-UserLogonPrivileges.ps1
+                    -Username "${DomainNetBIOSName}\${MFDSServiceAccountName}"
+                    -PrivilegeName "SeServiceLogonRight"
+                    -Status Grant
+              waitAfterCompletion: '0'
+            b-grant-mfds-account-logon-as-batch-job:
+              command: !Sub
+                powershell.exe
+                  -File c:\cfn\scripts\Configure-UserLogonPrivileges.ps1
+                    -Username "${DomainNetBIOSName}\${MFDSServiceAccountName}"
+                    -PrivilegeName "SeBatchLogonRight"
+                    -Status Grant
+              waitAfterCompletion: '0'
+            c-Configure-ESCWA:
+              command: !Sub
+                powershell.exe
+                  -File c:\cfn\scripts\Configure-ESCWA.ps1
+                  -DomainNetBIOSName ${DomainNetBIOSName}
+                  -ServiceUser ${MFDSServiceAccountName}
+                  -ServicePassword ${MFDSServiceAccountPassword}
+              waitAfterCompletion: '0'
+            d-add-other-MFDS:
+              command: !Sub
+                powershell.exe
+                  -File c:\cfn\scripts\Add-Other-MFDS.ps1
+                  -DomainNetBIOSName ${DomainNetBIOSName}
+                  -ServiceUser ${MFDSServiceAccountName}
+                  -ServicePassword ${MFDSServiceAccountPassword}
+              waitAfterCompletion: '0'
+            e-Configure-PAC:
+              command:
+                powershell.exe
+                  -File c:\cfn\scripts\Configure-PAC.ps1
+              waitAfterCompletion: '0'
+        090-Finalize:
+          commands:
+            a-finalize-init:
+              command:
+                powershell.exe
+                  -Command Write-AWSQuickStartStatus
+              waitAfterCompletion: '0'
+    Properties:
+      AvailabilityZone: !Select
+        - 0
+        - !Ref AvailabilityZones
+      SubnetId: !Ref SubnetID
+      SecurityGroupIds:
+        - !Ref DomainMemberSGID
+        - !Ref ESClientAccessSGID
+      IamInstanceProfile: !Ref ESCWAInstanceRoleProfile
+      KeyName: !Ref KeyPairName
+      InstanceType: !Ref ESCWAInstanceType
+      ImageId: !FindInMap
+        - AWSAMIRegionMap
+        - !Ref 'AWS::Region'
+        - MFES40AMI
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-ESCWA'
+      UserData: !Base64
+        'Fn::Sub':
+          - |
+            <script>
+              rem Uninstall Amazon SSM Agent and AWS CLI to allow updating
+              wmic product where "description='Amazon SSM Agent' " uninstall
+              wmic product where "description='aws-cfn-bootstrap' " uninstall
+
+              rem Install latest AWS CloudFormation Helper Scripts
+              start /wait c:\Windows\system32\msiexec /passive /qn /i https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-win64-latest.msi
+
+              rem Download and run the latest Amazon SSM Agent setup
+              powershell.exe -Command "iwr https://${QSS3Region}.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe -UseBasicParsing -OutFile C:\AmazonSSMAgentSetup.exe"
+              start /wait C:\AmazonSSMAgentSetup.exe /install /quiet
+
+              rem Run cfn-init helper to process AWS::CloudFormation::Init directives
+              cfn-init.exe -v -c config -s ${AWS::StackName} --resource ESCWAInstance --region ${AWS::Region}
+            </script>
+          - QSS3Region: !If
+              - GovCloudCondition
+              - s3-us-gov-west-1
+              - s3
+  ESCWAInstanceRecoveryAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmDescription: !Sub |
+        "${AWS::StackName} Stack instance auto-recovery alarm/trigger."
+      Namespace: AWS/EC2
+      MetricName: StatusCheckFailed_System
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 5
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      AlarmActions:
+        - !Sub 'arn:aws:automate:${AWS::Region}:ec2:recover'
+        - !If
+          - HaveEMailNotificationTopic
+          - !Ref EMailNotificationTopic
+          - !Ref 'AWS::NoValue'
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref ESCWAInstance
+Outputs:
+  ESCWAInstanceID:
+    Description: The Enterprise Server EC2 Instance ID
+    Value: !Ref ESCWAInstance
+  ESCWAInstanceAZ:
+    Description: >-
+      The Availability Zone where the deployed Enterprise Server instance is
+      launched.
+    Value: !GetAtt ESCWAInstance.AvailabilityZone
+  ESCWAInstancePrivateDnsName:
+    Description: The private DNS name of the deployed Enterprise Server instance
+    Value: !GetAtt ESCWAInstance.PrivateDnsName
+  ESCWAInstancePrivateIp:
+    Description: The private IP address of the deployed Enterprise Server instance
+    Value: !GetAtt ESCWAInstance.PrivateIp

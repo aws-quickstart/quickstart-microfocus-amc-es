@@ -1,0 +1,957 @@
+# © Copyright 2018 Micro Focus or one of its affiliates
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  "This template deploys a single Micro Focus Enterprise Server instance as
+  defined in the Micro Focus Enterprise Server Reference Architecture.
+  **WARNING** This template creates EC2 instances and related resources. You
+  will be billed for the AWS resources used if you create a stack from this
+  template. License: Apache 2.0 (Please do not remove) Sept,05,2018. Micro Focus
+  Enterprise Server is licensed separately, please review the terms and
+  conditions here (https://www.microfocus.com/about/legal/) for further details.
+  (qs-1qeg3mkuj)"
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: Software License Agreement
+        Parameters:
+          - LicenseAgreement
+          - ESLicenseFilename
+      - Label:
+          default: Network Configuration
+        Parameters:
+          - AvailabilityZones
+          - SubnetID
+      - Label:
+          default: Microsoft Active Directory Configuration
+        Parameters:
+          - DomainDNSName
+          - DomainMemberSGID
+          - DomainAdminPassword
+      - Label:
+          default: Enterprise Server Configuration
+        Parameters:
+          - ESInstanceType
+          - KeyPairName
+          - RegionsPerInstance
+          - AdditionalESStorageinGiB
+          - ESInstanceName
+          - ESClientAccessSGID
+          - ESS3BucketName
+          - EMailNotificationTopic
+          - ESCWLogGroup
+      - Label:
+          default: PAC Configuration
+        Parameters:
+          - PACDBMasterUserPassword
+      - Label:
+          default: Enterprise Server Demo Apps Configuration
+        Parameters:
+          - InstallFSDemoApp
+          - InstallSQLDemoApp
+          - InstallPACDemoApp
+      - Label:
+          default: Database Configuration
+        Parameters:
+          - DBMasterUserPassword
+      - Label:
+          default: AWS Quick Start Configuration
+        Parameters:
+          - QSS3BucketName
+          - QSS3KeyPrefix
+    ParameterLabels:
+      AdditionalESStorageinGiB:
+        default: Additional Enterprise Server instance storage
+      AvailabilityZones:
+        default: Availability Zones
+      DomainAdminPassword:
+        default: Domain Admin account password
+      DomainDNSName:
+        default: Domain DNS name
+      DomainMemberSGID:
+        default: Domain member Security Group ID
+      DBMasterUserPassword:
+        default: Database Master password
+      EMailNotificationTopic:
+        default: EMail Notification Topic
+      ESClientAccessSGID:
+        default: Enterprise Server Application (Client) Access Security Group ID
+      ESCWLogGroup:
+        default: Amazon CloudWatch Log Group
+      ESInstanceName:
+        default: Name of the Enterprise Server EC2 instance
+      ESInstanceType:
+        default: Enterprise Server instance type
+      ESLicenseFilename:
+        default: Enterprise Server license filename
+      ESS3BucketName:
+        default: Enterprise Server S3 bucket name
+      InstallFSDemoApp:
+        default: Install Fileshare Demo App
+      InstallSQLDemoApp:
+        default: Install SQLServer Demo App
+      InstallPACDemoApp:
+        default: Install PAC Demo App
+      KeyPairName:
+        default: Key pair name
+      LicenseAgreement:
+        default: License agreement
+      PACDBMasterUserPassword:
+        default: PAC database Master password
+      SubnetID:
+        default: Subnet ID
+      QSS3BucketName:
+        default: Quick Start S3 bucket name
+      QSS3KeyPrefix:
+        default: Quick Start S3 key prefix
+      RegionsPerInstance:
+        default: Number of Enterprise Server regions per instance
+Parameters:
+  AdditionalESStorageinGiB:
+    Type: Number
+    Description: >-
+      Additional EBS storage capacity in gibibytes (GiBs) added to each
+      Enterprise Server instance. Enter 0-16384 GiB.
+    MinValue: 0
+    MaxValue: 16384
+    Default: 100
+  AvailabilityZones:
+    Description: >-
+      The list of Availability Zones to use for the subnets in the VPC. The
+      Quick Start uses two Availability Zones from your list and preserves the
+      logical order you specify.
+    Type: 'List<AWS::EC2::AvailabilityZone::Name>'
+  DomainAdminPassword:
+    AllowedPattern: >-
+      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+    Description: >-
+      The password for the domain Admin account. Must be at least 8 characters
+      containing letters, numbers, and symbols.
+    MaxLength: '32'
+    MinLength: '8'
+    NoEcho: true
+    Type: String
+  DomainDNSName:
+    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
+    Default: example.com
+    Description: >-
+      The fully qualified domain name (FQDN), e.g., example.com. Must be 2-255
+      characters.
+    MaxLength: '255'
+    MinLength: '2'
+    Type: String
+  DomainMemberSGID:
+    Description: >-
+      The ID of the Domain Member Security Group (e.g., sg-7f16e910).
+    Type: 'AWS::EC2::SecurityGroup::Id'
+  DBMasterUserPassword:
+    AllowedPattern: >-
+      ^((?![\/"@])[^\x00-\x1F\x80-\x9F]){8,}$
+    ConstraintDescription: >-
+      Must be at least eight characters long, as in "mypassword". Can be any
+      printable ASCII character except "/", """, or "@".
+    Description: >-
+      The password for the DB master user. Must be at least eight characters
+      long, as in "mypassword". Can be any printable ASCII character except
+      "/", """, or "@".
+    Type: String
+    NoEcho: true
+  EMailNotificationTopic:
+    Type: String
+    Default: ''
+  ESClientAccessSGID:
+    Type: 'AWS::EC2::SecurityGroup::Id'
+    Description: >-
+      Security Group ID for application ingress into the Enterpriser Server
+      instance (e.g., sg-1234abcd).
+  ESCWLogGroup:
+    Type: String
+    Description: The logical ID of the Amazon CloudWatch Logs Log Group
+  ESInstanceName:
+    Type: String
+    Description: The name to assign to the Enterprise Server instance Windows Hostname
+  ESInstanceType:
+    AllowedValues:
+      - c5.large
+      - c5.xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+    Description: The type of Enterprise Server instance.
+    Default: c5.large
+    Type: String
+  ESLicenseFilename:
+    Description: >-
+      Place the license file obtained from Micro Focus in the S3 bucket folder:
+      s3://<Enterprise Server S3 bucket name>/license/
+    Type: String
+  ESS3BucketName:
+    AllowedPattern: '^[a-z0-9][a-z0-9-.]*$'
+    Description: >-
+      The name of the existing S3 bucket used to store/retrieve objects specific
+      to this stack. A system integrator extending this Quick Start should use
+      this bucket to store or retrieve items needed. This string can include
+      numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot
+      start or end with a hyphen (-).
+    Type: String
+  InstallFSDemoApp:
+    Type: String
+    AllowedValues:
+      - true
+      - false
+    Default: true
+    Description: >-
+      Choose 'false' if you don't want to install the Enterprise Server Fileshare demo
+      app. Requires selection of the 'Create-Remote-Fileshare-Server' Fileshare type.
+  InstallSQLDemoApp:
+    AllowedValues:
+      - true
+      - false
+    Default: true
+    Description: >-
+      Choose 'false' if you don't want to install the Enterprise Server SQLServer demo
+      app. Requires selection of the 'Create-RDS-Remote-Database' Database type.
+    Type: String
+  InstallPACDemoApp:
+    Type: String
+    AllowedValues:
+      - true
+      - false
+    Default: true
+    Description: >-
+      Choose 'false' if you don't want to install the Enterprise Server PAC demo
+      app.
+  KeyPairName:
+    Description: >-
+      The name of an existing EC2 key pair. All instances will launch with this key pair.
+    Type: 'AWS::EC2::KeyPair::KeyName'
+  LicenseAgreement:
+    Description: >-
+      I have read and agree to the license terms for Micro Focus Enterprise
+      Server
+      (https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-0562B3C9-2271-4CE8-AF64-93DE4940077F.html).
+    Type: String
+    Default: '-'
+    AllowedValues:
+      - I agree
+      - '-'
+    ConstraintDescription: must answer 'I agree'.
+  PACDBMasterUserPassword:
+    AllowedPattern: >-
+      ^((?![\/"@])[^\x00-\x1F\x80-\x9F]){8,}$
+    ConstraintDescription: >-
+      Must be at least eight characters long, as in "mypassword". Can be any
+      printable ASCII character except "/", """, or "@".
+    Description: >-
+      The password for the DB master user. Must be at least eight characters
+      long, as in "mypassword". Can be any printable ASCII character except
+      "/", """, or "@".
+    Type: String
+    NoEcho: true
+  SubnetID:
+    Description: 'The ID of a private subnet in an Availability Zone (e.g., subnet-a0246dcd).'
+    Type: 'AWS::EC2::Subnet::Id'
+  QSS3BucketName:
+    AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
+    ConstraintDescription: >-
+      Quick Start bucket name can include numbers, lowercase letters, uppercase
+      letters, and hyphens (-). It cannot start or end with a hyphen (-).
+    Default: aws-quickstart
+    Description: >-
+      S3 bucket name for the Quick Start assets. Quick Start bucket name can
+      include numbers, lowercase letters, uppercase letters, and hyphens (-). It
+      cannot start or end with a hyphen (-).
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: '^[0-9a-zA-Z-/]*$'
+    ConstraintDescription: >-
+      Quick Start key prefix can include numbers, lowercase letters, uppercase
+      letters, hyphens (-), and forward slash (/).
+    Default: quickstart-microfocus-amc-es/
+    Description: >-
+      S3 key prefix for the Quick Start assets. Quick Start key prefix can
+      include numbers, lowercase letters, uppercase letters, hyphens (-), and
+      forward slash (/).
+    Type: String
+  RegionsPerInstance:
+    ConstraintDescription: Must be between 1 and 10 regions per instance.
+    Description: >-
+      The number of regions per Enterprise Server instance. Must be between 1 and
+      10 regions per instance.
+    Default: 1
+    MaxValue: 10
+    MinValue: 1
+    Type: Number
+Rules:
+  KeyPairsNotEmpty:
+    Assertions:
+      - Assert: !Not
+          - 'Fn::EachMemberEquals':
+              - 'Fn::RefAll': 'AWS::EC2::KeyPair::KeyName'
+              - ''
+        AssertDescription: All key pair parameters must not be empty.
+  LicenseAgreementRule:
+    Assertions:
+      - Assert:
+          'Fn::Contains':
+            - - I agree
+            - !Ref LicenseAgreement
+        AssertDescription: User must agree to the terms of the license agreement.
+Mappings:
+  AWSAMIRegionMap:
+    AMI:
+      MFES40AMI: ES_50_PU05_RH_V1
+    ap-northeast-1:
+      MFES40AMI: ami-05d1842beab710b38
+    ap-northeast-2:
+      MFES40AMI: ami-0cf8cb7aff561c1c6
+    ap-south-1:
+      MFES40AMI: ami-0c298dd9691aba765
+    ap-southeast-1:
+      MFES40AMI: ami-0359dbf0b49908990
+    ap-southeast-2:
+      MFES40AMI: ami-0a564bf05f121468d
+    ca-central-1:
+      MFES40AMI: ami-0af0bef96f2738cb8
+    eu-central-1:
+      MFES40AMI: ami-072da8340c7ac3c90
+    eu-north-1:
+      MFES40AMI: ami-078851e55a0205bd3
+    eu-west-1:
+      MFES40AMI: ami-04fc334c1c571095b
+    eu-west-2:
+      MFES40AMI: ami-0b00fe6f6d1f8cf8a
+    eu-west-3:
+      MFES40AMI: ami-09634aba2e3e9af51
+    sa-east-1:
+      MFES40AMI: ami-0dbc3f6e6eb8cc52c
+    us-east-1:
+      MFES40AMI: ami-0a7658bdbac09c2f5
+    us-east-2:
+      MFES40AMI: ami-0644d10d2c8e259d0
+    us-west-1:
+      MFES40AMI: ami-0eaaa90f16236c7b8
+    us-west-2:
+      MFES40AMI: ami-0a702c05587e75698
+Conditions:
+  GovCloudCondition: !Equals
+    - !Ref 'AWS::Region'
+    - us-gov-west-1
+  HaveESlicenseFilename: !Not
+    - !Equals
+      - !Ref ESLicenseFilename
+      - ''
+  InstallingFSDemoApp: !Equals
+    - !Ref InstallFSDemoApp
+    - 'true'
+  InstallingSQLDemoApp: !Equals
+    - !Ref InstallSQLDemoApp
+    - 'true'
+  InstallingPACDemoApp: !Equals
+    - !Ref InstallPACDemoApp
+    - 'true'
+  HaveEMailNotificationTopic: !Not
+    - !Equals
+      - !Ref EMailNotificationTopic
+      - ''
+Resources:
+  ESInstanceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - 's3:GetObject'
+                Effect: Allow
+                Resource:
+                  - !Sub
+                    - 'arn:${partition}:s3:::${QSS3BucketName}'
+                    - partition: !If
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
+                  - !Sub
+                    - 'arn:${partition}:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*'
+                    - partition: !If
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
+            Version: 2012-10-17
+          PolicyName: aws-quick-start-s3-policy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - 's3:*'
+                Effect: Allow
+                Resource:
+                  - !Sub
+                    - 'arn:${partition}:s3:::${ESS3BucketName}'
+                    - partition: !If
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
+                  - !Sub
+                    - 'arn:${partition}:s3:::${ESS3BucketName}/*'
+                    - partition: !If
+                        - GovCloudCondition
+                        - aws-us-gov
+                        - aws
+              - Action:
+                  - 'ds:Describe*'
+                Effect: Allow
+                Resource: '*'
+          PolicyName: ESInstancePolicy
+  ESInstanceRoleProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: /
+      Roles:
+        - !Ref ESInstanceRole
+  LambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+  CalcPrimaryDataVolumeStorageSizeFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        ZipFile: |
+          var response = require('cfn-response');
+          exports.handler = function(event, context) {
+            var props = event.ResourceProperties;
+            var result = (parseInt(props.RegionsPerInstance) * parseInt(props.RegionStorageOverheadInGiB)) + parseInt(props.AdditionalESStorageinGiB);
+            response.send(event, context, response.SUCCESS, {Value: result});
+          };
+      Runtime: nodejs12.x
+  ESPrimaryDataVolumeStorageSize:
+    Type: 'Custom::CalcPrimaryDataVolumeStorageSizeFunction'
+    Properties:
+      ServiceToken: !GetAtt CalcPrimaryDataVolumeStorageSizeFunction.Arn
+      RegionsPerInstance: !Ref RegionsPerInstance
+      RegionStorageOverheadInGiB: 50
+      AdditionalESStorageinGiB: !Ref AdditionalESStorageinGiB
+      Value: 0
+  ESPrimaryDataVolume:
+    Type: 'AWS::EC2::Volume'
+    Properties:
+      VolumeType: gp2
+      Size: !GetAtt ESPrimaryDataVolumeStorageSize.Value
+      AvailabilityZone: !Select
+        - 0
+        - !Ref AvailabilityZones
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-${ESInstanceName} Data Volume'
+  ESInstance:
+    Type: 'AWS::EC2::Instance'
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT20M
+    Metadata:
+      'AWS::CloudFormation::Authentication':
+        S3AccessCreds:
+          type: S3
+          roleName: !Ref ESInstanceRole
+          buckets:
+            - !Ref QSS3BucketName
+            - !Ref ESS3BucketName
+      'AWS::CloudFormation::Init':
+        configSets:
+          config:
+            - 000-NoOperation
+            - 010-JoinDomain
+            - !If
+              - HaveESlicenseFilename
+              - 020-ApplyESLicenseFile
+              - 000-NoOperation
+            - !If
+              - InstallingSQLDemoApp
+              - 030-ConfigureODBC
+              - 000-NoOperation
+            - !If
+              - InstallingPACDemoApp
+              - 040-Setup-PAC-Database-Envrionment
+              - 000-NoOperation
+            - !If
+              - InstallingFSDemoApp
+              - 050-InstallBankDemoFS
+              - 000-NoOperation
+            - !If
+              - InstallingSQLDemoApp
+              - 070-InstallBankDemoSQL
+              - 000-NoOperation
+            - !If
+              - InstallingPACDemoApp
+              - 060-InstallBankDemoPAC
+              - 000-NoOperation
+            - !If
+              - InstallingFSDemoApp
+              - 080-StartBNKDMFS
+              - 000-NoOperation
+            - !If
+              - InstallingSQLDemoApp
+              - 090-StartBNKDMSQL
+              - 000-NoOperation
+            - !If
+              - InstallingPACDemoApp
+              - 100-StartBNKDM
+              - 000-NoOperation
+        000-NoOperation:
+          commands:
+            a-no-operation:
+              command: echo "No-Operation" > nul
+              waitAfterCompletion: '0'
+        010-JoinDomain:
+          files:
+            '/tmp/JoinTo-Domain-Linux.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/JoinTo-Domain-Linux.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+            '/tmp/RenameHost.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/RenameHost.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+          commands:
+            a-JoinDomain:
+              command: !Sub
+                ./tmp/JoinTo-Domain-Linux.sh Admin ${DomainDNSName} '${DomainAdminPassword}'
+              waitAfterCompletion: '0'
+            b-RenameMachine:
+              command: !Sub
+                ./tmp/RenameHost.sh ${DomainDNSName} ${ESInstanceName}
+              waitAfterCompletion: '0'
+        020-ApplyESLicenseFile:
+          files:
+            '/tmp/Enterprise-Server.mflic':
+              source: !Sub
+                - >-
+                  https://${ESS3BucketName}.${QSS3Region}.amazonaws.com/license/${ESLicenseFilename}
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+            '/tmp/Start-MFDS.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Start-MFDS.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+          commands:
+            a-install-license:
+              command:
+                ./var/microfocuslicensing/bin/cesadmintool.sh -install /tmp/Enterprise-Server.mflic
+            b-start-mfds:
+              command:
+                ./tmp/Start-MFDS.sh
+        030-ConfigureODBC:
+          files:
+            '/tmp/Install-ODBC.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Install-ODBC.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+            '/tmp/Configure-ODBC.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Configure-ODBC.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+          commands:
+            a-InstallDrivers:
+              command:
+                ./tmp/Install-ODBC.sh
+              waitAfterCompletion: '0'
+            b-AddDSNEntries:
+              command:
+                ./tmp/Configure-ODBC.sh ESDatabase
+              waitAfterCompletion: '0'
+        040-Setup-PAC-Database-Envrionment:
+          files:
+            '/tmp/Create-ps-DSN.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Create-ps-DSN.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+          commands:
+            a-Create-Postgres-DSN:
+              command: !Sub
+                /tmp/Create-ps-DSN.sh ${PACDBMasterUserPassword}
+              waitAfterCompletion: '0'
+        050-InstallBankDemoFS:
+          files:
+            '/tmp/Mount-Networkshare.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Mount-Networkshare.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+            '/tmp/Install-Region.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Install-Region.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+          commands:
+            a-ImportBNKDMFS:
+              command:
+                ./tmp/Install-Region.sh "/home/ec2-user/BankDemo_FS/Repo/BNKDMFS.xml"
+              waitAfterCompletion: '0'
+            b-MountNetworkShare:
+              command:
+                ./tmp/Mount-Networkshare.sh
+        060-InstallBankDemoPAC:
+          files:
+            '/tmp/Install-Region.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Install-Region.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+            '/tmp/deploy.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/deploy.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+            '/tmp/Add-region-to-PAC.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Add-region-to-PAC.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+          commands:
+            a-ImportBNKDM:
+              test: !Sub >-
+                if [ "${ESInstanceName}" == "ESServer1" ];then exit 0; else exit 1 ;fi
+              command:
+                ./tmp/Install-Region.sh "/home/ec2-user/BankDemo_PAC/Repo/BNKDM.xml"
+              waitAfterCompletion: '0'
+            b-ImportBNKDM2:
+              test: !Sub >-
+                if [ "${ESInstanceName}" == "ESServer2" ];then exit 0; else exit 1 ;fi
+              command:
+                ./tmp/Install-Region.sh "/home/ec2-user/BankDemo_PAC/Repo/BNKDM2.xml"
+            c-import-data-files:
+              test: !Sub >-
+                if [ "${ESInstanceName}" == "ESServer1" ];then exit 0; else exit 1 ;fi
+              command:
+                  ./tmp/deploy.sh
+              waitAfterCompletion: '0'
+            d-add-region-to-pac:
+              test: !Sub >-
+                if [ "${ESInstanceName}" == "ESServer1" ];then exit 0; else exit 1 ;fi
+              command: !Sub
+                ./tmp/Add-region-to-PAC.sh ${ESInstanceName} BNKDM
+              waitAfterCompletion: '0'
+            e-add-region-to-pac2:
+              test: !Sub >-
+                if [ "${ESInstanceName}" == "ESServer2" ];then exit 0; else exit 1 ;fi
+              command: !Sub
+                ./tmp/Add-region-to-PAC.sh ${ESInstanceName} BNKDM2
+              waitAfterCompletion: '0'
+        070-InstallBankDemoSQL:
+          files:
+            '/tmp/Install-Region.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Install-Region.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+            '/tmp/Setup-XA-resource.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Setup-XA-resource.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+          commands:
+            a-ImportBNKDMFS:
+              command:
+                /tmp/Install-Region.sh "/home/ec2-user/BankDemo_SQL/Repo/BNKDMSQL.xml"
+              waitAfterCompletion: '0'
+            b-Setup-XA-Resource:
+              command: !Sub
+                /tmp/Setup-XA-resource.sh ${DBMasterUserPassword}
+              waitAfterCompletion: '0'
+        080-StartBNKDMFS:
+          files:
+            '/tmp/Start-Region.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Start-Region.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+          commands:
+            a-StartBNKDMFS:
+              command:
+                ./tmp/Start-Region.sh BNKDMFS 32
+              waitAfterCompletion: '0'
+        090-StartBNKDMSQL:
+          files:
+            '/tmp/Start-Region.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Start-Region.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+          commands:
+            a-StartBNKDMSQL:
+              command:
+                ./tmp/Start-Region.sh BNKDMSQL 64
+              waitAfterCompletion: '0'
+        100-StartBNKDM:
+          files:
+            '/tmp/Start-Region.sh':
+              source: !Sub
+                - >-
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Start-Region.sh
+                - QSS3Region: !If
+                    - GovCloudCondition
+                    - s3-us-gov-west-1
+                    - s3
+              mode: 000550
+              owner: root
+              group: root
+              authentication: S3AccessCreds
+          commands:
+            a-StartBNKDM:
+              test: !Sub >-
+                if [ "${ESInstanceName}" == "ESServer1" ];then exit 0; else exit 1 ;fi
+              command:
+                ./tmp/Start-Region.sh BNKDM 64 c
+              waitAfterCompletion: '0'
+            b-StartBNKDM2:
+              test: !Sub >-
+                if [ "${ESInstanceName}" == "ESServer2" ];then exit 0; else exit 1 ;fi
+              command:
+                ./tmp/Start-Region.sh BNKDM2 64 w 180
+              waitAfterCompletion: '0'
+    Properties:
+      AvailabilityZone: !Select
+        - 0
+        - !Ref AvailabilityZones
+      Volumes:
+        - VolumeId: !Ref ESPrimaryDataVolume
+          Device: xvdb
+      SubnetId: !Ref SubnetID
+      SecurityGroupIds:
+        - !Ref DomainMemberSGID
+        - !Ref ESClientAccessSGID
+      IamInstanceProfile: !Ref ESInstanceRoleProfile
+      KeyName: !Ref KeyPairName
+      InstanceType: !Ref ESInstanceType
+      ImageId: !FindInMap
+        - AWSAMIRegionMap
+        - !Ref 'AWS::Region'
+        - MFES40AMI
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-${ESInstanceName}'
+      UserData: !Base64
+        'Fn::Join':
+          - ''
+          - - |
+              #!/bin/bash -xe
+            - | 
+              exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+            - >
+              rpm -Uvh
+              https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+            - |
+              yum -y install python-pip
+            - >
+              /bin/easy_install --script-dir /opt/aws/bin 
+              https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+            - >
+              cp -f `pip show aws-cfn-bootstrap 2>/dev/null|grep -E "^Location"|awk
+              -F: '{print $2}'`/init/redhat/cfn-hup /etc/init.d/
+            - |
+              chmod 755 /etc/init.d/cfn-hup
+              chkconfig --add cfn-hup
+            - >-
+              /opt/aws/bin/cfn-init -v --stack 
+            - !Ref 'AWS::StackName' 
+            - ' --resource ESInstance
+              --configsets config 
+              --region '
+            - !Ref 'AWS::Region'
+            - |+
+            
+            - '/opt/aws/bin/cfn-signal -e $? --stack '
+            - !Ref 'AWS::StackName'
+            - ' --resource ESInstance --region '
+            - !Ref 'AWS::Region'
+            - |+
+  ESInstanceRecoveryAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmDescription: !Sub |
+        "${AWS::StackName} Stack instance auto-recovery alarm/trigger."
+      Namespace: AWS/EC2
+      MetricName: StatusCheckFailed_System
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 5
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      AlarmActions:
+        - !Sub 'arn:aws:automate:${AWS::Region}:ec2:recover'
+        - !If
+          - HaveEMailNotificationTopic
+          - !Ref EMailNotificationTopic
+          - !Ref 'AWS::NoValue'
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref ESInstance
+Outputs:
+  ESInstanceID:
+    Description: The Enterprise Server EC2 Instance ID
+    Value: !Ref ESInstance
+  ESInstanceAZ:
+    Description: >-
+      The Availability Zone where the deployed Enterprise Server instance is
+      launched.
+    Value: !GetAtt ESInstance.AvailabilityZone
+  ESInstancePrivateDnsName:
+    Description: The private DNS name of the deployed Enterprise Server instance
+    Value: !GetAtt ESInstance.PrivateDnsName
+  ESInstancePrivateIp:
+    Description: The private IP address of the deployed Enterprise Server instance
+    Value: !GetAtt ESInstance.PrivateIp

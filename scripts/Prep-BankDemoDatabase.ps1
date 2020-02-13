@@ -50,6 +50,25 @@ try {
              CREATE User [MFDSServiceAccount] `
                FOR LOGIN [$DomainNetBIOSName\MFDSServiceAccount]"
 
+    # Create the Linux MFDBUser SQL Login
+    & "c:\Program Files\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\sqlcmd" `
+        -S ESDatabase `
+        -U $DBMasterUsername `
+        -P $DBMasterUserPassword `
+        -Q "CREATE Login [MFDBUser] `
+                WITH `
+                    PASSWORD='$DBMasterUserPassword', `
+                    default_database=BANKDEMO, `
+                    default_language=[us_english]"
+
+    # Create the MFDSServiceAccount User in BankDemo
+    & "c:\Program Files\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\sqlcmd" `
+        -S ESDatabase `
+        -U $DBMasterUsername `
+        -P $DBMasterUserPassword `
+        -Q "USE BANKDEMO; `
+             CREATE User [MFDBUser] `
+               FOR LOGIN [MFDBUser]"
     # Grant permissions
     & "c:\Program Files\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\sqlcmd" `
         -S ESDatabase `
@@ -57,8 +76,7 @@ try {
         -P $DBMasterUserPassword `
         -Q "USE BANKDEMO; `
              GRANT CONTROL `
-               TO [MFDSServiceAccount]"
-
+               TO [MFDSServiceAccount], [MFDBUser]"
 } catch {
      $_ | Write-AWSQuickStartException
 }
