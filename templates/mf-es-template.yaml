@@ -499,7 +499,7 @@ Resources:
             var result = (parseInt(props.RegionsPerInstance) * parseInt(props.RegionStorageOverheadInGiB)) + parseInt(props.AdditionalESStorageinGiB);
             response.send(event, context, response.SUCCESS, {Value: result});
           };
-      Runtime: nodejs8.10
+      Runtime: nodejs10.x
   ESPrimaryDataVolumeStorageSize:
     Type: 'Custom::CalcPrimaryDataVolumeStorageSizeFunction'
     Properties:
@@ -579,17 +579,11 @@ Resources:
             'c:\cfn\assets\GoogleChromeStandaloneEnterprise64.msi':
               source: >-
                 https://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi
-            'c:\cfn\assets\npp.Installer.x64.exe':
-              source: >-
-                https://notepad-plus-plus.org/repository/7.x/7.5.9/npp.7.5.9.Installer.x64.exe
           commands:
             a-install-aws-cli:
               command: 'start /wait c:\cfn\assets\AWSCLI64PY3.msi /quiet /passive /qn'
               waitAfterCompletion: '0'
-            b-install-npp:
-              command: 'start /wait c:\cfn\assets\npp.Installer.x64.exe /S'
-              waitAfterCompletion: '0'
-            c-install-chrome:
+            b-install-chrome:
               command: >-
                 start /wait c:\cfn\assets\GoogleChromeStandaloneEnterprise64.msi
                 /quiet /passive
