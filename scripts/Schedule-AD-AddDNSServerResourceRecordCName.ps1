@@ -36,10 +36,10 @@ try {
         throw "No DNS Servers found for domain $DomainDnsName"
     }
     $dnsServerIpAddress = $dnsServerAddresses[0].IPAddressToString;
-
+    $TName = "Add-DnsServerResourceRecordCName" + $CName
     # Schedule the Add-DNS call to run as <domain>\<domainuser> 10s from now and then delete the task 60s later
     c:\cfn\scripts\Schedule-AD-PowershellTask.ps1 `
-        -TaskName Add-DnsServerResourceRecordCName `
+        -TaskName "$TName" `
         -TaskArguments (
             "-Command Add-DnsServerResourceRecordCName "+ 
             "-Name $CName "+

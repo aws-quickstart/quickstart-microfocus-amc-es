@@ -1,19 +1,13 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
-    [string]$RegionName,
-    [Parameter(Mandatory=$false)]
-    [string]$Delay
+    [string]$RegionName
 )
 
 try {
     $ErrorActionPreference = "Stop"
      Start-Transcript -Path c:\cfn\log\$($MyInvocation.MyCommand.Name).txt -Append -IncludeInvocationHeader;
-     if ($Delay){
-         Start-Sleep -s 90
-     }
-	& "C:\Program Files (x86)\Micro Focus\Enterprise Server\bin\casstart.exe" `
-		"-r$RegionName"
+	& "C:\Program Files (x86)\Micro Focus\Enterprise Server\bin\casstart.exe" -r"$RegionName" -s:c
 
 } catch {
       $_ | Write-AWSQuickStartException

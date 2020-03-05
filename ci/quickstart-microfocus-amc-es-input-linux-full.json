@@ -1,0 +1,235 @@
+[
+    {
+        "ParameterKey": "AdditionalESStorageinGiB",
+        "ParameterValue": "1024"
+    },
+    {
+        "ParameterKey": "AvailabilityZones",
+        "ParameterValue": "$[taskcat_genaz_2]"
+    },
+    {
+        "ParameterKey": "DatabaseType",
+        "ParameterValue": "Create-RDS-Remote-Database"
+    },
+    {
+        "ParameterKey": "DBBackupRetentionPeriod",
+        "ParameterValue": "30"
+    },
+    {
+        "ParameterKey": "DBInstanceClass",
+        "ParameterValue": "db.r4.large"
+    },
+    {
+        "ParameterKey": "DBMasterUsername",
+        "ParameterValue": "DBAdmin"
+    },
+    {
+        "ParameterKey": "DBMasterUserPassword",
+        "ParameterValue": "$[taskcat_genpass_12A]"
+    },
+    {
+        "ParameterKey": "DBMasterUserPasswordConfirm",
+        "ParameterValue": "$[taskcat_getval_DBMasterUserPassword]"
+    },
+    {
+        "ParameterKey": "DBPreferredBackupWindow",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "DBPreferredMaintenanceWindow",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "DSMicrosoftADEdition",
+        "ParameterValue": "Enterprise"
+    },
+    {
+        "ParameterKey": "DBStorageInGiB",
+        "ParameterValue": "1024"
+    },
+    {
+        "ParameterKey": "DemoAppsIngressCIDR",
+        "ParameterValue": "10.0.0.0/16"
+    },
+    {
+        "ParameterKey": "DeployMultiAZ",
+        "ParameterValue": "false"
+    },
+    {
+        "ParameterKey": "DomainAdminPassword",
+        "ParameterValue": "$[taskcat_genpass_12A]"
+    },
+    {
+        "ParameterKey": "DomainAdminPasswordConfirm",
+        "ParameterValue": "$[taskcat_getval_DomainAdminPassword]"
+    },
+    {
+        "ParameterKey": "DomainDNSName",
+        "ParameterValue": "example.com" 
+    },
+    {
+        "ParameterKey": "DomainNetBIOSName",
+        "ParameterValue": "example"
+    },
+    {
+        "ParameterKey": "ESCWLogGroupRetentionInDays",
+        "ParameterValue": "7"
+    },
+    {
+        "ParameterKey": "ESDemoUserPassword",
+        "ParameterValue": "Password123!"
+    },
+    {
+        "ParameterKey": "ESDemoUserPasswordConfirm",
+        "ParameterValue": "$[taskcat_getval_ESDemoUserPassword]"
+    },
+    {
+        "ParameterKey": "ESInstanceType",
+        "ParameterValue": "c5.large"
+    },
+    {
+        "ParameterKey": "ESLicenseFilename",
+        "ParameterValue": "overridden"
+
+    },
+    {
+        "ParameterKey": "ESResourceNamePrefix",
+        "ParameterValue": "AWS::StackName"
+    },
+    {
+        "ParameterKey": "FSInstanceType",
+        "ParameterValue": "c5.large"
+    },
+    {
+        "ParameterKey": "FSStorageInGiB",
+        "ParameterValue": "50"
+    },
+    {
+        "ParameterKey": "FileshareType",
+        "ParameterValue": "Create-Remote-Fileshare-Server"
+    },
+    {
+        "ParameterKey": "FSVIEWUserPassword",
+        "ParameterValue": "Password123!"
+    },
+    {
+        "ParameterKey": "FSVIEWUserPasswordConfirm",
+        "ParameterValue": "Password123!"
+    },
+    {
+        "ParameterKey": "InstallFSDemoApp",
+        "ParameterValue": "true"
+    },
+    {
+        "ParameterKey": "InstallSQLDemoApp",
+        "ParameterValue": "true"
+    },
+    {
+        "ParameterKey": "KeyPairName",
+        "ParameterValue": "cikey"
+    },
+    {
+        "ParameterKey": "LicenseAgreement",
+        "ParameterValue": "I agree"
+    },
+    {
+        "ParameterKey": "MFDSServiceAccountName",
+        "ParameterValue": "MFDSServiceAccount"
+    },
+    {
+        "ParameterKey": "MFDSServiceAccountPassword",
+        "ParameterValue": "Password123!"
+    },
+    {
+        "ParameterKey": "MFDSServiceAccountPasswordConfirm",
+        "ParameterValue": "$[taskcat_getval_MFDSServiceAccountPassword]"
+    },
+    {
+        "ParameterKey": "NumberOfRDGWHosts",
+        "ParameterValue": "1"
+    },
+    {
+        "ParameterKey": "OperatorEmail",
+        "ParameterValue": "None"
+    },
+    {
+        "ParameterKey": "PrivateSubnet1ACIDR",
+        "ParameterValue": "10.0.0.0/19"
+    },
+    {
+        "ParameterKey": "PrivateSubnet2ACIDR",
+        "ParameterValue": "10.0.32.0/19"
+    },
+    {
+        "ParameterKey": "PublicSubnet1CIDR",
+        "ParameterValue": "10.0.128.0/20"
+    },
+    {
+        "ParameterKey": "PublicSubnet2CIDR",
+        "ParameterValue": "10.0.144.0/20"
+    },
+    {
+        "ParameterKey": "QSS3BucketName",
+        "ParameterValue": "$[taskcat_autobucket]"
+    },
+    {
+        "ParameterKey": "QSS3KeyPrefix",
+        "ParameterValue": "quickstart-microfocus-amc-es/"
+    },
+    {
+        "ParameterKey": "ESS3BucketName",
+        "ParameterValue": "$[taskcat_getval_QSS3BucketName]"
+    },
+    {
+        "ParameterKey": "RDGWCIDR",
+        "ParameterValue": "10.0.0.0/16"
+    },
+    {
+        "ParameterKey": "RDGWInstanceType",
+        "ParameterValue": "t2.large"
+    },
+    {
+        "ParameterKey": "RegionsPerInstance",
+        "ParameterValue": "1"
+    },
+	{
+        "ParameterKey": "NumberOfBastionHosts",
+        "ParameterValue": "1"
+    },
+	{
+        "ParameterKey": "BastionInstanceType",
+        "ParameterValue": "t2.large"
+    },
+	{
+        "ParameterKey": "InstallPACDemoApp",
+        "ParameterValue": "true"
+    },
+	{
+        "ParameterKey": "PACDBInstanceClass",
+        "ParameterValue": "db.r4.large"
+    },
+	{
+        "ParameterKey": "PACDBMasterUsername",
+        "ParameterValue": "DBAdmin"
+    },
+    {
+        "ParameterKey": "PACDBMasterUserPassword",
+        "ParameterValue": "$[taskcat_genpass_12A]"
+    },
+    {
+        "ParameterKey": "PACDBMasterUserPasswordConfirm",
+        "ParameterValue": "$[taskcat_getval_PACDBMasterUserPassword]"
+    },
+	{
+        "ParameterKey": "OS",
+        "ParameterValue": "Red Hat Enterprise Linux"
+    },
+	{
+        "ParameterKey": "BastionCIDR",
+        "ParameterValue": "10.0.0.0/16"
+    },
+    {
+        "ParameterKey": "VPCCIDR",
+        "ParameterValue": "10.0.0.0/16"
+    }
+]
