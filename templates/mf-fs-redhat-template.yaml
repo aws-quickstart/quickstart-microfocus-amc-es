@@ -586,7 +586,7 @@ Resources:
             '/tmp/Setup-Fileshare.sh':
               source: !Sub
                 - >-
-                  https://${ESS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Setup-Fileshare.sh
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Setup-Fileshare.sh
                 - QSS3Region: !If
                     - GovCloudCondition
                     - s3-us-gov-west-1
@@ -598,7 +598,7 @@ Resources:
             '/tmp/Start-Fileshare.sh':
               source: !Sub
                 - >-
-                  https://${ESS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Start-Fileshare.sh
+                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Start-Fileshare.sh
                 - QSS3Region: !If
                     - GovCloudCondition
                     - s3-us-gov-west-1
