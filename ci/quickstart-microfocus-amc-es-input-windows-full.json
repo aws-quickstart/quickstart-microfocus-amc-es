@@ -192,23 +192,23 @@
         "ParameterKey": "RegionsPerInstance",
         "ParameterValue": "1"
     },
-	{
+    {
         "ParameterKey": "NumberOfBastionHosts",
         "ParameterValue": "1"
     },
-	{
+    {
         "ParameterKey": "BastionInstanceType",
         "ParameterValue": "t2.large"
     },
-	{
+    {
         "ParameterKey": "InstallPACDemoApp",
         "ParameterValue": "true"
     },
-	{
+    {
         "ParameterKey": "PACDBInstanceClass",
         "ParameterValue": "db.r4.large"
     },
-	{
+    {
         "ParameterKey": "PACDBMasterUsername",
         "ParameterValue": "DBAdmin"
     },
@@ -220,11 +220,11 @@
         "ParameterKey": "PACDBMasterUserPasswordConfirm",
         "ParameterValue": "$[taskcat_getval_PACDBMasterUserPassword]"
     },
-	{
+    {
         "ParameterKey": "OS",
         "ParameterValue": "Windows"
     },
-	{
+    {
         "ParameterKey": "BastionCIDR",
         "ParameterValue": "10.0.0.0/16"
     },
