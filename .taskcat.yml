@@ -1,9 +1,9 @@
-general:
-  parameters:
-    KeyPairName: $[taskcat_getkeypair]
 project:
   name: quickstart-microfocus-amc-es
   owner: chris.turner@microfocus.com
+  shorten_stack_name: true
+  parameters:
+    KeyPairName: $[taskcat_getkeypair]
   regions:
     #    - ap-northeast-1  # Asia Pacific (Tokyo)
     #    - ap-northeast-2  # Asia Pacific (Seoul)
