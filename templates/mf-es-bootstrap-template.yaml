@@ -55,6 +55,7 @@ Metadata:
         default: AWS Quick Start Configuration
       Parameters:
       - QSS3BucketName
+      - QSS3BucketRegion
       - QSS3KeyPrefix
     ParameterLabels:
       AvailabilityZones:
@@ -99,6 +100,8 @@ Metadata:
         default: Subnet ID
       QSS3BucketName:
         default: Quick Start S3 bucket name
+      QSS3BucketRegion:
+        default: Quick Start S3 bucket region
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
       RedisEndPoint:
@@ -274,6 +277,10 @@ Parameters:
       name can include numbers, lowercase letters, uppercase letters, and hyphens
       (-), but should not start or end with a hyphen.
     Type: String
+  QSS3BucketRegion:
+    Default: 'us-east-1'
+    Description: 'The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.'
+    Type: String
   QSS3KeyPrefix:
     AllowedPattern: ^[0-9a-zA-Z-/]*$
     ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
@@ -298,6 +305,7 @@ Rules:
           - ''
       AssertDescription: All key pair parameters must not be empty.
 Conditions:
+  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
   GovCloudCondition:
     !Equals
     - !Ref AWS::Region
@@ -356,19 +364,11 @@ Resources:
             Effect: Allow
             Resource:
             - !Sub
-              - arn:${partition}:s3:::${QSS3BucketName}
-              - partition:
-                  !If
-                  - GovCloudCondition
-                  - aws-us-gov
-                  - aws
+              - arn:${AWS::Partition}:s3:::${S3Bucket}
+              - S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
             - !Sub
-              - arn:${partition}:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*
-              - partition:
-                  !If
-                  - GovCloudCondition
-                  - aws-us-gov
-                  - aws
+              - arn:${AWS::Partition}:s3:::${S3Bucket}/${QSS3KeyPrefix}*
+              - S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
           Version: 2012-10-17
         PolicyName: aws-quick-start-s3-policy
       - PolicyDocument:
@@ -377,20 +377,8 @@ Resources:
             - s3:*
             Effect: Allow
             Resource:
-            - !Sub
-              - arn:${partition}:s3:::${ESS3BucketName}
-              - partition:
-                  !If
-                  - GovCloudCondition
-                  - aws-us-gov
-                  - aws
-            - !Sub
-              - arn:${partition}:s3:::${ESS3BucketName}/*
-              - partition:
-                  !If
-                  - GovCloudCondition
-                  - aws-us-gov
-                  - aws
+            - !Sub 'arn:${AWS::Partition}:s3:::${ESS3BucketName}'
+            - !Sub 'arn:${AWS::Partition}:s3:::${ESS3BucketName}/*'
           - Action:
             - ds:Describe*
             Effect: Allow
@@ -414,7 +402,7 @@ Resources:
           type: S3
           roleName: !Ref BTSTRPInstanceRole
           buckets:
-          - !Ref QSS3BucketName
+          - !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
           - !Ref ESS3BucketName
       AWS::CloudFormation::Init:
         configSets:
@@ -456,32 +444,23 @@ Resources:
             c:\cfn\scripts\New-ADUser.ps1:
               source:
                 !Sub
-                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/New-ADUser.ps1
-                - QSS3Region:
-                    !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/New-ADUser.ps1
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
             C:\cfn\scripts\Unzip-Archive.ps1:
               source:
                 !Sub
-                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Unzip-Archive.ps1
-                - QSS3Region:
-                    !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Unzip-Archive.ps1
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
             C:\cfn\modules\AWSQuickStart.zip:
               source:
                 !Sub
-                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/modules/AWSQuickStart.zip
-                - QSS3Region:
-                    !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/modules/AWSQuickStart.zip
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
             c:\cfn\cfn-hup.conf:
               content: !Sub |
@@ -497,42 +476,30 @@ Resources:
             c:\cfn\scripts\AddTo-SystemPath.ps1:
               source:
                 !Sub
-                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/AddTo-SystemPath.ps1
-                - QSS3Region:
-                    !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/AddTo-SystemPath.ps1
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
             c:\cfn\scripts\Schedule-AD-PowershellTask.ps1:
               source:
                 !Sub
-                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Schedule-AD-PowershellTask.ps1
-                - QSS3Region:
-                    !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/Schedule-AD-PowershellTask.ps1
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
             C:\cfn\scripts\Join-Domain.ps1:
               source:
                 !Sub
-                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Join-Domain.ps1
-                - QSS3Region:
-                    !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Join-Domain.ps1
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
             C:\cfn\scripts\Rename-Computer.ps1:
               source:
                 !Sub
-                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Rename-Computer.ps1
-                - QSS3Region:
-                    !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Rename-Computer.ps1
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
           services:
             windows:
@@ -581,12 +548,9 @@ Resources:
             c:\cfn\scripts\Schedule-AD-AddDNSServerResourceRecordCName.ps1:
               source:
                 !Sub
-                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Schedule-AD-AddDNSServerResourceRecordCName.ps1
-                - QSS3Region:
-                    !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/Schedule-AD-AddDNSServerResourceRecordCName.ps1
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
           commands:
             a-schedule-add-database-cname-to-dns:
@@ -612,32 +576,23 @@ Resources:
               source: https://get.enterprisedb.com/postgresql/postgresql-11.5-1-windows-x64.exe
             'c:\cfn\scripts\Prep-PACDemoDatabase.ps1':
               source: !Sub
-                - >-
-                  https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Prep-PACDemoDatabase.ps1
-                - QSS3Region: !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/Prep-PACDemoDatabase.ps1
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
             'c:\cfn\scripts\Schedule-AD-AddDNSServerResourceRecordCName.ps1':
               source:
                 !Sub
-                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Schedule-AD-AddDNSServerResourceRecordCName.ps1
-                - QSS3Region:
-                    !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/Schedule-AD-AddDNSServerResourceRecordCName.ps1
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
             'c:\cfn\scripts\Install-Postgres-Tools.ps1':
               source:
                 !Sub
-                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Install-Postgres-Tools.ps1
-                - QSS3Region:
-                    !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/Install-Postgres-Tools.ps1
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
           commands:
             a-install-postgres-tools:
@@ -672,12 +627,9 @@ Resources:
             c:\cfn\scripts\Add-user-to-admin-group.ps1:
               source:
                 !Sub
-                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Add-user-to-admin-group.ps1
-                - QSS3Region:
-                    !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/Add-user-to-admin-group.ps1
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
           commands:
             a-create-esdemouser:
@@ -696,12 +648,9 @@ Resources:
             c:\cfn\scripts\Create-Mapped-Drive-GPO.ps1:
               source:
                 !Sub
-                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Create-Mapped-Drive-GPO.ps1
-                - QSS3Region:
-                    !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/Create-Mapped-Drive-GPO.ps1
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
           commands:
             a-create-fsserver-mapped-drive-gpo:
@@ -716,22 +665,16 @@ Resources:
             C:\BankDemo_SQL\System\BankDemoCreateAll.SQL:
               source:
                 !Sub
-                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/BankDemoCreateAll.SQL
-                - QSS3Region:
-                    !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/BankDemoCreateAll.SQL
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
             c:\cfn\scripts\Prep-BankDemoDatabase.ps1:
               source:
                 !Sub
-                - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/Prep-BankDemoDatabase.ps1
-                - QSS3Region:
-                    !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/Prep-BankDemoDatabase.ps1
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
           commands:
             a-create-bankdemo-sql-environment:

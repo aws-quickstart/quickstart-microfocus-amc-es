@@ -113,6 +113,7 @@ Metadata:
           default: AWS Quick Start Configuration
         Parameters:
           - QSS3BucketName
+          - QSS3BucketRegion
           - QSS3KeyPrefix
     ParameterLabels:
       AdditionalESStorageinGiB:
@@ -221,6 +222,8 @@ Metadata:
         default: Public Subnet 2 ID
       QSS3BucketName:
         default: Quick Start S3 bucket name
+      QSS3BucketRegion:
+        default: Quick Start S3 bucket region
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
       RDGWAccessSGID:
@@ -681,6 +684,10 @@ Parameters:
       bucket name can include numbers, lowercase letters, uppercase letters,
       and hyphens (-), but should not start or end with a hyphen.
     Type: String
+  QSS3BucketRegion:
+    Default: 'us-east-1'
+    Description: 'The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.'
+    Type: String
   QSS3KeyPrefix:
     AllowedPattern: '^[0-9a-zA-Z-/]*$'
     ConstraintDescription: >-
@@ -848,6 +855,7 @@ Rules:
         AssertDescription: Micro Focus is not currently supporting this Quick Start in 
           the chosen region. Please contact Micro Focus or launch into a different region.
 Conditions:
+  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
   CreateRDSRemoteDatabaseStack: !Equals
     - !Ref DatabaseType
     - Create-RDS-Remote-Database
@@ -930,12 +938,9 @@ Resources:
     Condition: CreateRDSRemoteDatabaseStack
     Properties:
       TemplateURL: !Sub
-        - >-
-          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-db-template.yaml
-        - QSS3Region: !If
-            - GovCloudCondition
-            - s3-us-gov-west-1
-            - s3
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mf-db-template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
         DBBackupRetentionPeriod: !Ref DBBackupRetentionPeriod
         DBInstanceClass: !Ref DBInstanceClass
@@ -960,12 +965,9 @@ Resources:
     Condition: CreateRedhatRemoteFileshareStack
     Properties:
       TemplateURL: !Sub
-        - >-
-          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-fs-redhat-template.yaml
-        - QSS3Region: !If
-            - GovCloudCondition
-            - s3-us-gov-west-1
-            - s3
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mf-fs-redhat-template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
         AvailabilityZones: !Join
           - ','
@@ -991,6 +993,7 @@ Resources:
           - !Ref 'AWS::NoValue'
         PrivateSubnet1AID: !Ref PrivateSubnet1AID
         QSS3BucketName: !Ref QSS3BucketName
+        QSS3BucketRegion: !Ref QSS3BucketRegion
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         BastionAccessSGID: !Ref BastionAccessSGID
         VPCID: !Ref VPCID
@@ -999,12 +1002,9 @@ Resources:
     Condition: CreateWinRemoteFileshareStack
     Properties:
       TemplateURL: !Sub
-        - >-
-          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-fs-template.yaml
-        - QSS3Region: !If
-            - GovCloudCondition
-            - s3-us-gov-west-1
-            - s3
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mf-fs-template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
         AvailabilityZones: !Join
           - ','
@@ -1031,6 +1031,7 @@ Resources:
           - !Ref 'AWS::NoValue'
         PrivateSubnet1AID: !Ref PrivateSubnet1AID
         QSS3BucketName: !Ref QSS3BucketName
+        QSS3BucketRegion: !Ref QSS3BucketRegion
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         RDGWAccessSGID: !Ref RDGWAccessSGID
         VPCID: !Ref VPCID
@@ -1039,12 +1040,9 @@ Resources:
     Condition: InstallingPACDemoApp
     Properties:
       TemplateURL: !Sub
-        - >-
-          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-db-aurora-template.yaml
-        - QSS3Region: !If
-            - GovCloudCondition
-            - s3-us-gov-west-1
-            - s3
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mf-db-aurora-template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
         DBInstanceClass: !Ref PACDBInstanceClass
         DBMasterUsername: !Ref PACDBMasterUsername
@@ -1272,12 +1270,9 @@ Resources:
       - RDSRemoteDatabaseStackCreateWaitCondition
     Properties:
       TemplateURL: !Sub
-        - >-
-          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-es-bootstrap-template.yaml
-        - QSS3Region: !If
-            - GovCloudCondition
-            - s3-us-gov-west-1
-            - s3
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mf-es-bootstrap-template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
         AvailabilityZones: !Join
           - ','
@@ -1312,6 +1307,7 @@ Resources:
         MFDSServiceAccountName: !Ref MFDSServiceAccountName
         MFDSServiceAccountPassword: !Ref MFDSServiceAccountPassword
         QSS3BucketName: !Ref QSS3BucketName
+        QSS3BucketRegion: !Ref QSS3BucketRegion
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         RedisEndPoint: !If
           - InstallingPACDemoApp
@@ -1324,12 +1320,9 @@ Resources:
       - BootstrapStack
     Properties:
       TemplateURL: !Sub
-        - >-
-          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-escwa-template.yaml
-        - QSS3Region: !If
-            - GovCloudCondition
-            - s3-us-gov-west-1
-            - s3
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mf-escwa-template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
         AvailabilityZones: !Join
           - ','
@@ -1352,6 +1345,7 @@ Resources:
         MFDSServiceAccountName: !Ref MFDSServiceAccountName
         MFDSServiceAccountPassword: !Ref MFDSServiceAccountPassword
         QSS3BucketName: !Ref QSS3BucketName
+        QSS3BucketRegion: !Ref QSS3BucketRegion
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         SubnetID: !Ref PrivateSubnet1AID
   ESInstanceStack1:
@@ -1362,12 +1356,9 @@ Resources:
       - BootstrapStack
     Properties:
       TemplateURL: !Sub
-        - >-
-          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-es-redhat-template.yaml
-        - QSS3Region: !If
-            - GovCloudCondition
-            - s3-us-gov-west-1
-            - s3
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mf-es-redhat-template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
         AvailabilityZones: !Join
           - ','
@@ -1394,6 +1385,7 @@ Resources:
         LicenseAgreement: !Ref LicenseAgreement
         PACDBMasterUserPassword: !Ref PACDBMasterUserPassword
         QSS3BucketName: !Ref QSS3BucketName
+        QSS3BucketRegion: !Ref QSS3BucketRegion
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         RegionsPerInstance: !Ref RegionsPerInstance
         SubnetID: !Ref PrivateSubnet1AID
@@ -1405,12 +1397,9 @@ Resources:
       - BootstrapStack
     Properties:
       TemplateURL: !Sub
-        - >-
-          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-es-redhat-template.yaml
-        - QSS3Region: !If
-            - GovCloudCondition
-            - s3-us-gov-west-1
-            - s3
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mf-es-redhat-template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
         AvailabilityZones: !Join
           - ','
@@ -1437,6 +1426,7 @@ Resources:
         LicenseAgreement: !Ref LicenseAgreement
         PACDBMasterUserPassword: !Ref PACDBMasterUserPassword
         QSS3BucketName: !Ref QSS3BucketName
+        QSS3BucketRegion: !Ref QSS3BucketRegion
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         RegionsPerInstance: !Ref RegionsPerInstance
         SubnetID: !Ref PrivateSubnet1AID
@@ -1448,12 +1438,9 @@ Resources:
       - BootstrapStack
     Properties:
       TemplateURL: !Sub
-        - >-
-          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-es-template.yaml
-        - QSS3Region: !If
-            - GovCloudCondition
-            - s3-us-gov-west-1
-            - s3
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mf-es-template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
         AvailabilityZones: !Join
           - ','
@@ -1486,6 +1473,7 @@ Resources:
         MFDSServiceAccountPassword: !Ref MFDSServiceAccountPassword
         PACDBMasterUserPassword: !Ref PACDBMasterUserPassword
         QSS3BucketName: !Ref QSS3BucketName
+        QSS3BucketRegion: !Ref QSS3BucketRegion
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         RegionsPerInstance: !Ref RegionsPerInstance
         SubnetID: !Ref PrivateSubnet1AID
@@ -1497,12 +1485,9 @@ Resources:
       - BootstrapStack
     Properties:
       TemplateURL: !Sub
-        - >-
-          https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/mf-es-template.yaml
-        - QSS3Region: !If
-            - GovCloudCondition
-            - s3-us-gov-west-1
-            - s3
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mf-es-template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
         AvailabilityZones: !Join
           - ','
@@ -1535,6 +1520,7 @@ Resources:
         MFDSServiceAccountPassword: !Ref MFDSServiceAccountPassword
         PACDBMasterUserPassword: !Ref PACDBMasterUserPassword
         QSS3BucketName: !Ref QSS3BucketName
+        QSS3BucketRegion: !Ref QSS3BucketRegion
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         RegionsPerInstance: !Ref RegionsPerInstance
         SubnetID: !Ref PrivateSubnet1AID
