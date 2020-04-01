@@ -69,6 +69,7 @@ tests:
       PublicSubnet1CIDR: "10.0.128.0/20"
       PublicSubnet2CIDR: "10.0.144.0/20"
       QSS3BucketName: "$[taskcat_autobucket]"
+      QSS3BucketRegion: $[taskcat_current_region]
       QSS3KeyPrefix: "quickstart-microfocus-amc-es/"
       ESS3BucketName: "$[taskcat_getval_QSS3BucketName]"
       RDGWCIDR: "10.0.0.0/16"
@@ -155,6 +156,7 @@ tests:
       PublicSubnet1CIDR: "10.0.128.0/20"
       PublicSubnet2CIDR: "10.0.144.0/20"
       QSS3BucketName: "$[taskcat_autobucket]"
+      QSS3BucketRegion: $[taskcat_current_region]
       QSS3KeyPrefix: "quickstart-microfocus-amc-es/"
       ESS3BucketName: "$[taskcat_getval_QSS3BucketName]"
       RDGWCIDR: "10.0.0.0/16"
