@@ -1196,7 +1196,6 @@ Resources:
         - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
           S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
-        BastionAMIOS: Amazon-Linux-HVM
         BastionTenancy: default
         BastionInstanceType: !Ref BastionInstanceType
         EnableBanner: "false"
