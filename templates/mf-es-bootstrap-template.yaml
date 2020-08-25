@@ -572,8 +572,12 @@ Resources:
               waitAfterCompletion: '0'
         040-Setup-PAC-Database-Environment:
           files:
-            'c:\cfn\assets\postgres-11-winx64.exe':
-              source: https://get.enterprisedb.com/postgresql/postgresql-11.5-1-windows-x64.exe
+            'c:\cfn\scripts\Download-postgres-tools.ps1':
+              source: !Sub
+                - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/Download-postgres-tools.ps1
+                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                  S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+              authentication: S3AccessCreds
             'c:\cfn\scripts\Prep-PACDemoDatabase.ps1':
               source: !Sub
                 - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/Prep-PACDemoDatabase.ps1
@@ -595,21 +599,26 @@ Resources:
                   S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
               authentication: S3AccessCreds
           commands:
-            a-install-postgres-tools:
+            a-download-postgres-tools:
+              command:
+                'powershell.exe -File C:\cfn\scripts\Download-postgres-tools.ps1'
+              waitAfterCompletion: '0'
+            b-install-postgres-tools:
               command: !Sub 'powershell.exe -File c:\cfn\scripts\Schedule-AD-PowershellTask.ps1 
-              -TaskName Install-Postgres-Tools -TaskArguments "-File c:\cfn\scripts\Install-Postgres-Tools.ps1"
-              -DomainUserName "${DomainNetBIOSName}\Admin" -DomainUserPassword "${DomainAdminPassword}"'
-            b-schedule-add-database-cname-to-dns:
+                -TaskName Install-Postgres-Tools -TaskArguments "-File c:\cfn\scripts\Install-Postgres-Tools.ps1"
+                -DomainUserName "${DomainNetBIOSName}\Admin" -DomainUserPassword "${DomainAdminPassword}"'
+              waitAfterCompletion: '90'
+            c-schedule-add-database-cname-to-dns:
               command: !Sub 'powershell.exe -File C:\cfn\scripts\Schedule-AD-AddDNSServerResourceRecordCName.ps1
                 -CName ESPACDatabase -HostNameAlias ${ESPACDatabaseEndpointAddress} -DomainDnsName
                 ${DomainDNSName} -DomainUserName Admin -DomainUserPassword ${DomainAdminPassword}'
               waitAfterCompletion: '0'
-            c-configure-database:
+            d-configure-database:
               cwd: 'C:\Program Files\PostgreSQL\11\bin'
               command: !Sub 'powershell.exe -File c:\cfn\scripts\Prep-PACDemoDatabase.ps1 -DBMasterUsername ${PACDBMasterUsername}
                 -DBMasterUserPassword ${PACDBMasterUserPassword}'
               waitAfterCompletion: '0'
-            d-schedule-add-redis-cname-to-dns:
+            e-schedule-add-redis-cname-to-dns:
               command: !Sub 'powershell.exe -File C:\cfn\scripts\Schedule-AD-AddDNSServerResourceRecordCName.ps1
                 -CName ESRedis -HostNameAlias ${RedisEndPoint} -DomainDnsName
                 ${DomainDNSName} -DomainUserName Admin -DomainUserPassword ${DomainAdminPassword}'

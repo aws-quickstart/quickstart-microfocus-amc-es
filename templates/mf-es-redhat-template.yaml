@@ -318,39 +318,39 @@ Rules:
 Mappings:
   AWSAMIRegionMap:
     AMI:
-      MFES40AMI: ES_50_PU05_RH_V1
+      MFES40AMI: ES_60_PU01_RH_V1
     ap-northeast-1:
-      MFES40AMI: ami-05d1842beab710b38
+      MFES40AMI: ami-05960a57ebd5c5fa3
     ap-northeast-2:
-      MFES40AMI: ami-0cf8cb7aff561c1c6
+      MFES40AMI: ami-0b0415a9b6d384f27
     ap-south-1:
-      MFES40AMI: ami-0c298dd9691aba765
+      MFES40AMI: ami-0d0442cfd2c2f1c7a
     ap-southeast-1:
-      MFES40AMI: ami-0359dbf0b49908990
+      MFES40AMI: ami-0293084bb483fe506
     ap-southeast-2:
-      MFES40AMI: ami-0a564bf05f121468d
+      MFES40AMI: ami-032474ecc3322864e
     ca-central-1:
-      MFES40AMI: ami-0af0bef96f2738cb8
+      MFES40AMI: ami-0f9b7b1967f2af76d
     eu-central-1:
       MFES40AMI: ami-072da8340c7ac3c90
     eu-north-1:
-      MFES40AMI: ami-078851e55a0205bd3
+      MFES40AMI: ami-0cb5cdae39af65e38
     eu-west-1:
-      MFES40AMI: ami-04fc334c1c571095b
+      MFES40AMI: ami-0d912fc5fb35a1518
     eu-west-2:
-      MFES40AMI: ami-0b00fe6f6d1f8cf8a
+      MFES40AMI: ami-09fd6e481820a31c1
     eu-west-3:
-      MFES40AMI: ami-09634aba2e3e9af51
+      MFES40AMI: ami-0bb15fa6a1211242b
     sa-east-1:
-      MFES40AMI: ami-0dbc3f6e6eb8cc52c
+      MFES40AMI: ami-0c03148647a303bf2
     us-east-1:
-      MFES40AMI: ami-0a7658bdbac09c2f5
+      MFES40AMI: ami-0363db79d74750f4f
     us-east-2:
-      MFES40AMI: ami-0644d10d2c8e259d0
+      MFES40AMI: ami-07bae3b4993f74638
     us-west-1:
-      MFES40AMI: ami-0eaaa90f16236c7b8
+      MFES40AMI: ami-09c135e2f738e08cb
     us-west-2:
-      MFES40AMI: ami-0a702c05587e75698
+      MFES40AMI: ami-08dcd5f1cebf6ef75
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
   GovCloudCondition: !Equals

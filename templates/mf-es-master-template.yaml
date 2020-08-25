@@ -1162,7 +1162,7 @@ Resources:
         NumberOfRDGWHosts: !Ref NumberOfRDGWHosts
         PublicSubnet1ID: !GetAtt VPCStack.Outputs.PublicSubnet1ID
         PublicSubnet2ID: !GetAtt VPCStack.Outputs.PublicSubnet2ID
-        QSS3BucketName: aws-quickstart
+        QSS3BucketName: !Ref QSS3BucketName
         QSS3BucketRegion: !Ref QSS3BucketRegion
         QSS3KeyPrefix: !Sub ${QSS3KeyPrefix}submodules/quickstart-microsoft-rdgateway/
         RDGWCIDR: !Ref RDGWCIDR
