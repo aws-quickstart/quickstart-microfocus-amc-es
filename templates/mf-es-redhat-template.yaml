@@ -330,7 +330,7 @@ Mappings:
     ap-southeast-2:
       MFES40AMI: ami-032474ecc3322864e
     ca-central-1:
-      MFES40AMI: ami-0f9b7b1967f2af76d
+      MFES40AMI: ami-08586e4e410b9f7e1
     eu-central-1:
       MFES40AMI: ami-072da8340c7ac3c90
     eu-north-1:
