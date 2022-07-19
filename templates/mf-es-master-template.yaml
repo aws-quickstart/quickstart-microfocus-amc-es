@@ -72,6 +72,7 @@ Metadata:
           - MFDSServiceAccountPasswordConfirm
           - OperatorEmail
           - ESS3BucketName
+          - ESS3BucketRegion
           - ESResourceNamePrefix
       - Label:
           default: PAC Configuration
@@ -173,6 +174,8 @@ Metadata:
         default: Resource 'Name' prefix
       ESS3BucketName:
         default: Enterprise Server S3 bucket name
+      ESS3BucketRegion:
+        default: Enterprise Server S3 bucket region
       FileshareType:
         default: Fileshare type
       FSInstanceType:
@@ -545,6 +548,10 @@ Parameters:
       this bucket to store or retrieve items needed. This string can include
       numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot
       start or end with a hyphen (-).
+    Type: String
+  ESS3BucketRegion:
+    Default: 'us-east-1'
+    Description: 'The AWS Region where the Enterprise Server S3 bucket (ESS3BucketName) is hosted. When using your own bucket, you must specify this value.'
     Type: String
   FSInstanceType:
     AllowedValues:
@@ -1273,6 +1280,7 @@ Resources:
         ESLicenseFilename: !Ref ESLicenseFilename
         ESResourceNamePrefix: !Ref ESResourceNamePrefix
         ESS3BucketName: !Ref ESS3BucketName
+        ESS3BucketRegion: !Ref ESS3BucketRegion
         FileshareType: !Ref FileshareType
         FSInstanceType: !Ref FSInstanceType
         FSStorageInGiB: !Ref FSStorageInGiB
@@ -1319,4 +1327,4 @@ Outputs:
   RemoteDesktopGatewayIP:
     Condition: IncludeRDGW
     Description: Public IP Address for the Remote Desktop Gateway
-    Value: !GetAtt RDGWStack.Outputs.RDPURL
+    Value: !GetAtt RDGWStack.Outputs.EIP1

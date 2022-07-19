@@ -160,6 +160,7 @@ tests:
       QSS3BucketRegion: $[taskcat_current_region]
       QSS3KeyPrefix: "quickstart-microfocus-amc-es/"
       ESS3BucketName: override
+      ESS3BucketRegion: override
       RDGWCIDR: "10.0.0.0/16"
       RDGWInstanceType: "t2.large"
       RegionsPerInstance: "1"

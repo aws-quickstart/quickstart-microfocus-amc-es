@@ -53,6 +53,7 @@ Metadata:
           - ESInstanceName
           - ESClientAccessSGID
           - ESS3BucketName
+          - ESS3BucketRegion
           - EMailNotificationTopic
           - ESCWLogGroup
       - Label:
@@ -104,6 +105,8 @@ Metadata:
         default: Enterprise Server license filename
       ESS3BucketName:
         default: Enterprise Server S3 bucket name
+      ESS3BucketRegion:
+        default: Enterprise Server S3 bucket region
       InstallFSDemoApp:
         default: Install Fileshare Demo App
       InstallSQLDemoApp:
@@ -216,6 +219,10 @@ Parameters:
       this bucket to store or retrieve items needed. This string can include
       numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot
       start or end with a hyphen (-).
+    Type: String
+  ESS3BucketRegion:
+    Default: 'us-east-1'
+    Description: 'The AWS Region where the Enterprise Server S3 bucket (ESS3BucketName) is hosted. When using your own bucket, you must specify this value.'
     Type: String
   InstallFSDemoApp:
     Type: String
@@ -929,7 +936,7 @@ Resources:
               source: !Sub
                 - >-
                   https://${ESS3BucketName}.s3.${S3Region}.${AWS::URLSuffix}/license/${ESLicenseFilename}
-                - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                - S3Region: !Ref ESS3BucketRegion
               authentication: S3AccessCreds
             'c:\cfn\scripts\MFDS-Listen-all.ps1':
               source: !Sub
