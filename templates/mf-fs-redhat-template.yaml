@@ -632,16 +632,14 @@ Resources:
             - |
               yum -y install python-pip
             - >
-              pip install 
-              https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+              pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
             - >
-              cp -f `pip show aws-cfn-bootstrap 2>/dev/null|grep -E "^Location"|awk
-              -F: '{print $2}'`/init/redhat/cfn-hup /etc/init.d/
+              cp -f /usr/init/redhat/cfn-hup /etc/init.d/
             - |
               chmod 755 /etc/init.d/cfn-hup
               chkconfig --add cfn-hup
             - >-
-              /opt/aws/bin/cfn-init -v --stack 
+              /bin/cfn-init -v --stack 
             - !Ref 'AWS::StackName' 
             - ' --resource FSPrimaryInstance
               --configsets config 
@@ -649,7 +647,7 @@ Resources:
             - !Ref 'AWS::Region'
             - |+
             
-            - '/opt/aws/bin/cfn-signal -e $? --stack '
+            - '/bin/cfn-signal -e $? --stack '
             - !Ref 'AWS::StackName'
             - ' --resource FSPrimaryInstance --region '
             - !Ref 'AWS::Region'

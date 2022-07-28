@@ -1327,4 +1327,4 @@ Outputs:
   RemoteDesktopGatewayIP:
     Condition: IncludeRDGW
     Description: Public IP Address for the Remote Desktop Gateway
-    Value: !GetAtt RDGWStack.Outputs.EIP1
+    Value: !GetAtt RDGWStack.Outputs.RDPURL

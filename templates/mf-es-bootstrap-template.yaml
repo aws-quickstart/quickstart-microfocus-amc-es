@@ -402,7 +402,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Count: 1
-        Timeout: PT20M
+        Timeout: PT30M
     Metadata:
       AWS::CloudFormation::Authentication:
         S3AccessCreds:
