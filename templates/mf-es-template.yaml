@@ -53,6 +53,7 @@ Metadata:
           - ESInstanceName
           - ESClientAccessSGID
           - ESS3BucketName
+          - ESS3BucketRegion
           - EMailNotificationTopic
           - ESCWLogGroup
       - Label:
@@ -104,6 +105,8 @@ Metadata:
         default: Enterprise Server license filename
       ESS3BucketName:
         default: Enterprise Server S3 bucket name
+      ESS3BucketRegion:
+        default: Enterprise Server S3 bucket region
       InstallFSDemoApp:
         default: Install Fileshare Demo App
       InstallSQLDemoApp:
@@ -216,6 +219,10 @@ Parameters:
       this bucket to store or retrieve items needed. This string can include
       numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot
       start or end with a hyphen (-).
+    Type: String
+  ESS3BucketRegion:
+    Default: 'us-east-1'
+    Description: 'The AWS Region where the Enterprise Server S3 bucket (ESS3BucketName) is hosted. When using your own bucket, you must specify this value.'
     Type: String
   InstallFSDemoApp:
     Type: String
@@ -928,11 +935,8 @@ Resources:
             'd:\esdir\Enterprise-Server.mflic':
               source: !Sub
                 - >-
-                  https://${ESS3BucketName}.${QSS3Region}.amazonaws.com/license/${ESLicenseFilename}
-                - QSS3Region: !If
-                    - GovCloudCondition
-                    - s3-us-gov-west-1
-                    - s3
+                  https://${ESS3BucketName}.s3.${S3Region}.${AWS::URLSuffix}/license/${ESLicenseFilename}
+                - S3Region: !Ref ESS3BucketRegion
               authentication: S3AccessCreds
             'c:\cfn\scripts\MFDS-Listen-all.ps1':
               source: !Sub
@@ -1034,10 +1038,10 @@ Resources:
           files:
             'c:\cfn\assets\psqlodbc1_11_x86.zip':
               source:
-                https://ftp.postgresql.org/pub/odbc/versions/msi/psqlodbc_11_01_0000-x86.zip
+                http://ftp.postgresql.org/pub/odbc/versions/msi/psqlodbc_11_01_0000-x86.zip
             'c:\cfn\assets\psqlodbc1_11_x64.zip':
               source:
-                https://ftp.postgresql.org/pub/odbc/versions/msi/psqlodbc_11_01_0000-x64.zip
+                http://ftp.postgresql.org/pub/odbc/versions/msi/psqlodbc_11_01_0000-x64.zip
           commands:
             a-Unzip-PsqlODBC-Driver-x86:
               command:

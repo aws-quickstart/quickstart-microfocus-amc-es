@@ -29,6 +29,7 @@ Metadata:
       - MFDSServiceAccountName
       - MFDSServiceAccountPassword
       - ESS3BucketName
+      - ESS3BucketRegion
     - Label:
         default: PAC Configuration
       Parameters:
@@ -80,6 +81,8 @@ Metadata:
         default: Enterprise Server Database Endpoint Address
       ESS3BucketName:
         default: Enterprise Server S3 bucket name
+      ESS3BucketRegion:
+        default: Enterprise Server S3 bucket region
       FileshareDataFolderUNC:
         default: FileShare Data Folder UNC
       InstallFSDemoApp:
@@ -186,6 +189,10 @@ Parameters:
       use this bucket to store or retrieve items needed. This string can include numbers,
       lowercase letters, uppercase letters, and hyphens (-). It cannot start or end
       with a hyphen (-).
+    Type: String
+  ESS3BucketRegion:
+    Default: 'us-east-1'
+    Description: 'The AWS Region where the Enterprise Server S3 bucket (ESS3BucketName) is hosted. When using your own bucket, you must specify this value.'
     Type: String
   FileshareDataFolderUNC:
     Type: String
@@ -395,7 +402,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Count: 1
-        Timeout: PT20M
+        Timeout: PT30M
     Metadata:
       AWS::CloudFormation::Authentication:
         S3AccessCreds:

@@ -10,11 +10,13 @@ then
   exit 1
 fi
 
+yum install postgresql postgresql-odbc -y
+driver=`rpm -ql postgresql-odbc | grep psqlodbcw.so`
+
 DBMasterPassword=$1
 cat <<EOT >> /tmp/odbcinst.ini
 [PostgreSQL]
-Driver = /usr/local/lib/psqlodbcw.so
-Setup = /usr/local/lib/libodbcpsqlS.so
+Driver = $driver
 EOT
 odbcinst -i -d -f /tmp/odbcinst.ini
 

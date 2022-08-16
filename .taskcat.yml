@@ -2,6 +2,7 @@ project:
   name: quickstart-microfocus-amc-es
   owner: chris.turner@microfocus.com
   shorten_stack_name: true
+  s3_regional_buckets: true
   parameters:
     KeyPairName: $[taskcat_getkeypair]
   regions:
@@ -49,7 +50,7 @@ tests:
       ESDemoUserPassword: "Password123!"
       ESDemoUserPasswordConfirm: "$[taskcat_getval_ESDemoUserPassword]"
       ESInstanceType: "c5.large"
-      ESLicenseFilename: "overridden"
+      ESLicenseFilename: override
       ESResourceNamePrefix: "AWS::StackName"
       FSInstanceType: "c5.large"
       FSStorageInGiB: "50"
@@ -71,7 +72,8 @@ tests:
       QSS3BucketName: "$[taskcat_autobucket]"
       QSS3BucketRegion: $[taskcat_current_region]
       QSS3KeyPrefix: "quickstart-microfocus-amc-es/"
-      ESS3BucketName: "$[taskcat_getval_QSS3BucketName]"
+      ESS3BucketName: override
+      ESS3BucketRegion: us-east-1
       RDGWCIDR: "10.0.0.0/16"
       RDGWInstanceType: "t2.large"
       RegionsPerInstance: "1"
@@ -136,7 +138,7 @@ tests:
       ESDemoUserPassword: "Password123!"
       ESDemoUserPasswordConfirm: "$[taskcat_getval_ESDemoUserPassword]"
       ESInstanceType: "c5.large"
-      ESLicenseFilename: "overridden"
+      ESLicenseFilename: override
       ESResourceNamePrefix: "AWS::StackName"
       FSInstanceType: "c5.large"
       FSStorageInGiB: "50"
@@ -158,7 +160,8 @@ tests:
       QSS3BucketName: "$[taskcat_autobucket]"
       QSS3BucketRegion: $[taskcat_current_region]
       QSS3KeyPrefix: "quickstart-microfocus-amc-es/"
-      ESS3BucketName: "$[taskcat_getval_QSS3BucketName]"
+      ESS3BucketName: override
+      ESS3BucketRegion: us-east-1
       RDGWCIDR: "10.0.0.0/16"
       RDGWInstanceType: "t2.large"
       RegionsPerInstance: "1"

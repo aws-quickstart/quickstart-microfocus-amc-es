@@ -70,6 +70,7 @@ Metadata:
           - MFDSServiceAccountPasswordConfirm
           - OperatorEmail
           - ESS3BucketName
+          - ESS3BucketRegion
           - ESResourceNamePrefix
       - Label:
           default: PAC Configuration
@@ -172,6 +173,8 @@ Metadata:
         default: Resource 'Name' prefix
       ESS3BucketName:
         default: Enterprise Server S3 bucket name
+      ESS3BucketRegion:
+        default: Enterprise Server S3 bucket region
       FileshareType:
         default: Fileshare type
       FSInstanceType:
@@ -511,6 +514,10 @@ Parameters:
       this bucket to store or retrieve items needed. This string can include
       numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot
       start or end with a hyphen (-).
+    Type: String
+  ESS3BucketRegion:
+    Default: 'us-east-1'
+    Description: 'The AWS Region where the Enterprise Server S3 bucket (ESS3BucketName) is hosted. When using your own bucket, you must specify this value.'
     Type: String
   FileshareType:
     AllowedValues:
@@ -979,6 +986,7 @@ Resources:
         ESLicenseFilename: !Ref ESLicenseFilename
         ESResourceNamePrefix: !Ref ESResourceNamePrefix
         ESS3BucketName: !Ref ESS3BucketName
+        ESS3BucketRegion: !Ref ESS3BucketRegion
         FSClientAccessSGID: !Ref ESInstance1ClientAccessSecurityGroup
         FSInstanceType: !Ref FSInstanceType
         FSServerName: FSServer
@@ -1017,6 +1025,7 @@ Resources:
         ESLicenseFilename: !Ref ESLicenseFilename
         ESResourceNamePrefix: !Ref ESResourceNamePrefix
         ESS3BucketName: !Ref ESS3BucketName
+        ESS3BucketRegion: !Ref ESS3BucketRegion
         FSClientAccessSGID: !Ref ESInstance1ClientAccessSecurityGroup
         FSInstanceType: !Ref FSInstanceType
         FSServerName: FSServer
@@ -1296,6 +1305,7 @@ Resources:
           - !GetAtt AuroraServerStack.Outputs.ESPACDatabaseEndpointAddress
           - !Ref 'AWS::NoValue'
         ESS3BucketName: !Ref ESS3BucketName
+        ESS3BucketRegion: !Ref ESS3BucketRegion
         FileshareDataFolderUNC: !If
           - CreateWinRemoteFileshareStack
           - !GetAtt RemoteFileshareWinServerStack.Outputs.FileshareDataFolderUNC
@@ -1340,6 +1350,7 @@ Resources:
         ESCWAInstanceType: !Ref ESInstanceType
         ESLicenseFilename: !Ref ESLicenseFilename
         ESS3BucketName: !Ref ESS3BucketName
+        ESS3BucketRegion: !Ref ESS3BucketRegion
         KeyPairName: !Ref KeyPairName
         LicenseAgreement: !Ref LicenseAgreement
         MFDSServiceAccountName: !Ref MFDSServiceAccountName
@@ -1377,6 +1388,7 @@ Resources:
         ESInstanceType: !Ref ESInstanceType
         ESLicenseFilename: !Ref ESLicenseFilename
         ESS3BucketName: !Ref ESS3BucketName
+        ESS3BucketRegion: !Ref ESS3BucketRegion
         InstallFSDemoApp: !Ref InstallFSDemoApp
         InstallPACDemoApp: !Ref InstallPACDemoApp
         InstallSQLDemoApp: !Ref InstallSQLDemoApp
@@ -1418,6 +1430,7 @@ Resources:
         ESInstanceType: !Ref ESInstanceType
         ESLicenseFilename: !Ref ESLicenseFilename
         ESS3BucketName: !Ref ESS3BucketName
+        ESS3BucketRegion: !Ref ESS3BucketRegion
         InstallFSDemoApp: !Ref InstallFSDemoApp
         InstallPACDemoApp: !Ref InstallPACDemoApp
         InstallSQLDemoApp: !Ref InstallSQLDemoApp
@@ -1463,6 +1476,7 @@ Resources:
         ESInstanceType: !Ref ESInstanceType
         ESLicenseFilename: !Ref ESLicenseFilename
         ESS3BucketName: !Ref ESS3BucketName
+        ESS3BucketRegion: !Ref ESS3BucketRegion
         InstallFSDemoApp: !Ref InstallFSDemoApp
         InstallPACDemoApp: !Ref InstallPACDemoApp
         InstallSQLDemoApp: !Ref InstallSQLDemoApp
@@ -1510,6 +1524,7 @@ Resources:
         ESInstanceType: !Ref ESInstanceType
         ESLicenseFilename: !Ref ESLicenseFilename
         ESS3BucketName: !Ref ESS3BucketName
+        ESS3BucketRegion: !Ref ESS3BucketRegion
         InstallFSDemoApp: !Ref InstallFSDemoApp
         InstallPACDemoApp: !Ref InstallPACDemoApp
         InstallSQLDemoApp: !Ref InstallSQLDemoApp
