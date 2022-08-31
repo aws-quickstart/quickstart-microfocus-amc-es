@@ -431,7 +431,7 @@ Resources:
                   - 'logs:PutLogEvents'
                 Effect: Allow
                 Resource:
-                  - 'arn:aws:logs:*:*:log-group:${ESCWLogGroup}*'
+                  - !Sub 'arn:aws:logs:*:*:log-group:${ESCWLogGroup}*'
           PolicyName: ESInstanceLogPolicy
   ESInstanceRoleProfile:
     Type: 'AWS::IAM::InstanceProfile'
