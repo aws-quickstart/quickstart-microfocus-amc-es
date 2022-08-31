@@ -424,6 +424,15 @@ Resources:
                 Effect: Allow
                 Resource: '*'
           PolicyName: ESInstancePolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - 'logs:Create*'
+                  - 'logs:PutLogEvents'
+                Effect: Allow
+                Resource:
+                  - 'arn:aws:logs:*:*:log-group:${ESCWLogGroup}*'
+          PolicyName: ESInstanceLogPolicy
   ESInstanceRoleProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
@@ -496,6 +505,7 @@ Resources:
         configSets:
           config:
             - 000-NoOperation
+            - 001-ConfigureCW
             - 010-JoinDomain
             - !If
               - HaveESlicenseFilename
@@ -538,6 +548,48 @@ Resources:
             a-no-operation:
               command: echo "No-Operation" > nul
               waitAfterCompletion: '0'
+        001-ConfigureCW:
+          files:
+            /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json:
+              content: !Sub |
+                {
+                  "agent": {
+                    "run_as_user": "root"
+                  },
+                  "logs": {
+                    "logs_collected": {
+                      "files": {
+                        "collect_list": [
+                          {
+                            "file_path": "/var/log/user-data.log",
+                            "log_group_name": "${InstancesLogGroup}",
+                            "log_stream_name": "{instance_id}/user-data.log"
+                          },
+                          {
+                            "file_path": "/var/log/cfn-init.log",
+                            "log_group_name": "${InstancesLogGroup}",
+                            "log_stream_name": "{instance_id}/cfn-init.log"
+                          },
+                          {
+                            "file_path": "/var/log/cfn-init-cmd.log",
+                            "log_group_name": "${InstancesLogGroup}",
+                            "log_stream_name": "{instance_id}/cfn-init-cmd.log"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              mode: '000400'
+              owner: root
+              group: root
+          commands:
+            a-stop-cwagent:
+              command: /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a stop
+              waitAfterCompletion: '30'
+            b-start-cwagent:
+              command: /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s
+              waitAfterCompletion: '30'
         010-JoinDomain:
           files:
             '/tmp/JoinTo-Domain-Linux.sh':
@@ -862,6 +914,8 @@ Resources:
               yum -y install python-pip
             - >
               pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+            - >
+              rpm -Uvh https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
             - >
               cp -f /usr/init/redhat/cfn-hup /etc/init.d/
             - |
