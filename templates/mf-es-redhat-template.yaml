@@ -454,6 +454,11 @@ Resources:
       Path: /
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+  LambdaLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${CalcPrimaryDataVolumeStorageSizeFunction}'
+      RetentionInDays: -1
   CalcPrimaryDataVolumeStorageSizeFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
