@@ -1296,6 +1296,7 @@ Resources:
         DomainNetBIOSName: !Ref DomainNetBIOSName
         ESDemoUserPassword: !Ref ESDemoUserPassword
         ESClientAccessSGID: !Ref ESInstance1ClientAccessSecurityGroup
+        ESCWLogGroup: !Ref ESCWLogGroup
         ESDatabaseEndpointAddress: !If
           - CreateRDSRemoteDatabaseStack
           - !GetAtt RemoteDatabaseServerStack.Outputs.ESDatabaseEndpointAddress

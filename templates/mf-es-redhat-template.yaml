@@ -567,17 +567,17 @@ Resources:
                           {
                             "file_path": "/var/log/user-data.log",
                             "log_group_name": "${ESCWLogGroup}",
-                            "log_stream_name": "{instance_id}/user-data.log"
+                            "log_stream_name": "ES/{instance_id}/user-data.log"
                           },
                           {
                             "file_path": "/var/log/cfn-init.log",
                             "log_group_name": "${ESCWLogGroup}",
-                            "log_stream_name": "{instance_id}/cfn-init.log"
+                            "log_stream_name": "ES/{instance_id}/cfn-init.log"
                           },
                           {
                             "file_path": "/var/log/cfn-init-cmd.log",
                             "log_group_name": "${ESCWLogGroup}",
-                            "log_stream_name": "{instance_id}/cfn-init-cmd.log"
+                            "log_stream_name": "ES/{instance_id}/cfn-init-cmd.log"
                           }
                         ]
                       }

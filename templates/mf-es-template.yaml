@@ -618,12 +618,12 @@ Resources:
                           {
                             "file_path": "C:\\cfn\\log\\cfn-init.log",
                             "log_group_name": "${ESCWLogGroup}",
-                            "log_stream_name": "{instance_id}/cfn-init.log"
+                            "log_stream_name": "ES/{instance_id}/cfn-init.log"
                           },
                           {
                             "file_path": "C:\\cfn\\log\\cfn-init-cmd.log",
                             "log_group_name": "${ESCWLogGroup}",
-                            "log_stream_name": "{instance_id}/cfn-init-cmd.log"
+                            "log_stream_name": "ES/{instance_id}/cfn-init-cmd.log"
                           }
                         ]
                       }
