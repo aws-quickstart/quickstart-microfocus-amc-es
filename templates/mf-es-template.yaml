@@ -494,7 +494,6 @@ Resources:
   CalcPrimaryDataVolumeStorageSizeFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
-      FunctionName: !Sub '${AWS::StackName}-'
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
