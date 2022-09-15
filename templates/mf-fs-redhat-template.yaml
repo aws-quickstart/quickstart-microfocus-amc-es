@@ -452,7 +452,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Count: 1
-        Timeout: PT20M
+        Timeout: PT30M
     Metadata:
       'AWS::CloudFormation::Authentication':
         S3AccessCreds:
@@ -670,8 +670,7 @@ Resources:
             - | 
               exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
             - >
-              rpm -Uvh
-              https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+              for i in 1 2 3 4 5; do rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && break || sleep 2m; done
             - |
               yum -y install python-pip
             - >
