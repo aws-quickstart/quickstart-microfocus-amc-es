@@ -1,3 +1,10 @@
 //Include any predeployment steps here, such as signing up for a Marketplace AMI or making any changes to a partner account. If there are no predeployment steps, leave this file empty.
 
 == Predeployment steps
+
+The BankDemo demonstration application that is included as part of this Quick Start requires the use of a TN3270 terminal emulator. You can use any TN3270 terminal
+emulator, but this guide shows the use of Micro Focus Rumba, which is supplied with Micro Focus Enterprise Developer.
+
+Before launching this Quick Start for Enterprise Server, you must review the terms of the
+https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-0562B3C9-2271-4CE8-AF64-93DE4940077F.html[Micro
+Focus End User License Agreement^]. You will be asked to accept the terms of the End User License Agreement during deployment.
