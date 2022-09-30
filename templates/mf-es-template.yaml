@@ -489,6 +489,7 @@ Resources:
         - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
   LambdaLogGroup:
     Type: 'AWS::Logs::LogGroup'
+    DeletionPolicy: Delete
     Properties:
       LogGroupName: !Sub '/aws/lambda/${CalcPrimaryDataVolumeStorageSizeFunction}'
   CalcPrimaryDataVolumeStorageSizeFunction:
