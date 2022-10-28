@@ -484,7 +484,7 @@ Resources:
             var result = (parseInt(props.RegionsPerInstance) * parseInt(props.RegionStorageOverheadInGiB)) + parseInt(props.AdditionalESStorageinGiB);
             response.send(event, context, response.SUCCESS, {Value: result});
           };
-      Runtime: nodejs12.x
+      Runtime: nodejs16.x
   ESPrimaryDataVolumeStorageSize:
     Type: 'Custom::CalcPrimaryDataVolumeStorageSizeFunction'
     Properties:
@@ -497,6 +497,7 @@ Resources:
     Type: 'AWS::EC2::Volume'
     Properties:
       VolumeType: gp2
+      Encrypted: true
       Size: !GetAtt ESPrimaryDataVolumeStorageSize.Value
       AvailabilityZone: !Select
         - 0
