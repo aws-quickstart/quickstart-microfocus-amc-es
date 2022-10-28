@@ -20,6 +20,11 @@ Description: >-
   conditions here (https://www.microfocus.com/about/legal/) for further details.
   (qs-1p440hhtu)"
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - W9002
+        - W9003
   'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
@@ -334,9 +339,6 @@ Mappings:
       MFES40AMI: ami-0e9d4a9ef3e4fb89a
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
-  GovCloudCondition: !Equals
-    - !Ref 'AWS::Region'
-    - us-gov-west-1
   NamePrefixIaUndefined: !Equals
     - !Ref ESResourceNamePrefix
     - ''
@@ -385,6 +387,13 @@ Resources:
       VpcId: !Ref VPCID
   FSInstanceRole:
     Type: 'AWS::IAM::Role'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            - EIAMPolicyActionWildcard: "Wildcard action for FSInstancePolicy allowed by design"
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -396,8 +405,9 @@ Resources:
                 - ec2.amazonaws.com
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMDirectoryServiceAccess
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy'
       Policies:
         - PolicyDocument:
             Statement:
@@ -667,7 +677,7 @@ Resources:
           - ''
           - - |
               #!/bin/bash -xe
-            - | 
+            - |
               exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
             - >
               for i in 1 2 3 4 5; do rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && break || sleep 2m; done
@@ -683,14 +693,14 @@ Resources:
               chmod 755 /etc/init.d/cfn-hup
               chkconfig --add cfn-hup
             - >-
-              /bin/cfn-init -v --stack 
-            - !Ref 'AWS::StackName' 
+              /bin/cfn-init -v --stack
+            - !Ref 'AWS::StackName'
             - ' --resource FSPrimaryInstance
-              --configsets config 
+              --configsets config
               --region '
             - !Ref 'AWS::Region'
             - |+
-            
+
             - '/bin/cfn-signal -e $? --stack '
             - !Ref 'AWS::StackName'
             - ' --resource FSPrimaryInstance --region '
