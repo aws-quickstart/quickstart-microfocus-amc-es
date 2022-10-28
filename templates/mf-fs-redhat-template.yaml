@@ -442,6 +442,13 @@ Resources:
         - !Ref FSInstanceRole
   FSPrimaryDataVolume:
     Type: 'AWS::EC2::Volume'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EBSVolumeEncryption
+          ignore_reasons:
+            - EBSVolumeEncryption: "Ignore invalid check"
     Properties:
       VolumeType: gp2
       Encrypted: true
