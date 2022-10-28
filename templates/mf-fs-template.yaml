@@ -20,6 +20,12 @@ Description: >-
   conditions here (https://www.microfocus.com/about/legal/) for further details.
   (qs-1p440hhtu)"
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+        - W4002
+        - W1020
   'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
@@ -399,6 +405,13 @@ Resources:
       VpcId: !Ref VPCID
   FSInstanceRole:
     Type: 'AWS::IAM::Role'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            - EIAMPolicyActionWildcard: "Wildcard action for bootstrap instance policy allowed by design"
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -410,8 +423,9 @@ Resources:
                 - ec2.amazonaws.com
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMDirectoryServiceAccess
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy
       Policies:
         - PolicyDocument:
             Statement:

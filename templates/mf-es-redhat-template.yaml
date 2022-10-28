@@ -22,6 +22,13 @@ Description: >-
   conditions here (https://www.microfocus.com/about/legal/) for further details.
   (qs-1qeg3mkuj)"
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+        - W4002
+        - W9004
+
   'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
@@ -360,9 +367,6 @@ Mappings:
       MFES40AMI: ami-0e9d4a9ef3e4fb89a
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
-  GovCloudCondition: !Equals
-    - !Ref 'AWS::Region'
-    - us-gov-west-1
   HaveESlicenseFilename: !Not
     - !Equals
       - !Ref ESLicenseFilename
@@ -383,6 +387,13 @@ Conditions:
 Resources:
   ESInstanceRole:
     Type: 'AWS::IAM::Role'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            - EIAMPolicyActionWildcard: "Wildcard action for instance policy allowed by design"
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -394,8 +405,9 @@ Resources:
                 - ec2.amazonaws.com
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMDirectoryServiceAccess
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy
       Policies:
         - PolicyDocument:
             Statement:
@@ -431,7 +443,7 @@ Resources:
                   - 'logs:PutLogEvents'
                 Effect: Allow
                 Resource:
-                  - !Sub 'arn:aws:logs:*:*:log-group:${ESCWLogGroup}*'
+                  - !Sub 'arn:${AWS::Partition}:logs:*:*:log-group:${ESCWLogGroup}*'
           PolicyName: ESInstanceLogPolicy
   ESInstanceRoleProfile:
     Type: 'AWS::IAM::InstanceProfile'
@@ -453,7 +465,7 @@ Resources:
               - 'sts:AssumeRole'
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
   LambdaLogGroup:
     Type: 'AWS::Logs::LogGroup'
     DeletionPolicy: Delete
@@ -910,7 +922,7 @@ Resources:
           - ''
           - - |
               #!/bin/bash -xe
-            - | 
+            - |
               exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
             - >
               for i in 1 2 3 4 5; do rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && break || sleep 2m; done
@@ -926,14 +938,14 @@ Resources:
               chmod 755 /etc/init.d/cfn-hup
               chkconfig --add cfn-hup
             - >-
-              /bin/cfn-init -v --stack 
-            - !Ref 'AWS::StackName' 
+              /bin/cfn-init -v --stack
+            - !Ref 'AWS::StackName'
             - ' --resource ESInstance
-              --configsets config 
+              --configsets config
               --region '
             - !Ref 'AWS::Region'
             - |+
-            
+
             - '/bin/cfn-signal -e $? --stack '
             - !Ref 'AWS::StackName'
             - ' --resource ESInstance --region '

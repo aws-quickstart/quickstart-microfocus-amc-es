@@ -21,6 +21,11 @@ Description: >-
   conditions here (https://www.microfocus.com/about/legal/) for further details.
   (qs-1p6hinfg3)"
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+
   'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
@@ -212,7 +217,7 @@ Metadata:
         default: Operator email address
       PACDBInstanceClass:
         default: Database instance class
-      PACDBMasterUsername: 
+      PACDBMasterUsername:
         default: PAC database Master username
       PACDBMasterUserPassword:
         default: PAC database Master password
@@ -332,7 +337,7 @@ Parameters:
       printable ASCII character except "/", """, or "@".
     Description: >-
       The password for the DB master user. Must be at least eight characters
-      long, as in "mypassword". Can be any printable ASCII character 
+      long, as in "mypassword". Can be any printable ASCII character
       except "/", """, or "@".
     Type: String
     NoEcho: true
@@ -948,9 +953,9 @@ Rules:
             #- me-south-1         # Middle East (Bahrain) --> MFES not available
             - sa-east-1          # South America (Sao Paulo)
             # - us-gov-east-1      # AWS GovCloud (US-East) --> GovCloud not supported
-            # - us-gov-west-1      # AWS GovCloud (US-West) --> GovCloud not supported 
+            # - us-gov-west-1      # AWS GovCloud (US-West) --> GovCloud not supported
           - !Ref AWS::Region
-        AssertDescription: Micro Focus is not currently supporting this Quick Start in 
+        AssertDescription: Micro Focus is not currently supporting this Quick Start in
           the chosen region. Please contact Micro Focus or launch into a different region.
   LicenseAgreementRule:
     Assertions:
@@ -1006,9 +1011,6 @@ Conditions:
   InstallingSQLDemoApp: !Equals
     - !Ref InstallSQLDemoApp
     - 'true'
-  GovCloudCondition: !Equals
-    - !Ref 'AWS::Region'
-    - us-gov-west-1
 Resources:
   VPCStack:
     Type: 'AWS::CloudFormation::Stack'

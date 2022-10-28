@@ -7,6 +7,16 @@ Description: '"This template deploys a single Micro Focus Enterprise Server inst
   separately, please review the terms and conditions here (https://www.microfocus.com/about/legal/)
   for further details. (qs-1p6hinfit)"'
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+        - E9010
+        - W9002
+        - W9003
+        - W9004
+        - W4002
+        - W2001
   AWS::CloudFormation::Interface:
     ParameterGroups:
     - Label:
@@ -98,7 +108,7 @@ Metadata:
         default: Micro Focus Directory Server service domain account name
       MFDSServiceAccountPassword:
         default: Micro Focus Directory Server service account password
-      PACDBMasterUsername: 
+      PACDBMasterUsername:
         default: Database Master username
       PACDBMasterUserPassword:
         default: Database Master password
@@ -234,7 +244,7 @@ Parameters:
     Description: The name of an existing EC2 key pair. All instances will launch with
       this key pair.
     Type: AWS::EC2::KeyPair::KeyName
-  LatestWS2012R2AmiId: 
+  LatestWS2012R2AmiId:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: '/aws/service/ami-windows-latest/Windows_Server-2012-R2_RTM-English-64Bit-Base'
   MFDSServiceAccountName:
@@ -356,6 +366,13 @@ Conditions:
 Resources:
   BTSTRPInstanceRole:
     Type: AWS::IAM::Role
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            - EIAMPolicyActionWildcard: "Wildcard action for bootstrap instance policy allowed by design"
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -367,8 +384,9 @@ Resources:
             - ec2.amazonaws.com
       Path: /
       ManagedPolicyArns:
-      - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
-      - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMDirectoryServiceAccess
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy
       Policies:
       - PolicyDocument:
           Statement:
@@ -649,7 +667,7 @@ Resources:
                 'powershell.exe -File C:\cfn\scripts\Download-postgres-tools.ps1'
               waitAfterCompletion: '0'
             b-install-postgres-tools:
-              command: !Sub 'powershell.exe -File c:\cfn\scripts\Schedule-AD-PowershellTask.ps1 
+              command: !Sub 'powershell.exe -File c:\cfn\scripts\Schedule-AD-PowershellTask.ps1
                 -TaskName Install-Postgres-Tools -TaskArguments "-File c:\cfn\scripts\Install-Postgres-Tools.ps1"
                 -DomainUserName "${DomainNetBIOSName}\Admin" -DomainUserPassword "${DomainAdminPassword}"'
               waitAfterCompletion: '90'

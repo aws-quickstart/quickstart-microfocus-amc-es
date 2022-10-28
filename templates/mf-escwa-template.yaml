@@ -22,6 +22,13 @@ Description: >-
   conditions here (https://www.microfocus.com/about/legal/) for further details.
   (qs-1qeg3mku7)"
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+        - W9004
+        - W4002
+
   'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
@@ -307,6 +314,13 @@ Conditions:
 Resources:
   ESCWAInstanceRole:
     Type: 'AWS::IAM::Role'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            - EIAMPolicyActionWildcard: "Wildcard action for bootstrap instance policy allowed by design"
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -318,8 +332,9 @@ Resources:
                 - ec2.amazonaws.com
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMDirectoryServiceAccess
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy
       Policies:
         - PolicyDocument:
             Statement:
@@ -368,7 +383,7 @@ Resources:
               - 'sts:AssumeRole'
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
   ESCWAInstance:
     Type: 'AWS::EC2::Instance'
     CreationPolicy:

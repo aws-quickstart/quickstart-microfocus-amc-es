@@ -22,6 +22,13 @@ Description: >-
   conditions here (https://www.microfocus.com/about/legal/) for further details.
   (qs-1p6hinfje)"
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+        - W9004
+        - W4002
+
   'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
@@ -416,6 +423,13 @@ Conditions:
 Resources:
   ESInstanceRole:
     Type: 'AWS::IAM::Role'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            - EIAMPolicyActionWildcard: "Wildcard action for instance policy allowed by design"
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -427,8 +441,9 @@ Resources:
                 - ec2.amazonaws.com
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMDirectoryServiceAccess
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy
       Policies:
         - PolicyDocument:
             Statement:
@@ -464,7 +479,7 @@ Resources:
                   - 'logs:PutLogEvents'
                 Effect: Allow
                 Resource:
-                  - !Sub 'arn:aws:logs:*:*:log-group:${ESCWLogGroup}*'
+                  - !Sub 'arn:${AWS::Partition}:logs:*:*:log-group:${ESCWLogGroup}*'
           PolicyName: ESInstanceLogPolicy
   ESInstanceRoleProfile:
     Type: 'AWS::IAM::InstanceProfile'
@@ -486,7 +501,7 @@ Resources:
               - 'sts:AssumeRole'
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
   LambdaLogGroup:
     Type: 'AWS::Logs::LogGroup'
     DeletionPolicy: Delete
@@ -1048,7 +1063,7 @@ Resources:
                       -DsnType "System" `
                       -Platform "32-bit" `
                       -SetPropertyValue @("Server=ESPACDatabase", "UserName=esuser", "Database=postgres", "Password=${PACDBMasterUserPassword}")
-                  
+
                   Add-OdbcDsn `
                       -Name PG.REGION `
                       -DriverName "PostgreSQL ANSI" `
@@ -1255,12 +1270,12 @@ Resources:
               rem Uninstall Amazon SSM Agent and AWS CLI to allow updating
               wmic product where "description='Amazon SSM Agent' " uninstall
               wmic product where "description='aws-cfn-bootstrap' " uninstall
-              
+
               rem Install Unified CloudWatchAgent
               mkdir C:\Downloads\Amazon\AmazonCloudWatchAgent
               powershell -Command "(New-Object Net.WebClient).DownloadFile('https://s3.amazonaws.com/amazoncloudwatch-agent/windows/amd64/latest/amazon-cloudwatch-agent.msi','C:\Downloads\Amazon\AmazonCloudWatchAgent\amazon-cloudwatch-agent.msi')"
               C:\Downloads\Amazon\AmazonCloudWatchAgent\amazon-cloudwatch-agent.msi
-              
+
               rem Install latest AWS CloudFormation Helper Scripts
               start /wait c:\Windows\system32\msiexec /passive /qn /i https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-win64-latest.msi
 
