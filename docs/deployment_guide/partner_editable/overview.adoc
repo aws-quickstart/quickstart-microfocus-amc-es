@@ -18,7 +18,7 @@ Using Enterprise Server, your organization can:
 * Support mainframe application deployment to Linux or Windows on AWS.
 * Rapidly replicate business-critical functionality to new platforms to support geographic, regulatory, line-of-business, or other key requirements.
 * Reduce your ongoing IT application costs by as much as 90 percent.
-* Meet and exceed your application reliability, availability, and serviceability requirements. Enterprise Server 7.0 enables you to deploy your applications into a scale-out architecture, providing even more improvements to your applications' availability, scalability, reliability, and performance.
+* Meet and exceed your application reliability, availability, and serviceability requirements. Enterprise Server 8.0 enables you to deploy your applications into a scale-out architecture, providing even more improvements to your applications' availability, scalability, reliability, and performance.
 This scale-out architecture is provided by Performance and Availability Clusters (PACs) and Scale-Out Repositories (SORs) which are currently in Early Adopter Product (EAP) release status in Enterprise Server.
 An additional document, Micro Focus Enterprise Server on the AWS Cloud - Scale-Out Architecture Demonstrations describes how you can take a closer look at the scale-out capabilities offered by Enterprise Server.
 * Integrate with your security infrastructure, for appropriate application and system security.
