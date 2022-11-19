@@ -22,6 +22,13 @@ Description: >-
   conditions here (https://www.microfocus.com/about/legal/) for further details.
   (qs-1qeg3mkuj)"
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+        - W4002
+        - W9004
+
   'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
@@ -360,9 +367,6 @@ Mappings:
       MFES40AMI: ami-0e9d4a9ef3e4fb89a
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
-  GovCloudCondition: !Equals
-    - !Ref 'AWS::Region'
-    - us-gov-west-1
   HaveESlicenseFilename: !Not
     - !Equals
       - !Ref ESLicenseFilename
@@ -383,6 +387,13 @@ Conditions:
 Resources:
   ESInstanceRole:
     Type: 'AWS::IAM::Role'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            - EIAMPolicyActionWildcard: "Wildcard action for instance policy allowed by design"
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -394,8 +405,9 @@ Resources:
                 - ec2.amazonaws.com
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMDirectoryServiceAccess
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy
       Policies:
         - PolicyDocument:
             Statement:
@@ -424,6 +436,15 @@ Resources:
                 Effect: Allow
                 Resource: '*'
           PolicyName: ESInstancePolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - 'logs:Create*'
+                  - 'logs:PutLogEvents'
+                Effect: Allow
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:*:*:log-group:${ESCWLogGroup}*'
+          PolicyName: ESInstanceLogPolicy
   ESInstanceRoleProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
@@ -444,7 +465,7 @@ Resources:
               - 'sts:AssumeRole'
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
   CalcPrimaryDataVolumeStorageSizeFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -458,7 +479,7 @@ Resources:
             var result = (parseInt(props.RegionsPerInstance) * parseInt(props.RegionStorageOverheadInGiB)) + parseInt(props.AdditionalESStorageinGiB);
             response.send(event, context, response.SUCCESS, {Value: result});
           };
-      Runtime: nodejs12.x
+      Runtime: nodejs16.x
   ESPrimaryDataVolumeStorageSize:
     Type: 'Custom::CalcPrimaryDataVolumeStorageSizeFunction'
     Properties:
@@ -469,8 +490,16 @@ Resources:
       Value: 0
   ESPrimaryDataVolume:
     Type: 'AWS::EC2::Volume'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EBSVolumeEncryption
+          ignore_reasons:
+            - EBSVolumeEncryption: "Ignore invalid check"
     Properties:
       VolumeType: gp2
+      Encrypted: true
       Size: !GetAtt ESPrimaryDataVolumeStorageSize.Value
       AvailabilityZone: !Select
         - 0
@@ -483,7 +512,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Count: 1
-        Timeout: PT20M
+        Timeout: PT30M
     Metadata:
       'AWS::CloudFormation::Authentication':
         S3AccessCreds:
@@ -496,6 +525,7 @@ Resources:
         configSets:
           config:
             - 000-NoOperation
+            - 001-ConfigureCW
             - 010-JoinDomain
             - !If
               - HaveESlicenseFilename
@@ -538,6 +568,48 @@ Resources:
             a-no-operation:
               command: echo "No-Operation" > nul
               waitAfterCompletion: '0'
+        001-ConfigureCW:
+          files:
+            /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json:
+              content: !Sub |
+                {
+                  "agent": {
+                    "run_as_user": "root"
+                  },
+                  "logs": {
+                    "logs_collected": {
+                      "files": {
+                        "collect_list": [
+                          {
+                            "file_path": "/var/log/user-data.log",
+                            "log_group_name": "${ESCWLogGroup}",
+                            "log_stream_name": "ES/{instance_id}/user-data.log"
+                          },
+                          {
+                            "file_path": "/var/log/cfn-init.log",
+                            "log_group_name": "${ESCWLogGroup}",
+                            "log_stream_name": "ES/{instance_id}/cfn-init.log"
+                          },
+                          {
+                            "file_path": "/var/log/cfn-init-cmd.log",
+                            "log_group_name": "${ESCWLogGroup}",
+                            "log_stream_name": "ES/{instance_id}/cfn-init-cmd.log"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              mode: '000400'
+              owner: root
+              group: root
+          commands:
+            a-stop-cwagent:
+              command: /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a stop
+              waitAfterCompletion: '30'
+            b-start-cwagent:
+              command: /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s
+              waitAfterCompletion: '30'
         010-JoinDomain:
           files:
             '/tmp/JoinTo-Domain-Linux.sh':
@@ -853,29 +925,27 @@ Resources:
           - ''
           - - |
               #!/bin/bash -xe
-            - | 
+            - |
               exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
             - >
-              rpm -Uvh
-              https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+              for i in 1 2 3 4 5; do rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && break || sleep 2m; done
             - |
               yum -y install python-pip
             - >
               pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
             - >
+              rpm -Uvh https://s3.amazonaws.com/amazoncloudwatch-agent/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
+            - >
               cp -f /usr/init/redhat/cfn-hup /etc/init.d/
             - |
               chmod 755 /etc/init.d/cfn-hup
               chkconfig --add cfn-hup
-            - >-
-              /bin/cfn-init -v --stack 
-            - !Ref 'AWS::StackName' 
-            - ' --resource ESInstance
-              --configsets config 
-              --region '
+            - '/bin/cfn-init -v --stack '
+            - !Ref 'AWS::StackName'
+            - ' --resource ESInstance --configsets config --region '
             - !Ref 'AWS::Region'
             - |+
-            
+
             - '/bin/cfn-signal -e $? --stack '
             - !Ref 'AWS::StackName'
             - ' --resource ESInstance --region '

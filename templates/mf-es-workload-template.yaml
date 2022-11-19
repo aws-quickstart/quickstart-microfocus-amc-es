@@ -22,6 +22,10 @@ Description:
   and conditions here (https://www.microfocus.com/about/legal/) for further
   details. (qs-1p6hinfi)"
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
   'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
@@ -80,7 +84,6 @@ Metadata:
           - PACDBMasterUsername
           - PACDBMasterUserPassword
           - PACDBMasterUserPasswordConfirm
-          - PACDBStorageInGiB
       - Label:
           default: Enterprise Server Fileshare Configuration
         Parameters:
@@ -207,14 +210,12 @@ Metadata:
         default: Operator email address
       PACDBInstanceClass:
         default: PAC database instance class
-      PACDBMasterUsername: 
+      PACDBMasterUsername:
         default: PAC database Master username
       PACDBMasterUserPassword:
         default: PAC database Master password
       PACDBMasterUserPasswordConfirm:
         default: Re-enter the PAC database Master password
-      PACDBStorageInGiB:
-        default: Database allocated storage size
       PrivateSubnet1AID:
         default: Private Subnet 1A ID
       PrivateSubnet2AID:
@@ -301,7 +302,7 @@ Parameters:
       printable ASCII character except "/", """, or "@".
     Description: >-
       The password for the DB master user. Must be at least eight characters
-      long, as in "mypassword". Can be any printable ASCII character 
+      long, as in "mypassword". Can be any printable ASCII character
       except "/", """, or "@".
     Type: String
     NoEcho: true
@@ -479,12 +480,6 @@ Parameters:
       except "/", """, or "@".
     Type: String
     NoEcho: true
-  PACDBStorageInGiB:
-    Type: Number
-    Description: Enter 20-16384 GiB.
-    MinValue: 20
-    MaxValue: 16384
-    Default: 100
   ESInstanceType:
     AllowedValues:
       - c5.large
@@ -857,9 +852,9 @@ Rules:
             #- me-south-1         # Middle East (Bahrain) --> MFES not available
             - sa-east-1          # South America (Sao Paulo)
             # - us-gov-east-1      # AWS GovCloud (US-East) --> GovCloud not supported
-            # - us-gov-west-1      # AWS GovCloud (US-West) --> GovCloud not supported 
+            # - us-gov-west-1      # AWS GovCloud (US-West) --> GovCloud not supported
           - !Ref AWS::Region
-        AssertDescription: Micro Focus is not currently supporting this Quick Start in 
+        AssertDescription: Micro Focus is not currently supporting this Quick Start in
           the chosen region. Please contact Micro Focus or launch into a different region.
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
@@ -1068,6 +1063,13 @@ Resources:
         VPCID: !Ref VPCID
   ESInstanceRole:
     Type: 'AWS::IAM::Role'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            - EIAMPolicyActionWildcard: "Wildcard action for ESInstancePolicy allowed by design"
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -1079,8 +1081,9 @@ Resources:
                 - ec2.amazonaws.com
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMDirectoryServiceAccess
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy
       Policies:
         - PolicyDocument:
             Statement:
@@ -1296,6 +1299,7 @@ Resources:
         DomainNetBIOSName: !Ref DomainNetBIOSName
         ESDemoUserPassword: !Ref ESDemoUserPassword
         ESClientAccessSGID: !Ref ESInstance1ClientAccessSecurityGroup
+        ESCWLogGroup: !Ref ESCWLogGroup
         ESDatabaseEndpointAddress: !If
           - CreateRDSRemoteDatabaseStack
           - !GetAtt RemoteDatabaseServerStack.Outputs.ESDatabaseEndpointAddress

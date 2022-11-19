@@ -20,6 +20,11 @@ Description: >-
   please review the terms and conditions here
   (https://www.microfocus.com/about/legal/) for further details. (qs-1p440hhtu)"
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+        - W9004
   'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
@@ -93,7 +98,7 @@ Parameters:
       - db.r4.xlarge
       - db.r4.2xlarge
       - db.r4.4xlarge
-      - db.r2.8xlarge
+      - db.r4.8xlarge
     Description: The type of Amazon RDS DB instance.
     Default: db.r4.large
     Type: String
@@ -251,7 +256,7 @@ Resources:
                 - rds.amazonaws.com
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonRDSDirectoryServiceAccess'
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonRDSDirectoryServiceAccess
   ESDatabase:
     Type: 'AWS::RDS::DBInstance'
     DeletionPolicy: Delete

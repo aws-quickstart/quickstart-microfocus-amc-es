@@ -20,6 +20,11 @@ Description: >-
   please review the terms and conditions here
   (https://www.microfocus.com/about/legal/) for further details. (qs-1qeg3mkqr)"
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+        - W9004
   'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
@@ -69,13 +74,16 @@ Parameters:
       - db.r4.xlarge
       - db.r4.2xlarge
       - db.r4.4xlarge
-      - db.r2.8xlarge
+      - db.r4.8xlarge
     Default: db.r4.large
     Type: String
+    Description: DB instance class
   DBMasterUsername:
+    Description: The master user name for the DB instance.
     Type: String
     Default: DBAdmin
   DBMasterUserPassword:
+    Description: The password for the master user.
     Type: String
     NoEcho: true
   DirectoryServiceID:
@@ -153,7 +161,7 @@ Resources:
                 - rds.amazonaws.com
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonRDSDirectoryServiceAccess'
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonRDSDirectoryServiceAccess
   DatabaseSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
@@ -163,6 +171,13 @@ Resources:
         - !Ref PrivateSubnet2AID
   AuroraCluster:
     Type: AWS::RDS::DBCluster
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - ERDSStorageEncryptionEnabled
+          ignore_reasons:
+            - ERDSStorageEncryptionEnabled: "Encryption disabled by design"
     Properties:
       Engine: aurora-postgresql
       EngineVersion: "10"
@@ -176,7 +191,6 @@ Resources:
       VpcSecurityGroupIds:
         - !Ref ESDatabaseSG
       BackupRetentionPeriod: 30
-    DependsOn: DatabaseSubnetGroup
 
   ESDatabase:
     Type: 'AWS::RDS::DBInstance'

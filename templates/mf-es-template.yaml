@@ -22,6 +22,13 @@ Description: >-
   conditions here (https://www.microfocus.com/about/legal/) for further details.
   (qs-1p6hinfje)"
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+        - W9004
+        - W4002
+
   'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
@@ -416,6 +423,13 @@ Conditions:
 Resources:
   ESInstanceRole:
     Type: 'AWS::IAM::Role'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            - EIAMPolicyActionWildcard: "Wildcard action for instance policy allowed by design"
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -427,8 +441,9 @@ Resources:
                 - ec2.amazonaws.com
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMDirectoryServiceAccess
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy
       Policies:
         - PolicyDocument:
             Statement:
@@ -457,6 +472,15 @@ Resources:
                 Effect: Allow
                 Resource: '*'
           PolicyName: ESInstancePolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - 'logs:Create*'
+                  - 'logs:PutLogEvents'
+                Effect: Allow
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:*:*:log-group:${ESCWLogGroup}*'
+          PolicyName: ESInstanceLogPolicy
   ESInstanceRoleProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
@@ -477,7 +501,7 @@ Resources:
               - 'sts:AssumeRole'
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
   CalcPrimaryDataVolumeStorageSizeFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -491,7 +515,7 @@ Resources:
             var result = (parseInt(props.RegionsPerInstance) * parseInt(props.RegionStorageOverheadInGiB)) + parseInt(props.AdditionalESStorageinGiB);
             response.send(event, context, response.SUCCESS, {Value: result});
           };
-      Runtime: nodejs12.x
+      Runtime: nodejs16.x
   ESPrimaryDataVolumeStorageSize:
     Type: 'Custom::CalcPrimaryDataVolumeStorageSizeFunction'
     Properties:
@@ -502,8 +526,16 @@ Resources:
       Value: 0
   ESPrimaryDataVolume:
     Type: 'AWS::EC2::Volume'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EBSVolumeEncryption
+          ignore_reasons:
+            - EBSVolumeEncryption: "Ignore invalid check"
     Properties:
       VolumeType: gp2
+      Encrypted: true
       Size: !GetAtt ESPrimaryDataVolumeStorageSize.Value
       AvailabilityZone: !Select
         - 0
@@ -516,7 +548,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Count: 1
-        Timeout: PT25M
+        Timeout: PT50M
     Metadata:
       'AWS::CloudFormation::Authentication':
         S3AccessCreds:
@@ -594,157 +626,35 @@ Resources:
               waitAfterCompletion: '0'
         020-ConfigureCWLogs:
           files:
-            'C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json':
+            "C:\\ProgramData\\Amazon\\AmazonCloudWatchAgent\\amazon-cloudwatch-agent.json":
               content: !Sub |
                 {
-                  "IsEnabled": true,
-                  "EngineConfiguration": {
-                    "PollInterval": "00:00:05",
-                    "Components": [
-                      {
-                        "Id": "ApplicationEventLog",
-                        "FullName": "AWS.EC2.Windows.CloudWatch.EventLog.EventLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                        "Parameters": {
-                          "LogName": "Application",
-                          "Levels": "7"
-                        }
-                      },
-                      {
-                        "Id": "SystemEventLog",
-                        "FullName": "AWS.EC2.Windows.CloudWatch.EventLog.EventLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                        "Parameters": {
-                          "LogName": "System",
-                          "Levels": "7"
-                        }
-                      },
-                      {
-                        "Id": "SecurityEventLog",
-                        "FullName": "AWS.EC2.Windows.CloudWatch.EventLog.EventLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                        "Parameters": {
-                          "LogName": "Security",
-                          "Levels": "7"
-                        }
-                      },
-                      {
-                        "Id": "EC2ConfigLog",
-                        "FullName": "AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                        "Parameters": {
-                          "LogDirectoryPath": "C:\\Program Files\\Amazon\\Ec2ConfigService\\Logs",
-                          "TimestampFormat": "yyyy-MM-ddTHH:mm:ss.fffZ:",
-                          "Encoding": "ASCII",
-                          "Filter": "EC2ConfigLog.txt",
-                          "CultureName": "en-US",
-                          "TimeZoneKind": "UTC"
-                        }
-                      },
-                      {
-                        "Id": "CfnInitLog",
-                        "FullName": "AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                        "Parameters": {
-                          "LogDirectoryPath": "C:\\cfn\\log",
-                          "TimestampFormat": "yyyy-MM-dd HH:mm:ss,fff",
-                          "Encoding": "ASCII",
-                          "Filter": "cfn-init.log",
-                          "CultureName": "en-US",
-                          "TimeZoneKind": "Local"
-                        }
-                      },
-                      {
-                        "Id": "MemoryPerformanceCounter",
-                        "FullName": "AWS.EC2.Windows.CloudWatch.PerformanceCounterComponent.PerformanceCounterInputComponent,AWS.EC2.Windows.CloudWatch",
-                        "Parameters": {
-                          "CategoryName": "Memory",
-                          "CounterName": "Available MBytes",
-                          "InstanceName": "",
-                          "MetricName": "Memory",
-                          "Unit": "Megabytes",
-                          "DimensionName": "",
-                          "DimensionValue": ""
-                        }
-                      },
-                      {
-                        "Id": "CloudWatchApplicationEventLog",
-                        "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                        "Parameters": {
-                          "AccessKey": "",
-                          "SecretKey": "",
-                          "Region": "${AWS::Region}",
-                          "LogGroup": "${ESCWLogGroup}",
-                          "LogStream": "ES/{instance_id}/ApplicationEventLog"
-                        }
-                      },
-                      {
-                        "Id": "CloudWatchSystemEventLog",
-                        "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                        "Parameters": {
-                          "AccessKey": "",
-                          "SecretKey": "",
-                          "Region": "${AWS::Region}",
-                          "LogGroup": "${ESCWLogGroup}",
-                          "LogStream": "ES/{instance_id}/SystemEventLog"
-                        }
-                      },
-                      {
-                        "Id": "CloudWatchSecurityEventLog",
-                        "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                        "Parameters": {
-                          "AccessKey": "",
-                          "SecretKey": "",
-                          "Region": "${AWS::Region}",
-                          "LogGroup": "${ESCWLogGroup}",
-                          "LogStream": "ES/{instance_id}/SecurityEventLog"
-                        }
-                      },
-                      {
-                        "Id": "CloudWatchEC2ConfigLog",
-                        "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                        "Parameters": {
-                          "AccessKey": "",
-                          "SecretKey": "",
-                          "Region": "${AWS::Region}",
-                          "LogGroup": "${ESCWLogGroup}",
-                          "LogStream": "ES/{instance_id}/EC2ConfigLog"
-                        }
-                      },
-                      {
-                        "Id": "CloudWatchCfnInitLog",
-                        "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                        "Parameters": {
-                          "AccessKey": "",
-                          "SecretKey": "",
-                          "Region": "${AWS::Region}",
-                          "LogGroup": "${ESCWLogGroup}",
-                          "LogStream": "ES/{instance_id}/CfnInitLog"
-                        }
-                      },
-                      {
-                        "Id": "CloudWatch",
-                        "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatch.CloudWatchOutputComponent,AWS.EC2.Windows.CloudWatch",
-                        "Parameters": {
-                          "AccessKey": "",
-                          "SecretKey": "",
-                          "Region": "${AWS::Region}",
-                          "NameSpace": "Windows/Default"
-                        }
+                  "logs": {
+                    "logs_collected": {
+                      "files": {
+                        "collect_list": [
+                          {
+                            "file_path": "C:\\cfn\\log\\cfn-init.log",
+                            "log_group_name": "${ESCWLogGroup}",
+                            "log_stream_name": "ES/{instance_id}/cfn-init.log"
+                          },
+                          {
+                            "file_path": "C:\\cfn\\log\\cfn-init-cmd.log",
+                            "log_group_name": "${ESCWLogGroup}",
+                            "log_stream_name": "ES/{instance_id}/cfn-init-cmd.log"
+                          }
+                        ]
                       }
-                    ],
-                    "Flows": {
-                      "Flows": [
-                        "ApplicationEventLog,CloudWatchApplicationEventLog",
-                        "SystemEventLog,CloudWatchSystemEventLog",
-                        "SecurityEventLog,CloudWatchSecurityEventLog",
-                        "EC2ConfigLog,CloudWatchEC2ConfigLog",
-                        "CfnInitLog,CloudWatchCfnInitLog",
-                        "MemoryPerformanceCounter,CloudWatch"
-                      ]
                     }
                   }
                 }
           commands:
-            a-restartSSM:
-              command: powershell.exe -Command Restart-Service AmazonSSMAgent
-              ignoreErrors: true
-              waitAfterCompletion: 0
+            a-stop-cwagent:
+              command: powershell -Command "C:\\'Program Files'\\Amazon\\AmazonCloudWatchAgent\\amazon-cloudwatch-agent-ctl.ps1 -a stop"
+              waitAfterCompletion: '30'
+            b-start-cwagent:
+              command: powershell -Command "C:\\'Program Files'\\Amazon\\AmazonCloudWatchAgent\\amazon-cloudwatch-agent-ctl.ps1 -a fetch-config -m ec2 -c file:C:\\ProgramData\\Amazon\\AmazonCloudWatchAgent\\amazon-cloudwatch-agent.json -s"
+              waitAfterCompletion: '30'
         030-InitPowerShell:
           files:
             'C:\cfn\scripts\Unzip-Archive.ps1':
@@ -1156,7 +1066,7 @@ Resources:
                       -DsnType "System" `
                       -Platform "32-bit" `
                       -SetPropertyValue @("Server=ESPACDatabase", "UserName=esuser", "Database=postgres", "Password=${PACDBMasterUserPassword}")
-                  
+
                   Add-OdbcDsn `
                       -Name PG.REGION `
                       -DriverName "PostgreSQL ANSI" `
@@ -1363,6 +1273,11 @@ Resources:
               rem Uninstall Amazon SSM Agent and AWS CLI to allow updating
               wmic product where "description='Amazon SSM Agent' " uninstall
               wmic product where "description='aws-cfn-bootstrap' " uninstall
+
+              rem Install Unified CloudWatchAgent
+              mkdir C:\Downloads\Amazon\AmazonCloudWatchAgent
+              powershell -Command "(New-Object Net.WebClient).DownloadFile('https://s3.amazonaws.com/amazoncloudwatch-agent/windows/amd64/latest/amazon-cloudwatch-agent.msi','C:\Downloads\Amazon\AmazonCloudWatchAgent\amazon-cloudwatch-agent.msi')"
+              C:\Downloads\Amazon\AmazonCloudWatchAgent\amazon-cloudwatch-agent.msi
 
               rem Install latest AWS CloudFormation Helper Scripts
               start /wait c:\Windows\system32\msiexec /passive /qn /i https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-win64-latest.msi

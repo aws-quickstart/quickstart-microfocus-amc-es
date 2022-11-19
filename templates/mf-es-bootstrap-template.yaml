@@ -7,6 +7,16 @@ Description: '"This template deploys a single Micro Focus Enterprise Server inst
   separately, please review the terms and conditions here (https://www.microfocus.com/about/legal/)
   for further details. (qs-1p6hinfit)"'
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+        - E9010
+        - W9002
+        - W9003
+        - W9004
+        - W4002
+        - W2001
   AWS::CloudFormation::Interface:
     ParameterGroups:
     - Label:
@@ -30,6 +40,7 @@ Metadata:
       - MFDSServiceAccountPassword
       - ESS3BucketName
       - ESS3BucketRegion
+      - ESCWLogGroup
     - Label:
         default: PAC Configuration
       Parameters:
@@ -75,6 +86,8 @@ Metadata:
         default: Domain member Security Group ID
       ESClientAccessSGID:
         default: ES Client Access Security Group ID
+      ESCWLogGroup:
+        default: Amazon CloudWatch Log Group
       ESDemoUserPassword:
         default: Enterprise Server Demo User password
       ESDatabaseEndpointAddress:
@@ -95,7 +108,7 @@ Metadata:
         default: Micro Focus Directory Server service domain account name
       MFDSServiceAccountPassword:
         default: Micro Focus Directory Server service account password
-      PACDBMasterUsername: 
+      PACDBMasterUsername:
         default: Database Master username
       PACDBMasterUserPassword:
         default: Database Master password
@@ -163,6 +176,9 @@ Parameters:
     Type: AWS::EC2::SecurityGroup::Id
     Description: Security Group ID for application ingress into the Enterpriser Server
       instance (e.g., sg-1234abcd).
+  ESCWLogGroup:
+    Type: String
+    Description: The logical ID of the Amazon CloudWatch Logs Log Group
   ESDatabaseEndpointAddress:
     Type: String
     Description: The connection endpoint for the database
@@ -228,7 +244,7 @@ Parameters:
     Description: The name of an existing EC2 key pair. All instances will launch with
       this key pair.
     Type: AWS::EC2::KeyPair::KeyName
-  LatestWS2012R2AmiId: 
+  LatestWS2012R2AmiId:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: '/aws/service/ami-windows-latest/Windows_Server-2012-R2_RTM-English-64Bit-Base'
   MFDSServiceAccountName:
@@ -350,6 +366,13 @@ Conditions:
 Resources:
   BTSTRPInstanceRole:
     Type: AWS::IAM::Role
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            - EIAMPolicyActionWildcard: "Wildcard action for bootstrap instance policy allowed by design"
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -361,8 +384,9 @@ Resources:
             - ec2.amazonaws.com
       Path: /
       ManagedPolicyArns:
-      - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
-      - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMDirectoryServiceAccess
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy
       Policies:
       - PolicyDocument:
           Statement:
@@ -415,6 +439,7 @@ Resources:
         configSets:
           config:
           - 010-InitPowerShell
+          - 011-ConfigureCW
           - 020-RenameAndJoinDomain
           - !If
             - HaveDatabaseEnvironment
@@ -529,6 +554,37 @@ Resources:
               command: !Sub 'powershell.exe -Command New-AWSQuickStartResourceSignal
                 -Stack ${AWS::StackName} -Resource BTSTRPInstance -Region ${AWS::Region}'
               waitAfterCompletion: '0'
+        011-ConfigureCW:
+          files:
+            "C:\\ProgramData\\Amazon\\AmazonCloudWatchAgent\\amazon-cloudwatch-agent.json":
+              content: !Sub |
+                {
+                  "logs": {
+                    "logs_collected": {
+                      "files": {
+                        "collect_list": [
+                          {
+                            "file_path": "C:\\cfn\\log\\cfn-init.log",
+                            "log_group_name": "${ESCWLogGroup}",
+                            "log_stream_name": "BTSTRP/{instance_id}/cfn-init.log"
+                          },
+                          {
+                            "file_path": "C:\\cfn\\log\\cfn-init-cmd.log",
+                            "log_group_name": "${ESCWLogGroup}",
+                            "log_stream_name": "BTSTRP/{instance_id}/cfn-init-cmd.log"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+          commands:
+            a-stop-cwagent:
+              command: powershell -Command "C:\\'Program Files'\\Amazon\\AmazonCloudWatchAgent\\amazon-cloudwatch-agent-ctl.ps1 -a stop"
+              waitAfterCompletion: '30'
+            b-start-cwagent:
+              command: powershell -Command "C:\\'Program Files'\\Amazon\\AmazonCloudWatchAgent\\amazon-cloudwatch-agent-ctl.ps1 -a fetch-config -m ec2 -c file:C:\\ProgramData\\Amazon\\AmazonCloudWatchAgent\\amazon-cloudwatch-agent.json -s"
+              waitAfterCompletion: '30'
         020-RenameAndJoinDomain:
           commands:
             a-rename-computer:
@@ -611,7 +667,7 @@ Resources:
                 'powershell.exe -File C:\cfn\scripts\Download-postgres-tools.ps1'
               waitAfterCompletion: '0'
             b-install-postgres-tools:
-              command: !Sub 'powershell.exe -File c:\cfn\scripts\Schedule-AD-PowershellTask.ps1 
+              command: !Sub 'powershell.exe -File c:\cfn\scripts\Schedule-AD-PowershellTask.ps1
                 -TaskName Install-Postgres-Tools -TaskArguments "-File c:\cfn\scripts\Install-Postgres-Tools.ps1"
                 -DomainUserName "${DomainNetBIOSName}\Admin" -DomainUserPassword "${DomainAdminPassword}"'
               waitAfterCompletion: '90'
@@ -731,6 +787,11 @@ Resources:
               rem Uninstall Amazon SSM Agent and AWS CLI to allow updating
               wmic product where "description='Amazon SSM Agent' " uninstall
               wmic product where "description='aws-cfn-bootstrap' " uninstall
+
+              rem Install Unified CloudWatchAgent
+              mkdir C:\Downloads\Amazon\AmazonCloudWatchAgent
+              powershell -Command "(New-Object Net.WebClient).DownloadFile('https://s3.amazonaws.com/amazoncloudwatch-agent/windows/amd64/latest/amazon-cloudwatch-agent.msi','C:\Downloads\Amazon\AmazonCloudWatchAgent\amazon-cloudwatch-agent.msi')"
+              C:\Downloads\Amazon\AmazonCloudWatchAgent\amazon-cloudwatch-agent.msi
 
               rem Install latest AWS CloudFormation Helper Scripts
               start /wait c:\Windows\system32\msiexec /passive /qn /i https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-win64-latest.msi
