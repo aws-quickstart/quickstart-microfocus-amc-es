@@ -1,6 +1,6 @@
 //Include any predeployment steps here, such as signing up for a Marketplace AMI or making any changes to a partner account. If there are no predeployment steps, leave this file empty.
 
-== Pre Deployment steps
+== Predeployment steps
 
 The BankDemo demonstration application that is included as part of this Partner Solution requires the use of a TN3270 terminal emulator. You can use any TN3270 terminal
 emulator, but this guide shows the use of Micro Focus Rumba, which is supplied with Micro Focus Enterprise Developer.
@@ -9,56 +9,33 @@ Before launching this Partner Solution for Enterprise Server, you must review th
 https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-0562B3C9-2271-4CE8-AF64-93DE4940077F.html[Micro
 Focus End User License Agreement^]. You will be asked to accept the terms of the End User License Agreement during deployment.
 
-=== Step 1. Prepare Your AWS Account
+=== Prepare an Amazon S3 Bucket
 
-. If you don’t already have an AWS account, create one at https://aws.amazon.com[role=external,window=_blank] by following the on-screen instructions.
- 
-. Use the region selector in the navigation bar to choose the AWS Region where you want to deploy Enterprise Server on AWS.
-+
-[IMPORTANT]
-This Partner Solution includes AWS Directory Service which isn’t supported in all AWS Regions. See https://docs.aws.amazon.com/general/latest/gr/rande.html#ds_region[AWS Regions and Endpoints^] for a list of supported regions.
-When deploying the RDS Remote Database option, Amazon RDS does not support Windows (domain) Authentication in all AWS Regions. See https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_SQLServerWinAuth.html[Using Windows Authentication with a Microsoft SQL Server DB Instance^].
-. Amazon EC2 uses public-key cryptography to encrypt and decrypt login information. To be able to log in to your instances, you must create a https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html[key pair^] in your preferred region. To do this:
-..	In the navigation pane of the Amazon EC2 console, select *Key Pairs*.
-..	Choose *Create Key Pair*.
-..	Specify the name for the key pair.
-..	Choose *Create*.
-
-
-. If necessary, https://console.aws.amazon.com/support/home#/case/create?issueType=service-limit-increase&limitType=service-code-[request a service limit increase, role=external,window=_blank] for the relevant Amazon EC2 instance types. You might need to do this if you have an existing deployment that uses this instance type, and you think you might exceed the http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-resource-limits.html[default limit, role=external,window=_blank] with this deployment.
-
-=== Step 2. Prepare the S3 Bucket
-
-We recommend that you launch the Enterprise Server Partner Solution from an S3 bucket, and these instructions will guide you through the content of this bucket. The commands are using the AWS CLI on Windows, but if you prefer, you can use the user interface options from the Amazon S3 > Buckets page to complete the tasks. +
+We recommend that you launch the Enterprise Server Partner Solution from an Amazon S3 bucket, and these instructions will guide you through the content of this bucket. The commands are using the AWS CLI on Windows, but if you prefer, you can use the Amazon S3 Console to complete the tasks. +
 If you are deploying from local files or a non-S3 location, these steps can be skipped.
-[NOTE]
-====
-Cloning the GitHub repository requires the use of an SSH key. Generate a new SSH key pair and add the public key to your GitHub account. If you are not familiar with SSH keys in GitHub, see https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account[Adding a new SSH key to your GitHub account - GitHub Docs, role=external,window=_blank] .
-====
+
+NOTE: Cloning the GitHub repository requires the use of an SSH key. Generate a new SSH key pair and add the public key to your GitHub account. If you are not familiar with SSH keys in GitHub, see https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account[Adding a new SSH key to your GitHub account - GitHub Docs, role=external,window=_blank] .
 . Create a new folder for the templates and scripts; for example, *C:\quickstart-microfocus-amc-es*.
 . Download the following contents and submodules from our GitHub repository, by entering the following command:
-+
-====
+
+```
 git clone --recursive -c core.autocrlf=false git@github.com:aws-quickstart/quickstart-microfocus-amc-es.git C:\quickstart-microfocus-amc-es
-====
-+
-[TIP]
+```
 
-Check that the script files within the 'scripts' sub-folders of the cloned repository contain the correct line endings for their platform: .ps1 files should have Windows-style line endings (CRLF), and .sh files should have Linux-style line endings (LF).
-
+TIP: Check that the script files within the 'scripts' sub-folders of the cloned repository contain the correct line endings for their platform: .ps1 files should have Windows-style line endings (CRLF), and .sh files should have Linux-style line endings (LF).
 
 . Upload this entire structure, excluding the GitHub metadata files (*git*) into an existing, empty S3 bucket; for example, if using the AWS command line tools on your local machine:
 +
-====
+```
 aws s3 cp C:\quickstart-microfocus-amc-es s3://aws-quickstart/quickstart-microfocus-amc-es/ --recursive --exclude \*git* --quiet
-====
+```
 +
 where _aws-quickstart_ is the name of the S3 bucket.
 . Add your license file (.mflic) into a folder named *license* in the same S3 bucket; for example:
 +
-====
+```
 aws s3 cp .\Enterprise-Server.mflic s3://aws-quickstart/license/Enterprise-Server.mflic
-====
+```
 +
 where _Enterprise-Server.mflic_ is the name of the license file.
 

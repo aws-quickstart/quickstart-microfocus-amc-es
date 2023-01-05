@@ -7,30 +7,3 @@ This Partner Solution is for you if you are:
 • A system integrator (SI) who is used to installing and configuring Enterprise Server deployments on premises, and wants a template to use as a starting point for installing and configuring Enterprise Server deployments on AWS.
 
 The Partner Solution creates the required infrastructure for both AWS Cloud and Enterprise Server. This makes it easy for you to see a fully-functioning demonstration application called BankDemo—using COBOL, CICS, Job Control Language (JCL),  Virtual Storage Access Method (VSAM) files, and Performance and Availability Clusters (PACs) — running under Enterprise Server on AWS.
-
-=== Micro Focus Enterprise Server on AWS
-Micro Focus Enterprise Server is an application deployment environment for IBM mainframe applications that have been running on the IBM z/OS operating system. Enterprise Server enables you to modernize and integrate mainframe applications with technologies such as .NET and Java. It also gives you application flexibility across Linux and Microsoft Windows, containerized or virtual, on AWS. +
-[NOTE]
-For a in-depth discussion of the unique benefits offered by the Micro Focus Enterprise Server solution on AWS, see the AWS blog post Empowering Enterprise Mainframe Workloads on AWS with Micro Focus.
-
-Using Enterprise Server, your organization can:
-
-* Support mainframe application deployment to Linux or Windows on AWS.
-* Rapidly replicate business-critical functionality to new platforms to support geographic, regulatory, line-of-business, or other key requirements.
-* Reduce your ongoing IT application costs by as much as 90 percent.
-* Meet and exceed your application reliability, availability, and serviceability requirements. Enterprise Server 8.0 enables you to deploy your applications into a scale-out architecture, providing even more improvements to your applications' availability, scalability, reliability, and performance.
-This scale-out architecture is provided by Performance and Availability Clusters (PACs) and Scale-Out Repositories (SORs) which are currently in Early Adopter Product (EAP) release status in Enterprise Server.
-An additional document, Micro Focus Enterprise Server on the AWS Cloud - Scale-Out Architecture Demonstrations describes how you can take a closer look at the scale-out capabilities offered by Enterprise Server.
-* Integrate with your security infrastructure, for appropriate application and system security.
-
-For more information on the architecture employed by Enterprise Server, see Enterprise Server Architecture Overview.
-
-In addition, by using Enterprise Server on AWS you can harness the following benefits of moving any application to the AWS Cloud:
-
-* A high-availability deployment environment that scales as your applications need it to and only charges you for the resources that you use.
-* The ability to quickly build new services targeting new channels, such as mobile or voice-based applications.
-* Big data services that provide analytics capabilities enabling you to create a data lake that offers a comprehensive view of your mainframe data assets.
-* Amazon Machine Learning (Amazon ML) to help you use your historical data to make even better business decisions. Amazon ML can find patterns in your data and then use the patterns to build models to make predictions on future data.
-// For advanced information about the product, troubleshooting, or additional functionality, refer to the https://{quickstart-github-org}.github.io/{quickstart-project-name}/operational/index.html[Operational Guide^].
-
-// For information about using this Partner Solution for migrations, refer to the https://{quickstart-github-org}.github.io/{quickstart-project-name}/migration/index.html[Migration Guide^].
