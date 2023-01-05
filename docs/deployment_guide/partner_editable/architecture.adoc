@@ -6,16 +6,16 @@ Server Architecture^] and
 https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/BKCACAINTRU005.html[Enterprise
 Server Instance Architecture] in the {partner-product-short-name} product documentation.
 
-Deploying this Quick Start with default parameters builds the following {partner-product-short-name} environment in the
+Deploying this Partner Solution with default parameters builds the following {partner-product-short-name} environment in the
 AWS Cloud.
 
 // Replace this example diagram with your own. Follow our wiki guidelines: https://w.amazon.com/bin/view/AWS_Quick_Starts/Process_for_PSAs/#HPrepareyourarchitecturediagram. Upload your source PowerPoint file to the GitHub {deployment name}/docs/images/ directory in its repository.
 
 [#architecture1]
-.Quick Start architecture for {partner-product-short-name} on AWS
+.Partner Solution architecture for {partner-product-short-name} on AWS
 image::../docs/deployment_guide/images/architecture_diagram.png[Architecture]
 
-As shown in <<architecture1>>, this Quick Start sets up the following:
+As shown in <<architecture1>>, this Partner Solution sets up the following:
 
 * A highly available architecture that spans two Availability Zones.*
 * A virtual private cloud (VPC) configured with public and private subnets, according to AWS
@@ -38,8 +38,8 @@ This is how the Enterprise Server instances are configured for use with the Bank
 CloudFormation template (to tailor it for use with other applications), you must allow the required protocols through the load balancer and
 specify the required number of instances.
 +
-NOTE: The Quick Start can deploy a maximum of two Enterprise Server instances for demonstration purposes. If you are an SI who wants to
-launch additional Enterprise Server instances as part of a migration project, you must modify the templates supplied with this Quick Start.
+NOTE: The Partner Solution can deploy a maximum of two Enterprise Server instances for demonstration purposes. If you are an SI who wants to
+launch additional Enterprise Server instances as part of a migration project, you must modify the templates supplied with this Partner Solution.
 +
 ** An optional Fileshare instance that is preconfigured to be accessible from the Enterprise Server instances (via Fileshare) and accessible
 directly via the Common Internet File System (CIFS) protocol share for batch processing.
@@ -48,4 +48,4 @@ and automated backups. The database is preconfigured to work as a relational dat
 ** An optional Amazon ElastiCache for Redis cluster that is preconfigured to work as an SOR for Enterprise Server.
 ** AWS Directory Service for Microsoft Active Directory (also known as AWS Managed Microsoft AD).
 
-[.small]#* The template that deploys this Quick Start into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.#
+[.small]#* The template that deploys this Partner Solution into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.#

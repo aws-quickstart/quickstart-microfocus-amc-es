@@ -1,5 +1,5 @@
-:quickstart-project-name: quickstart-microfocus-amc-es
-:quickstart-github-org: aws-quickstart
+:partner-solution-project-name: quickstart-microfocus-amc-es
+:partner-solution-github-org: aws-quickstart
 :partner-product-name: Micro Focus Enterprise Server
 :partner-product-short-name: Enterprise Server
 :partner-company-name: Micro Focus Inc.

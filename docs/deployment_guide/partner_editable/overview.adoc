@@ -1,14 +1,14 @@
-This Quick Start deploys {partner-product-name} on the AWS Cloud. This guide covers the steps necessary to deploy this Quick Start.
+This Partner Solution deploys {partner-product-name} on the AWS Cloud. This guide covers the steps necessary to deploy this Partner Solution.
 
-This Quick Start is for you if you are:
+This Partner Solution is for you if you are:
 
 • An existing Micro Focus customer who has already deployed an IBM mainframe workload to Enterprise Server on premises and want to see how easy it is to migrate these rehosted applications to the AWS Cloud.
 • Interested in exploring the feasibility of moving an IBM mainframe workload to the AWS Cloud and want to experience a fully functioning production server for running mainframe applications that can be deployed with a single click.
 • A system integrator (SI) who is used to installing and configuring Enterprise Server deployments on premises, and wants a template to use as a starting point for installing and configuring Enterprise Server deployments on AWS.
 
-The Quick Start creates the required infrastructure for both AWS Cloud and Enterprise Server. This makes it easy for you to see a fully-functioning demonstration application called BankDemo—using COBOL, CICS, Job Control Language (JCL),  Virtual Storage Access Method (VSAM) files, and Performance and Availability Clusters (PACs) — running under Enterprise Server on AWS. 
+The Partner Solution creates the required infrastructure for both AWS Cloud and Enterprise Server. This makes it easy for you to see a fully-functioning demonstration application called BankDemo—using COBOL, CICS, Job Control Language (JCL),  Virtual Storage Access Method (VSAM) files, and Performance and Availability Clusters (PACs) — running under Enterprise Server on AWS.
 
-== Micro Focus Enterprise Server on AWS
+=== Micro Focus Enterprise Server on AWS
 Micro Focus Enterprise Server is an application deployment environment for IBM mainframe applications that have been running on the IBM z/OS operating system. Enterprise Server enables you to modernize and integrate mainframe applications with technologies such as .NET and Java. It also gives you application flexibility across Linux and Microsoft Windows, containerized or virtual, on AWS. +
 [NOTE]
 For a in-depth discussion of the unique benefits offered by the Micro Focus Enterprise Server solution on AWS, see the AWS blog post Empowering Enterprise Mainframe Workloads on AWS with Micro Focus.
@@ -33,4 +33,4 @@ In addition, by using Enterprise Server on AWS you can harness the following ben
 * Amazon Machine Learning (Amazon ML) to help you use your historical data to make even better business decisions. Amazon ML can find patterns in your data and then use the patterns to build models to make predictions on future data.
 // For advanced information about the product, troubleshooting, or additional functionality, refer to the https://{quickstart-github-org}.github.io/{quickstart-project-name}/operational/index.html[Operational Guide^].
 
-// For information about using this Quick Start for migrations, refer to the https://{quickstart-github-org}.github.io/{quickstart-project-name}/migration/index.html[Migration Guide^].
+// For information about using this Partner Solution for migrations, refer to the https://{quickstart-github-org}.github.io/{quickstart-project-name}/migration/index.html[Migration Guide^].

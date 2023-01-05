@@ -2,10 +2,10 @@
 
 == Pre Deployment steps
 
-The BankDemo demonstration application that is included as part of this Quick Start requires the use of a TN3270 terminal emulator. You can use any TN3270 terminal
+The BankDemo demonstration application that is included as part of this Partner Solution requires the use of a TN3270 terminal emulator. You can use any TN3270 terminal
 emulator, but this guide shows the use of Micro Focus Rumba, which is supplied with Micro Focus Enterprise Developer.
 
-Before launching this Quick Start for Enterprise Server, you must review the terms of the
+Before launching this Partner Solution for Enterprise Server, you must review the terms of the
 https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-0562B3C9-2271-4CE8-AF64-93DE4940077F.html[Micro
 Focus End User License Agreement^]. You will be asked to accept the terms of the End User License Agreement during deployment.
 
@@ -13,23 +13,23 @@ Focus End User License Agreement^]. You will be asked to accept the terms of the
 
 . If you don’t already have an AWS account, create one at https://aws.amazon.com[role=external,window=_blank] by following the on-screen instructions.
  
-. Use the region selector in the navigation bar to choose the AWS Region where you want to deploy Enterprise Server on AWS. 
+. Use the region selector in the navigation bar to choose the AWS Region where you want to deploy Enterprise Server on AWS.
 +
 [IMPORTANT]
-This Quick Start includes AWS Directory Service which isn’t supported in all AWS Regions. See https://docs.aws.amazon.com/general/latest/gr/rande.html#ds_region[AWS Regions and Endpoints, role=external,window=_blank] for a list of supported regions.
-When deploying the RDS Remote Database option, Amazon RDS does not support Windows (domain) Authentication in all AWS Regions. See https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_SQLServerWinAuth.html[Using Windows Authentication with a Microsoft SQL Server DB Instance, role=external,window=_blank].
-. Amazon EC2 uses public-key cryptography to encrypt and decrypt login information. To be able to log in to your instances, you must create a https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html[key pair, role=external,window=_blank] in your preferred region. To do this:
+This Partner Solution includes AWS Directory Service which isn’t supported in all AWS Regions. See https://docs.aws.amazon.com/general/latest/gr/rande.html#ds_region[AWS Regions and Endpoints^] for a list of supported regions.
+When deploying the RDS Remote Database option, Amazon RDS does not support Windows (domain) Authentication in all AWS Regions. See https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_SQLServerWinAuth.html[Using Windows Authentication with a Microsoft SQL Server DB Instance^].
+. Amazon EC2 uses public-key cryptography to encrypt and decrypt login information. To be able to log in to your instances, you must create a https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html[key pair^] in your preferred region. To do this:
 ..	In the navigation pane of the Amazon EC2 console, select *Key Pairs*.
 ..	Choose *Create Key Pair*.
 ..	Specify the name for the key pair.
-..	Choose *Create*. 
+..	Choose *Create*.
 
 
 . If necessary, https://console.aws.amazon.com/support/home#/case/create?issueType=service-limit-increase&limitType=service-code-[request a service limit increase, role=external,window=_blank] for the relevant Amazon EC2 instance types. You might need to do this if you have an existing deployment that uses this instance type, and you think you might exceed the http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-resource-limits.html[default limit, role=external,window=_blank] with this deployment.
 
 === Step 2. Prepare the S3 Bucket
 
-We recommend that you launch the Enterprise Server Quick Start from an S3 bucket, and these instructions will guide you through the content of this bucket. The commands are using the AWS CLI on Windows, but if you prefer, you can use the user interface options from the Amazon S3 > Buckets page to complete the tasks. +
+We recommend that you launch the Enterprise Server Partner Solution from an S3 bucket, and these instructions will guide you through the content of this bucket. The commands are using the AWS CLI on Windows, but if you prefer, you can use the user interface options from the Amazon S3 > Buckets page to complete the tasks. +
 If you are deploying from local files or a non-S3 location, these steps can be skipped.
 [NOTE]
 ====
@@ -62,13 +62,13 @@ aws s3 cp .\Enterprise-Server.mflic s3://aws-quickstart/license/Enterprise-Serve
 +
 where _Enterprise-Server.mflic_ is the name of the license file.
 
-Using the example names above, these are the parameters that you should specify when deploying the Quick Start: 
+Using the example names above, these are the parameters that you should specify when deploying the Partner Solution:
 |===
-|Parameter | Value 
+|Parameter | Value
 |Quick Start S3 key prefix (QSS3KeyPrefix)	|quickstart-microfocus-amc-es/
 |Quick Start S3 bucket name (QSS3BucketName)	|aws-quickstart
 |Enterprise Server license filename (ESLicenseFilename)	|Enterprise-Server.mflic
 |Quick Start S3 bucket name (ESS3BucketName)	|aws-quickstart
 |===
 For a full list of parameters required for deployment, refer to https://www.microfocus.com/media/documentation/micro-focus-enterprise-server-on-the-aws-cloud-deployment-guide-documentation.pdf[Micro Focus Enterprise Server on the AWS Cloud Deployment Guide^]. +
-This example employs one bucket for both the Quick Start and the Enterprise Server parameters. If required, you can employ separate buckets for each.
+This example employs one bucket for both the Partner Solution and the Enterprise Server parameters. If required, you can employ separate buckets for each.
