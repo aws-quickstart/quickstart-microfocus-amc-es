@@ -186,7 +186,7 @@ Resources:
       DBSubnetGroupName: !Ref DatabaseSubnetGroup
       StorageEncrypted: false
       DatabaseName: mydb
-      DBClusterParameterGroupName: default.aurora-postgresql10
+      DBClusterParameterGroupName: default.aurora-postgresql14
       Port:  5432
       VpcSecurityGroupIds:
         - !Ref ESDatabaseSG
