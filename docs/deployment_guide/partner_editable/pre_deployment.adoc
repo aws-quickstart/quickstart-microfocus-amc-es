@@ -2,20 +2,21 @@
 
 == Predeployment steps
 
-The BankDemo demonstration application that is included as part of this Partner Solution requires the use of a TN3270 terminal emulator. You can use any TN3270 terminal
-emulator, but this guide shows the use of Micro Focus Rumba, which is supplied with Micro Focus Enterprise Developer.
+The BankDemo demonstration application that is included as part of this Partner Solution requires a TN3270 terminal emulator. You can use any TN3270 terminal
+emulator, but this guide covers Micro Focus Rumba, which is supplied with Micro Focus Enterprise Developer.
 
 Before launching this Partner Solution for Enterprise Server, you must review the terms of the
 https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-0562B3C9-2271-4CE8-AF64-93DE4940077F.html[Micro
 Focus End User License Agreement^]. You will be asked to accept the terms of the End User License Agreement during deployment.
 
-=== Prepare an Amazon S3 Bucket
+=== Prepare an Amazon S3 bucket
 
-We recommend that you launch the Enterprise Server Partner Solution from an Amazon S3 bucket, and these instructions will guide you through the content of this bucket. The commands are using the AWS CLI on Windows, but if you prefer, you can use the Amazon S3 Console to complete the tasks. +
-If you are deploying from local files or a non-S3 location, these steps can be skipped.
+Launch the Enterprise Server Partner Solution from an Amazon S3 bucket. These instructions guide you through the content of this bucket. The commands use AWS CLI on Windows, but if you prefer, you can use the Amazon S3 console to complete the tasks. +
+If you are deploying from local files or a non-S3 location, you can skip these steps.
 
-NOTE: Cloning the GitHub repository requires the use of an SSH key. Generate a new SSH key pair and add the public key to your GitHub account. If you are not familiar with SSH keys in GitHub, see https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account[Adding a new SSH key to your GitHub account - GitHub Docs, role=external,window=_blank] .
-. Create a new folder for the templates and scripts; for example, *C:\quickstart-microfocus-amc-es*.
+NOTE: Cloning the GitHub repository requires an SSH key. Generate a new SSH key pair and add the public key to your GitHub account. If you are not familiar with SSH keys in GitHub, refer to https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account[Adding a new SSH key to your GitHub account - GitHub Docs, role=external,window=_blank].
+
+. Create a new folder for the templates and scripts, for example, *C:\quickstart-microfocus-amc-es*.
 . Download the following contents and submodules from our GitHub repository, by entering the following command:
 
 ```
