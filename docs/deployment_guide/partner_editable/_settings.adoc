@@ -3,7 +3,7 @@
 :partner-product-name: Micro Focus Enterprise Server
 :partner-product-short-name: Enterprise Server
 :partner-company-name: Micro Focus Inc.
-:doc-month: January
+:doc-month: February
 :doc-year: 2023
 :partner-contributors: {partner-company-name}
 // :other-contributors: Akua Mansa, Trek10
