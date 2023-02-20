@@ -1,5 +1,6 @@
 // Include any postdeployment steps here, such as steps necessary to test that the deployment was successful. If there are no postdeployment steps, leave this file empty.
 
-== Post Deployment steps
-To test the successful deployment of Enterprise Server on the AWS Cloud, you run a demonstration application called BankDemo: an application that runs an imaginary banking company, which provides simple banking functionality such as displaying accounts and transactions, transferring funds between accounts, and changing users' contact details. +
+== Postdeployment steps
+To test the successful deployment of Enterprise Server on the AWS Cloud, run BankDemo, a demonstration application that runs an imaginary banking company that provides simple banking functionality such as displaying accounts and transactions, transferring funds between accounts, and changing users' contact details. +
+
 Refer to the _Step 5. Test the Deployment_ section of https://www.microfocus.com/media/documentation/micro-focus-enterprise-server-on-the-aws-cloud-deployment-guide-documentation.pdf[Micro Focus Enterprise Server on the AWS Cloud Deployment Guide^] for detailed instructions on running this application.
