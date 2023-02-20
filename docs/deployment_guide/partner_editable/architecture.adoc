@@ -1,0 +1,51 @@
+:xrefstyle: short
+
+For an overview of {partner-product-short-name} architecture, see
+https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-B2ED168C-812D-4660-9A2C-F5A106E90FDD.html[Enterprise
+Server Architecture^] and
+https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/BKCACAINTRU005.html[Enterprise
+Server Instance Architecture] in the {partner-product-short-name} product documentation.
+
+Deploying this Partner Solution with default parameters builds the following {partner-product-short-name} environment in the
+AWS Cloud.
+
+// Replace this example diagram with your own. Follow our wiki guidelines: https://w.amazon.com/bin/view/AWS_Quick_Starts/Process_for_PSAs/#HPrepareyourarchitecturediagram. Upload your source PowerPoint file to the GitHub {deployment name}/docs/images/ directory in its repository.
+
+[#architecture1]
+.Partner Solution architecture for {partner-product-short-name} on AWS
+image::../docs/deployment_guide/images/architecture_diagram.png[Architecture]
+
+As shown in <<architecture1>>, this Partner Solution sets up the following:
+
+* A highly available architecture that spans two Availability Zones.*
+* A virtual private cloud (VPC) configured with public and private subnets, according to AWS
+best practices, to provide you with your own virtual network on AWS.*
+* An internet gateway to allow access to the internet.*
++
+When deploying the optional BankDemo demonstration applications, TN3270
+communications from the internet will also flow through the internet
+gateway.
+* In the public subnets:
+** Managed network address translation (NAT) gateways to allow outbound
+internet access for resources in the private subnets.*
+** Optional Remote Desktop Gateway (RD Gateway) instances in the public
+subnets for administrative access.*
+* In the private subnets:
+** Enterprise Server instances that can be accessed via a TN3270 terminal emulator or HTTP.
+** A Network Load Balancer to automatically distribute requests for the BankDemo demonstration applications to the deployed Enterprise Server instances.
++
+This is how the Enterprise Server instances are configured for use with the BankDemo demonstration applications. If you modify the AWS
+CloudFormation template (to tailor it for use with other applications), you must allow the required protocols through the load balancer and
+specify the required number of instances.
++
+NOTE: The Partner Solution can deploy a maximum of two Enterprise Server instances for demonstration purposes. If you are an SI who wants to
+launch additional Enterprise Server instances as part of a migration project, you must modify the templates supplied with this Partner Solution.
++
+** An optional Fileshare instance that is preconfigured to be accessible from the Enterprise Server instances (via Fileshare) and accessible
+directly via the Common Internet File System (CIFS) protocol share for batch processing.
+** An optional Microsoft SQL Server database using Amazon Relational Database Service (Amazon RDS) for SQL Server with support for failover
+and automated backups. The database is preconfigured to work as a relational data store for Enterprise Server.
+** An optional Amazon ElastiCache for Redis cluster that is preconfigured to work as an SOR for Enterprise Server.
+** AWS Directory Service for Microsoft Active Directory (also known as AWS Managed Microsoft AD).
+
+[.small]#* The template that deploys this Partner Solution into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.#

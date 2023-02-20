@@ -1,0 +1,12 @@
+// Include details about any licenses and how to sign up. Provide links as appropriate.
+This Partner Solution uses a Bring Your Own License (BYOL) model for
+{partner-product-short-name}. How you license {partner-product-short-name} for use with this
+Partner Solution depends on what sort of license you have:
+
+* If you are an existing user of Enterprise Server you can use one of your existing licenses.
+* If you are not an existing user of Enterprise Server, you can https://www.microfocus.com/products/enterprise-suite/enterprise-server/trial/[request a trial license from Micro Focus^].
+
+This trial license for {partner-product-short-name} on AWS is only intended to be used for a maximum of 90 days, and is not intended for production use.
+After the trial period, you are responsible for acquiring the necessary licenses directly from Micro Focus to continue using {partner-product-short-name} on AWS.
+
+There is no cost to use this Partner Solution, but you will be billed for any AWS services or resources that this Partner Solution deploys. For more information, refer to the https://fwd.aws/rA69w?[AWS Partner Solution General Information Guide^].

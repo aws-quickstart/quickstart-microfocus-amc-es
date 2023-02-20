@@ -1,0 +1,9 @@
+This Partner Solution deploys {partner-product-name} on the AWS Cloud. This guide covers the steps necessary to deploy this Partner Solution.
+
+This Partner Solution is for you if you are:
+
+• An existing Micro Focus customer who has already deployed an IBM mainframe workload to Enterprise Server on premises and want to see how easy it is to migrate these rehosted applications to the AWS Cloud.
+• Interested in exploring the feasibility of moving an IBM mainframe workload to the AWS Cloud and want to experience a fully functioning production server for running mainframe applications that can be deployed with a single click.
+• A system integrator (SI) who is used to installing and configuring Enterprise Server deployments on premises, and wants a template to use as a starting point for installing and configuring Enterprise Server deployments on AWS.
+
+The Partner Solution creates the required infrastructure for both AWS Cloud and Enterprise Server. This makes it easy for you to see a fully-functioning demonstration application called BankDemo—using COBOL, CICS, Job Control Language (JCL),  Virtual Storage Access Method (VSAM) files, and Performance and Availability Clusters (PACs) — running under Enterprise Server on AWS.
