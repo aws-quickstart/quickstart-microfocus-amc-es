@@ -25,6 +25,7 @@ git clone --recursive -c core.autocrlf=false git@github.com:aws-quickstart/quick
 
 TIP: Check that the script files within the 'scripts' sub-folders of the cloned repository contain the correct line endings for their platform: .ps1 files should have Windows-style line endings (CRLF), and .sh files should have Linux-style line endings (LF).
 
+[start=3]
 . Upload this entire structure, excluding the GitHub metadata files (*git*) into an existing, empty S3 bucket; for example, if using the AWS command line tools on your local machine:
 +
 ```
