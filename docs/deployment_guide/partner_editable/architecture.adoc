@@ -4,7 +4,7 @@ For an overview of {partner-product-short-name} architecture, see
 https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-B2ED168C-812D-4660-9A2C-F5A106E90FDD.html[Enterprise
 Server Architecture^] and
 https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/BKCACAINTRU005.html[Enterprise
-Server Instance Architecture] in the {partner-product-short-name} product documentation.
+Server Instance Architecture^] in the {partner-product-short-name} product documentation.
 
 Deploying this Partner Solution with default parameters builds the following {partner-product-short-name} environment in the
 AWS Cloud.
@@ -26,7 +26,7 @@ When deploying the optional BankDemo demonstration applications, TN3270
 communications from the internet will also flow through the internet
 gateway.
 * In the public subnets:
-** Managed network address translation (NAT) gateways to allow outbound
+** Managed NAT gateways to allow outbound
 internet access for resources in the private subnets.*
 ** Optional Remote Desktop Gateway (RD Gateway) instances in the public
 subnets for administrative access.*

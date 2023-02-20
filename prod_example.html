@@ -860,11 +860,11 @@ p.footer-text a{color:#d7d8d8}
 <li><a href="#_deployment_options">Deployment options</a></li>
 <li><a href="#_predeployment_steps">Predeployment steps</a>
 <ul class="sectlevel2">
-<li><a href="#_prepare_an_amazon_s3_bucket">Prepare an Amazon S3 Bucket</a></li>
+<li><a href="#_prepare_an_amazon_s3_bucket">Prepare an Amazon S3 bucket</a></li>
 </ul>
 </li>
 <li><a href="#_deployment_steps">Deployment steps</a></li>
-<li><a href="#_post_deployment_steps">Post Deployment steps</a></li>
+<li><a href="#_postdeployment_steps">Postdeployment steps</a></li>
 <li><a href="#_troubleshooting">Troubleshooting</a></li>
 <li><a href="#_customer_responsibility">Customer responsibility</a></li>
 <li><a href="#_feedback">Feedback</a></li>
@@ -883,7 +883,7 @@ p.footer-text a{color:#d7d8d8}
 </div>
 </div>
 <div class="paragraph text-center">
-<p><strong>January 2023</strong><br>
+<p><strong>February 2023</strong><br>
 <em>Micro Focus Inc.</em><br>
 <em>Vinod Shukla, AWS Integration &amp; Automation team</em><br></p>
 </div>
@@ -970,7 +970,7 @@ After the trial period, you are responsible for acquiring the necessary licenses
 <p>For an overview of Enterprise Server architecture, see
 <a href="https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/GUID-B2ED168C-812D-4660-9A2C-F5A106E90FDD.html" target="_blank" rel="noopener">Enterprise
 Server Architecture</a> and
-<a href="https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/BKCACAINTRU005.html">Enterprise
+<a href="https://www.microfocus.com/documentation/enterprise-developer/ed-latest/ES-WIN/BKCACAINTRU005.html" target="_blank" rel="noopener">Enterprise
 Server Instance Architecture</a> in the Enterprise Server product documentation.</p>
 </div>
 <div class="paragraph">
@@ -1008,7 +1008,7 @@ gateway.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>Managed network address translation (NAT) gateways to allow outbound
+<p>Managed NAT gateways to allow outbound
 internet access for resources in the private subnets.*</p>
 </li>
 <li>
@@ -1095,8 +1095,8 @@ and automated backups. The database is preconfigured to work as a relational dat
 <h2 id="_predeployment_steps">Predeployment steps</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The BankDemo demonstration application that is included as part of this Partner Solution requires the use of a TN3270 terminal emulator. You can use any TN3270 terminal
-emulator, but this guide shows the use of Micro Focus Rumba, which is supplied with Micro Focus Enterprise Developer.</p>
+<p>The BankDemo demonstration application that is included as part of this Partner Solution requires a TN3270 terminal emulator. You can use any TN3270 terminal
+emulator, but this guide covers Micro Focus Rumba, which is supplied with Micro Focus Enterprise Developer.</p>
 </div>
 <div class="paragraph">
 <p>Before launching this Partner Solution for Enterprise Server, you must review the terms of the
@@ -1104,10 +1104,10 @@ emulator, but this guide shows the use of Micro Focus Rumba, which is supplied w
 Focus End User License Agreement</a>. You will be asked to accept the terms of the End User License Agreement during deployment.</p>
 </div>
 <div class="sect2">
-<h3 id="_prepare_an_amazon_s3_bucket">Prepare an Amazon S3 Bucket</h3>
+<h3 id="_prepare_an_amazon_s3_bucket">Prepare an Amazon S3 bucket</h3>
 <div class="paragraph">
-<p>We recommend that you launch the Enterprise Server Partner Solution from an Amazon S3 bucket, and these instructions will guide you through the content of this bucket. The commands are using the AWS CLI on Windows, but if you prefer, you can use the Amazon S3 Console to complete the tasks.<br>
-If you are deploying from local files or a non-S3 location, these steps can be skipped.</p>
+<p>Launch the Enterprise Server Partner Solution from an Amazon S3 bucket. These instructions guide you through the content of this bucket. The commands use AWS CLI on Windows, but if you prefer, you can use the Amazon S3 console to complete the tasks.<br>
+If you are deploying from local files or a non-S3 location, you can skip these steps.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1116,12 +1116,20 @@ If you are deploying from local files or a non-S3 location, these steps can be s
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-Cloning the GitHub repository requires the use of an SSH key. Generate a new SSH key pair and add the public key to your GitHub account. If you are not familiar with SSH keys in GitHub, see <a href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account" class="external" target="_blank" rel="noopener">Adding a new SSH key to your GitHub account - GitHub Docs</a> .
-. Create a new folder for the templates and scripts; for example, <strong>C:\quickstart-microfocus-amc-es</strong>.
-. Download the following contents and submodules from our GitHub repository, by entering the following command:
+Cloning the GitHub repository requires an SSH key. Generate a new SSH key pair and add the public key to your GitHub account. If you are not familiar with SSH keys in GitHub, refer to <a href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account" class="external" target="_blank" rel="noopener">Adding a new SSH key to your GitHub account - GitHub Docs</a>.
 </td>
 </tr>
 </table>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Create a new folder for the templates and scripts, for example, <strong>C:\quickstart-microfocus-amc-es</strong>.</p>
+</li>
+<li>
+<p>Download the following contents and submodules from our GitHub repository, by entering the following command:</p>
+</li>
+</ol>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1253,11 +1261,13 @@ Unless you&#8217;re customizing the Partner Solution templates or are instructed
 </div>
 </div>
 <div class="sect1">
-<h2 id="_post_deployment_steps">Post Deployment steps</h2>
+<h2 id="_postdeployment_steps">Postdeployment steps</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>To test the successful deployment of Enterprise Server on the AWS Cloud, you run a demonstration application called BankDemo: an application that runs an imaginary banking company, which provides simple banking functionality such as displaying accounts and transactions, transferring funds between accounts, and changing users' contact details.<br>
-Refer to the <em>Step 5. Test the Deployment</em> section of <a href="https://www.microfocus.com/media/documentation/micro-focus-enterprise-server-on-the-aws-cloud-deployment-guide-documentation.pdf" target="_blank" rel="noopener">Micro Focus Enterprise Server on the AWS Cloud Deployment Guide</a> for detailed instructions on running this application.</p>
+<p>To test the successful deployment of Enterprise Server on the AWS Cloud, run BankDemo, a demonstration application that runs an imaginary banking company that provides simple banking functionality such as displaying accounts and transactions, transferring funds between accounts, and changing users' contact details.<br></p>
+</div>
+<div class="paragraph">
+<p>Refer to the <em>Step 5. Test the Deployment</em> section of <a href="https://www.microfocus.com/media/documentation/micro-focus-enterprise-server-on-the-aws-cloud-deployment-guide-documentation.pdf" target="_blank" rel="noopener">Micro Focus Enterprise Server on the AWS Cloud Deployment Guide</a> for detailed instructions on running this application.</p>
 </div>
 </div>
 </div>
