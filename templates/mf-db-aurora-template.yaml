@@ -70,12 +70,12 @@ Metadata:
 Parameters:
   DBInstanceClass:
     AllowedValues:
-      - db.r4.large
-      - db.r4.xlarge
-      - db.r4.2xlarge
-      - db.r4.4xlarge
-      - db.r4.8xlarge
-    Default: db.r4.large
+      - db.r5.large
+      - db.r5.xlarge
+      - db.r5.2xlarge
+      - db.r5.4xlarge
+      - db.r5.8xlarge
+    Default: db.r5.large
     Type: String
     Description: DB instance class
   DBMasterUsername:
@@ -180,13 +180,12 @@ Resources:
             - ERDSStorageEncryptionEnabled: "Encryption disabled by design"
     Properties:
       Engine: aurora-postgresql
-      EngineVersion: "10"
+      EngineVersion: "14.5"
       MasterUsername: !Ref DBMasterUsername
       MasterUserPassword: !Ref DBMasterUserPassword
       DBSubnetGroupName: !Ref DatabaseSubnetGroup
       StorageEncrypted: false
       DatabaseName: mydb
-      DBClusterParameterGroupName: default.aurora-postgresql10
       Port:  5432
       VpcSecurityGroupIds:
         - !Ref ESDatabaseSG

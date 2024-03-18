@@ -310,13 +310,13 @@ Parameters:
     Type: Number
   DBInstanceClass:
     AllowedValues:
-      - db.r4.large
-      - db.r4.xlarge
-      - db.r4.2xlarge
-      - db.r4.4xlarge
+      - db.r5.large
+      - db.r5.xlarge
+      - db.r5.2xlarge
+      - db.r5.4xlarge
       - db.r2.8xlarge
     Description: The type of Amazon RDS DB instance.
-    Default: db.r4.large
+    Default: db.r5.large
     Type: String
   DBMasterUsername:
     Description: >-
@@ -474,13 +474,13 @@ Parameters:
     Type: String
   PACDBInstanceClass:
     AllowedValues:
-      - db.r4.large
-      - db.r4.xlarge
-      - db.r4.2xlarge
-      - db.r4.4xlarge
+      - db.r5.large
+      - db.r5.xlarge
+      - db.r5.2xlarge
+      - db.r5.4xlarge
       - db.r2.8xlarge
     Description: The type of Amazon RDS DB instance.
-    Default: db.r4.large
+    Default: db.r5.large
     Type: String
   PACDBMasterUsername:
     Description: >-

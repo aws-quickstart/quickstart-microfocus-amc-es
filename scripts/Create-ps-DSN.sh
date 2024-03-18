@@ -10,8 +10,9 @@ then
   exit 1
 fi
 
-yum install postgresql postgresql-odbc -y
-driver=`rpm -ql postgresql-odbc | grep psqlodbcw.so`
+yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+yum install -y postgresql14 postgresql14-odbc
+driver=`rpm -ql postgresql14-odbc | grep psqlodbcw.so`
 
 DBMasterPassword=$1
 cat <<EOT >> /tmp/odbcinst.ini
